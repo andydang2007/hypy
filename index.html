@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinyin Shooting Lxxx Exxx</title>
+    <title>Pinyin Shooting: Laser Explorer</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            /* 飞船部分配色 */
             --accent-glow: #06b6d4;   
             --correct-color: #22c55e; 
             --wrong-color: #ef4444;   
-            /* 底部亮色面板配色 */
             --panel-light-bg: rgba(248, 250, 252, 0.95);
             --wheel-bg: #ffffff;
             --text-dark: #0f172a;
-            --text-muted-light: #64748b;
+            --text-muted-light: #94a3b8;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-family: 'Nunito', 'Microsoft YaHei', sans-serif; }
@@ -36,16 +34,10 @@
         }
 
         header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: flex-end; align-items: center;
             padding: 15px 20px; background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(5px);
             border-bottom: 1px solid rgba(6, 182, 212, 0.3); z-index: 10;
         }
-        #btn-audio { 
-            background: rgba(51, 65, 85, 0.8); border: 2px solid #475569; color: #38bdf8; 
-            padding: 10px 20px; border-radius: 20px; font-weight: 900; font-size: 16px; 
-            cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-        }
-        #btn-audio:active { transform: scale(0.95); background: #38bdf8; color: #fff; }
         
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
         .stat-label { font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; }
@@ -54,6 +46,7 @@
         #game-board { flex: 1; display: flex; flex-direction: column; position: relative; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
+        /* 🎯 目标汉字 */
         .target-zone { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 40px; position: relative; z-index: 2; }
         .enemy-target {
             width: 120px; height: 120px; border-radius: 20px;
@@ -61,15 +54,25 @@
             backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
             font-size: 60px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.8);
             box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
-            transform: rotate(45deg); transition: all 0.3s;
+            transform: rotate(45deg); transition: all 0.2s; cursor: pointer;
         }
-        .enemy-text { transform: rotate(-45deg); } 
+        .enemy-target:active { transform: rotate(45deg) scale(0.9); background: rgba(255, 255, 255, 0.15); border-color: #38bdf8; box-shadow: 0 0 30px rgba(56, 189, 248, 0.5); }
+        .enemy-text { transform: rotate(-45deg); position: relative;} 
+        .audio-icon { position: absolute; right: -15px; top: -10px; font-size: 18px; filter: drop-shadow(0 2px 2px #000); }
 
-        .hit-correct { transform: rotate(45deg) scale(1.2) !important; border-color: var(--correct-color) !important; background: rgba(34, 197, 94, 0.2) !important; box-shadow: 0 0 40px var(--correct-color) !important; color: var(--correct-color) !important; }
+        .hit-correct { transform: rotate(45deg) scale(1.2) !important; border-color: var(--correct-color) !important; background: rgba(34, 197, 94, 0.2) !important; box-shadow: 0 0 40px var(--correct-color) !important; color: var(--correct-color) !important; pointer-events: none;}
         .hit-wrong { animation: shake 0.4s both; border-color: var(--wrong-color) !important; background: rgba(239, 68, 68, 0.2) !important; color: var(--wrong-color) !important;}
         @keyframes shake { 10%, 90% { transform: rotate(45deg) translate3d(-5px, 0, 0); } 20%, 80% { transform: rotate(45deg) translate3d(8px, 0, 0); } 30%, 50%, 70% { transform: rotate(45deg) translate3d(-10px, 0, 0); } 40%, 60% { transform: rotate(45deg) translate3d(10px, 0, 0); } }
 
-        .ship-zone { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; margin-bottom: 20px; }
+        /* 口诀提示飘字 */
+        #rule-toast {
+            position: absolute; top: 25%; width: 100%; text-align: center;
+            color: #fbbf24; font-size: 24px; font-weight: 900; opacity: 0; pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50;
+        }
+
+        /* --- 🚀 飞船主机 --- */
+        .ship-zone { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; margin-bottom: 30px; }
         .spaceship { position: relative; width: 220px; height: 120px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 80px; height: 40px; background: rgba(30, 41, 59, 0.9); top: 40px; box-shadow: inset 0 0 10px #000; border-bottom: 3px solid var(--accent-glow); backdrop-filter: blur(5px);}
         .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); border-radius: 10px 0 0 10px; }
@@ -83,73 +86,79 @@
             border: 4px solid var(--accent-glow); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; position: relative; z-index: 12;
             box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), inset 0 0 20px rgba(0,0,0,0.8);
-            cursor: pointer; transition: 0.1s;
+            cursor: pointer; transition: 0.2s;
         }
         .ship-core:active { transform: scale(0.9); box-shadow: 0 0 15px rgba(6, 182, 212, 0.9); border-color: #fff; }
-        .ship-core.disabled { filter: grayscale(1); opacity: 0.5; pointer-events: none; border-color: #475569; }
-        .hud-text { font-size: 42px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); letter-spacing: 2px;}
+        .hud-text { font-size: 44px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); letter-spacing: 2px; transition: 0.2s;}
+        
+        /* ⚠️ 待脱帽的红色警告状态 */
+        .ship-core.needs-fix { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(0,0,0,0.8); animation: pulseRed 1s infinite alternate; }
+        .ship-core.needs-fix .hud-text { color: #fca5a5; text-shadow: 0 0 15px #ef4444; }
+        @keyframes pulseRed { from { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), inset 0 0 20px rgba(0,0,0,0.8); } to { box-shadow: 0 0 40px rgba(239, 68, 68, 0.8), inset 0 0 20px rgba(0,0,0,0.8); } }
 
-        /* --- 🎛️ 底部浅色系雷达转盘 --- */
+        /* --- 🎛️ 底部浅色系纯物理雷达转盘 --- */
         .dashboard {
-            height: 260px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
-            border-radius: 40px 40px 0 0; display: flex; justify-content: space-around; align-items: center;
-            padding: 20px 10px; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); position: relative; z-index: 10;
+            height: 240px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
+            border-radius: 40px 40px 0 0; display: flex; justify-content: space-evenly; align-items: center;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); position: relative; z-index: 10;
             backdrop-filter: blur(10px);
         }
 
-        .dial-container { display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; }
-        .dial-title { font-size: 18px; font-weight: 900; color: var(--text-dark); letter-spacing: 1px;}
+        .dial-container { position: relative; display: flex; align-items: center; justify-content: center; width: 180px; }
         
-        /* 放大后的外圈容器 */
         .dial-wrapper {
-            width: 140px; height: 140px; border-radius: 50%; border: 4px solid #cbd5e1;
+            width: 150px; height: 150px; border-radius: 50%; border: 4px solid #cbd5e1;
             background: var(--wheel-bg); position: relative; 
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.1);
-            display: flex; justify-content: center; align-items: center;
-            cursor: grab; /* 提示可拖拽 */
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.15);
+            display: flex; justify-content: center; align-items: center; cursor: grab; 
         }
         .dial-wrapper:active { cursor: grabbing; }
-
-        /* 中心的高亮指示框也跟着放大 */
-        .dial-indicator {
-            position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-            width: 50px; height: 50px; border: 3px solid var(--accent-glow); border-radius: 12px;
-            background: rgba(6, 182, 212, 0.1); z-index: 5; pointer-events: none;
-            box-shadow: 0 0 15px rgba(6,182,212,0.3);
-        }
-
-        /* 转盘本体 */
         .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; }
-        /* 增加拖拽时的类，取消过渡动画以保证跟手 */
         .dial-wheel.dragging { transition: none !important; }
 
         .dial-item {
-            position: absolute; top: 50%; left: 50%; width: 50px; height: 40px;
-            margin-top: -20px; margin-left: -25px;
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 40px; margin-top: -20px; margin-left: -25px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 26px; font-weight: bold; color: var(--text-muted-light); transition: 0.2s;
-            pointer-events: none; /* 让事件穿透到背景环上 */
+            font-size: 26px; font-weight: bold; color: var(--text-muted-light); transition: color 0.2s, font-size 0.2s; pointer-events: none; 
         }
         
-        /* 选中状态：大字号，深颜色 */
-        .dial-item.active { color: var(--text-dark); font-size: 40px; font-weight: 900; }
-        .dial-wrapper.tone-dial .dial-item.active { color: #d97706; } /* 声调选黄色系的琥珀色 */
-        .dial-wrapper.final-dial .dial-item.active { color: #0284c7; } /* 韵母选蓝色系 */
+        .dial-item.active { font-size: 40px; font-weight: 900; }
+        .i-dial .dial-item.active { color: #334155; }
+        .f-dial .dial-item.active { color: #0284c7; } 
+        .t-dial .dial-item.active { color: #d97706; } 
 
-        /* 针对“轻声”的特殊调整 */
         .text-qingsheng { font-size: 20px !important; letter-spacing: -1px; }
         .dial-item.active .text-qingsheng { font-size: 26px !important; }
 
+        .dial-arrow {
+            position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+            font-size: 30px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        .i-dial-arrow { color: #475569; } .f-dial-arrow { color: #0284c7; } .t-dial-arrow { color: #d97706; }
+
+        /* --- 🎮 开始页面 (含 PSLE 专属标题) --- */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px);}
-        .start-btn { background: linear-gradient(135deg, #06b6d4, #0369a1); color: white; border: none; padding: 15px 50px; border-radius: 30px; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #075985; margin-top: 30px; transition: 0.1s;}
+        
+        .game-title {
+            font-size: 32px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px #06b6d4; 
+            text-align: center; white-space: nowrap; font-style: italic; letter-spacing: 2px;
+            display: flex; align-items: baseline; gap: 8px;
+        }
+        .psle-cap { color: #fbbf24; font-size: 56px; text-shadow: 0 0 20px #f59e0b; font-style: normal; }
+        
+        .start-btn { background: linear-gradient(135deg, #06b6d4, #0369a1); color: white; border: none; padding: 15px 50px; border-radius: 30px; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #075985; transition: 0.1s;}
         .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #075985;}
 
+        @media (max-width: 800px) {
+            .game-title { font-size: 4vw; gap: 4px;}
+            .psle-cap { font-size: 7vw; }
+        }
+
         @media (max-height: 700px) {
-            .dashboard { height: 220px; padding: 10px 0; }
+            .dashboard { height: 180px; }
             .dial-wrapper { width: 120px; height: 120px; }
             .spaceship { transform: scale(0.8); }
             .enemy-target { width: 100px; height: 100px; font-size: 50px; }
-            .dial-title { font-size: 16px; }
             .dial-item { font-size: 22px; }
             .dial-item.active { font-size: 34px; }
         }
@@ -158,23 +167,23 @@
 <body>
 
     <header>
-        <button id="btn-audio" onclick="playTargetAudio()">🔊 发声提示</button>
         <div class="stat-box"><span class="stat-label">SCORE</span><span class="stat-value" id="ui-score">0</span></div>
     </header>
 
     <div id="game-board">
         <canvas id="laser-canvas"></canvas>
+        <div id="rule-toast">⚠️ j q x y 遇到 ü 要脱帽！</div>
         
         <div class="target-zone">
-            <div class="enemy-target" id="target-container">
-                <div class="enemy-text" id="target-char">🎯</div>
+            <div class="enemy-target" id="target-container" onclick="playTargetAudio()">
+                <div class="enemy-text" id="target-char">🎯<span class="audio-icon">🔊</span></div>
             </div>
         </div>
 
         <div class="ship-zone">
             <div class="spaceship">
                 <div class="wing left"><div class="thruster"></div></div>
-                <div class="ship-core disabled" id="btn-fire" onclick="fireLaser()">
+                <div class="ship-core" id="btn-fire" onclick="handleHudClick()">
                     <span class="hud-text" id="hud-display"></span>
                 </div>
                 <div class="wing right"><div class="thruster"></div></div>
@@ -183,46 +192,38 @@
 
         <div class="dashboard">
             <div class="dial-container">
-                <div class="dial-title">声母 (Initial)</div>
-                <div class="dial-wrapper" id="wrap-i">
-                    <div class="dial-indicator"></div>
-                    <div class="dial-wheel" id="wheel-i"></div>
-                </div>
+                <div class="dial-wrapper i-dial" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div></div>
+                <div class="dial-arrow i-dial-arrow">◀</div>
             </div>
             
             <div class="dial-container">
-                <div class="dial-title" style="color:#0284c7;">韵母 (Final)</div>
-                <div class="dial-wrapper final-dial" id="wrap-f">
-                    <div class="dial-indicator" style="border-color:#0284c7;"></div>
-                    <div class="dial-wheel" id="wheel-f"></div>
-                </div>
+                <div class="dial-wrapper f-dial" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div></div>
+                <div class="dial-arrow f-dial-arrow">◀</div>
             </div>
 
             <div class="dial-container">
-                <div class="dial-title" style="color:#d97706;">声调 (Tone)</div>
-                <div class="dial-wrapper tone-dial" id="wrap-t">
-                    <div class="dial-indicator" style="border-color:#d97706;"></div>
-                    <div class="dial-wheel" id="wheel-t"></div>
-                </div>
+                <div class="dial-wrapper t-dial" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div></div>
+                <div class="dial-arrow t-dial-arrow">◀</div>
             </div>
         </div>
     </div>
 
     <div id="overlay">
-        <h1 style="font-size: 42px; color:#fff; margin-bottom: 10px; text-shadow: 0 0 20px #06b6d4; text-align: center;" id="end-title">Pinyin Shooting Lxxx Exxx</h1>
-        <p style="color:var(--text-muted); font-size:18px; margin-bottom: 20px;">触屏转动拨轮进行选择</p>
+        <h1 class="game-title">
+            <span><span class="psle-cap">P</span>inyin</span>
+            <span><span class="psle-cap">S</span>hooting</span>
+            <span><span class="psle-cap">L</span>aser</span>
+            <span><span class="psle-cap">E</span>xplorer</span>
+        </h1>
         <button class="start-btn" onclick="startGame()">MISSION START</button>
     </div>
 
 <script>
-    // --- 词库与配置 ---
     const P1_WORDS = [
-        { char: '爸', i: 'b', f: 'a', t: '4', py: 'bà' }, { char: '妈', i: 'm', f: 'a', t: '1', py: 'mā' },
-        { char: '大', i: 'd', f: 'a', t: '4', py: 'dà' }, { char: '小', i: 'x', f: 'iao', t: '3', py: 'xiǎo' },
+        { char: '去', i: 'q', f: 'ü', t: '4', py: 'qù' }, { char: '女', i: 'n', f: 'ü', t: '3', py: 'nǚ' },
+        { char: '爸', i: 'b', f: 'a', t: '4', py: 'bà' }, { char: '小', i: 'x', f: 'iao', t: '3', py: 'xiǎo' },
         { char: '泥', i: 'n', f: 'i', t: '2', py: 'ní' }, { char: '木', i: 'm', f: 'u', t: '4', py: 'mù' },
-        { char: '禾', i: 'h', f: 'e', t: '2', py: 'hé' }, { char: '水', i: 'sh', f: 'ui', t: '3', py: 'shuǐ' },
-        { char: '不', i: 'b', f: 'u', t: '4', py: 'bù' }, { char: '的', i: 'd', f: 'e', t: '轻声', py: 'de' }, 
-        { char: '女', i: 'n', f: 'ü', t: '3', py: 'nǚ' }
+        { char: '的', i: 'd', f: 'e', t: '轻声', py: 'de' }
     ];
 
     const ALL_INITIALS = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
@@ -230,16 +231,13 @@
     const ALL_TONES = ['1', '2', '3', '4', '轻声'];
 
     let state = {
-        score: 0, isPlaying: false, currentTarget: null,
-        i: { angle: 0, opts: [], step: 0 }, 
-        f: { angle: 0, opts: [], step: 0 }, 
-        t: { angle: 0, opts: [], step: 0 }
+        score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
+        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 }
     };
 
     const canvas = document.getElementById('laser-canvas');
     const ctx = canvas.getContext('2d');
 
-    // --- 音频引擎 ---
     function playTargetAudio() {
         if (!state.currentTarget) return;
         let msg = new SpeechSynthesisUtterance(state.currentTarget.char);
@@ -260,24 +258,24 @@
         } else if (type === 'wrong') {
             osc.type = 'square'; osc.frequency.setValueAtTime(150, actx.currentTime); gain.gain.setValueAtTime(0.1, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
             osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.2);
+        } else if (type === 'pop') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, actx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.3, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.1);
         }
     }
 
-    // --- 游戏主循环 ---
     function startGame() {
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
         document.getElementById('ui-score').innerText = state.score; 
-        document.getElementById('btn-fire').classList.remove('disabled');
-        
         resizeCanvas(); nextTarget();
     }
 
     function getDistractors(correct, allArr, totalCount) {
         let filtered = allArr.filter(x => x !== correct);
         filtered.sort(() => 0.5 - Math.random());
-        let res = filtered.slice(0, totalCount - 1); 
-        res.push(correct);
+        let res = filtered.slice(0, totalCount - 1); res.push(correct);
         return res.sort(() => 0.5 - Math.random());
     }
 
@@ -295,44 +293,30 @@
 
         const tc = document.getElementById('target-container');
         tc.className = 'enemy-target'; 
-        document.getElementById('target-char').innerText = next.char;
+        document.getElementById('target-char').innerHTML = `${next.char}<span class="audio-icon">🔊</span>`;
     }
 
-    // --- 🧭 圆形 iPod 触控逻辑 ---
-    const RADIUS = 50; // 因为外圈放大了，文字离圆心的半径也调大
+    const RADIUS = 55; 
 
     function buildDial(type, options) {
         const wheel = document.getElementById(`wheel-${type}`);
-        let html = '';
-        state[type].step = 360 / options.length; 
-
+        let html = ''; state[type].step = 360 / options.length; 
         options.forEach((opt, index) => {
             let rot = index * state[type].step;
             let displayClass = opt === '轻声' ? 'text-qingsheng' : '';
-            html += `
-                <div class="dial-item" id="item-${type}-${index}" style="transform: rotate(${rot}deg) translateY(-${RADIUS}px);">
-                    <span class="inner-text ${displayClass}" style="transform: rotate(${-rot}deg); display:block; transition: transform 0.2s;">${opt}</span>
-                </div>`;
+            html += `<div class="dial-item ${displayClass}" id="item-${type}-${index}" style="transform: rotate(${rot}deg) translateX(${RADIUS}px);">${opt}</div>`;
         });
-        wheel.innerHTML = html;
-        state[type].angle = 0;
-        updateDialVisuals(type, false);
+        wheel.innerHTML = html; state[type].angle = 0; updateDialVisuals(type);
     }
 
-    // --- 核心：处理手指画圈拖拽 ---
     function setupiPodWheel(type) {
         const wrapper = document.getElementById(`wrap-${type}`);
         const wheel = document.getElementById(`wheel-${type}`);
-        let isDragging = false;
-        let startAngle = 0;
-        let initialRotation = 0;
-        let center = { x: 0, y: 0 };
-        let lastPlayedIdx = -1; // 用于拖拽时发出滴答声
+        let isDragging = false, startAngle = 0, initialRotation = 0, center = { x: 0, y: 0 }, lastPlayedIdx = -1; 
 
         function getAngle(e) {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            // atan2 计算以圆心为原点的角度，乘以 180/PI 转为角度制
             return Math.atan2(clientY - center.y, clientX - center.x) * (180 / Math.PI);
         }
 
@@ -340,133 +324,112 @@
             isDragging = true;
             const rect = wrapper.getBoundingClientRect();
             center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            startAngle = getAngle(e);
-            initialRotation = state[type].angle;
-            
-            wheel.classList.add('dragging'); // 取消 CSS 动画，保证绝对跟手
-            wheel.style.transition = 'none';
+            startAngle = getAngle(e); initialRotation = state[type].angle;
+            wheel.classList.add('dragging'); wheel.style.transition = 'none';
         }
 
         function onDrag(e) {
-            if (!isDragging) return;
-            e.preventDefault(); 
-            
-            let currentAngle = getAngle(e);
-            let delta = currentAngle - startAngle;
-            
-            // 处理 atan2 在 180 到 -180 的突变边界
-            if (delta > 180) delta -= 360;
-            if (delta < -180) delta += 360;
+            if (!isDragging) return; e.preventDefault(); 
+            let delta = getAngle(e) - startAngle;
+            if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
+            state[type].angle = initialRotation + delta;
+            state.hatRemoved = false; 
+            updateDialVisuals(type);
 
-            // 这里使用 += 逻辑累加，手指顺时针画圈，整体角度减小（向右转）
-            state[type].angle = initialRotation - delta;
-            
-            // 拖拽过程中的即时视觉更新
-            updateDialVisuals(type, true);
-
-            // 拖拽时发出微小的机械滴答声
-            let currentIdx = Math.round(state[type].angle / state[type].step);
-            if (currentIdx !== lastPlayedIdx) {
-                playSound('spin');
-                lastPlayedIdx = currentIdx;
-            }
+            let currentIdx = Math.round(-state[type].angle / state[type].step);
+            if (currentIdx !== lastPlayedIdx) { playSound('spin'); lastPlayedIdx = currentIdx; }
         }
 
         function endDrag() {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            wheel.classList.remove('dragging');
-            wheel.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            
-            // 松手时，吸附 (Snap) 到最近的格子
-            const step = state[type].step;
-            state[type].angle = Math.round(state[type].angle / step) * step;
-            
-            updateDialVisuals(type, false);
-            playSound('spin'); // 最终落位音效
+            if (!isDragging) return; isDragging = false;
+            wheel.classList.remove('dragging'); wheel.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            state[type].angle = Math.round(state[type].angle / state[type].step) * state[type].step;
+            updateDialVisuals(type); playSound('spin'); 
         }
 
-        wrapper.addEventListener('mousedown', startDrag);
-        window.addEventListener('mousemove', onDrag, { passive: false });
-        window.addEventListener('mouseup', endDrag);
-        window.addEventListener('mouseleave', endDrag); // 鼠标移出屏幕外防卡死
-
-        wrapper.addEventListener('touchstart', startDrag, { passive: true });
-        window.addEventListener('touchmove', onDrag, { passive: false });
-        window.addEventListener('touchend', endDrag);
+        wrapper.addEventListener('mousedown', startDrag); window.addEventListener('mousemove', onDrag, { passive: false });
+        window.addEventListener('mouseup', endDrag); window.addEventListener('mouseleave', endDrag); 
+        wrapper.addEventListener('touchstart', startDrag, { passive: true }); window.addEventListener('touchmove', onDrag, { passive: false }); window.addEventListener('touchend', endDrag);
     }
 
-    // 初始化三个拨轮
     setupiPodWheel('i'); setupiPodWheel('f'); setupiPodWheel('t');
 
-    function updateDialVisuals(type, isDragging) {
+    function updateDialVisuals(type) {
         const wheel = document.getElementById(`wheel-${type}`);
-        wheel.style.transform = `rotate(${-state[type].angle}deg)`;
-
-        let steps = Math.round(state[type].angle / state[type].step);
-        let activeIdx = steps % state[type].opts.length;
-        if (activeIdx < 0) activeIdx += state[type].opts.length;
+        wheel.style.transform = `rotate(${state[type].angle}deg)`;
+        let steps = Math.round(-state[type].angle / state[type].step);
+        let activeIdx = steps % state[type].opts.length; if (activeIdx < 0) activeIdx += state[type].opts.length;
 
         for (let i = 0; i < state[type].opts.length; i++) {
             let item = document.getElementById(`item-${type}-${i}`);
-            let innerText = item.querySelector('.inner-text');
-            let itemRot = i * state[type].step;
-            
-            // 抵消外圈旋转，使文字永远正立
-            innerText.style.transform = `rotate(${state[type].angle - itemRot}deg)`;
-            
-            // 只有在非拖拽状态，或者拖拽但恰好位于正上方时才高亮
-            if (i === activeIdx) item.classList.add('active');
-            else item.classList.remove('active');
+            if (i === activeIdx) item.classList.add('active'); else item.classList.remove('active');
         }
         updateHUD(); 
     }
 
     function getSelectedValue(type) {
-        let steps = Math.round(state[type].angle / state[type].step);
-        let activeIdx = steps % state[type].opts.length; 
-        if (activeIdx < 0) activeIdx += state[type].opts.length;
+        let steps = Math.round(-state[type].angle / state[type].step);
+        let activeIdx = steps % state[type].opts.length; if (activeIdx < 0) activeIdx += state[type].opts.length;
         return state[type].opts[activeIdx];
     }
 
-    // --- 🔮 拼音拼接与声调映射逻辑 (生成飞船HUD) ---
     const TONE_MAP = {
         'a': ['a','ā','á','ǎ','à'], 'o': ['o','ō','ó','ǒ','ò'], 'e': ['e','ē','é','ě','è'],
         'i': ['i','ī','í','ǐ','ì'], 'u': ['u','ū','ú','ǔ','ù'], 'ü': ['ü','ǖ','ǘ','ǚ','ǜ']
     };
 
     function updateHUD() {
-        let curI = getSelectedValue('i');
-        let curF = getSelectedValue('f');
-        let curT = getSelectedValue('t');
-        
-        let combined = curI + curF;
-        let tn = parseInt(curT);
+        let curI = getSelectedValue('i'); let curF = getSelectedValue('f'); let curT = getSelectedValue('t');
+        let combined = ""; let tn = parseInt(curT);
+        let displayF = curF;
+        let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
 
-        // 处理轻声
-        if (!isNaN(tn) && tn >= 1 && tn <= 4 && curF) {
-            let v = '';
-            if (curF.includes('a')) v = 'a';
-            else if (curF.includes('o')) v = 'o';
-            else if (curF.includes('e')) v = 'e';
-            else if (curF.includes('ui')) v = 'i';
-            else if (curF.includes('iu')) v = 'u';
-            else if (curF.includes('i')) v = 'i';
-            else if (curF.includes('u')) v = 'u';
-            else if (curF.includes('ü')) v = 'ü';
-            
-            if (v) combined = curI + curF.replace(v, TONE_MAP[v][tn]);
+        if (needsHatRemoval) {
+            if (!state.hatRemoved) {
+                document.getElementById('btn-fire').classList.add('needs-fix');
+            } else {
+                displayF = curF.replace(/ü/g, 'u');
+                document.getElementById('btn-fire').classList.remove('needs-fix');
+            }
+        } else {
+            document.getElementById('btn-fire').classList.remove('needs-fix');
         }
-        
+
+        combined = curI + displayF;
+        if (!isNaN(tn) && tn >= 1 && tn <= 4 && displayF) {
+            let v = '';
+            if (displayF.includes('a')) v = 'a'; else if (displayF.includes('o')) v = 'o'; else if (displayF.includes('e')) v = 'e';
+            else if (displayF.includes('ui')) v = 'i'; else if (displayF.includes('iu')) v = 'u'; else if (displayF.includes('i')) v = 'i';
+            else if (displayF.includes('u')) v = 'u'; else if (displayF.includes('ü')) v = 'ü';
+            if (v) combined = curI + displayF.replace(v, TONE_MAP[v][tn]);
+        }
         document.getElementById('hud-display').innerText = combined;
     }
 
-    // --- 🚀 射击与判定 ---
-    function fireLaser() {
+    function handleHudClick() {
         if (!state.isPlaying) return;
-        playSound('laser');
-        drawLaser();
+
+        let curI = getSelectedValue('i'); let curF = getSelectedValue('f');
+        let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
+
+        if (needsHatRemoval && !state.hatRemoved) {
+            state.hatRemoved = true; playSound('pop');
+            
+            const ship = document.getElementById('btn-fire').getBoundingClientRect();
+            confetti({ particleCount: 20, spread: 50, origin: { x: (ship.left + ship.width/2)/window.innerWidth, y: (ship.top + ship.height/2)/window.innerHeight }, colors: ['#ef4444', '#fff'], startVelocity: 15, ticks: 50 });
+            
+            updateHUD(); 
+
+            const toast = document.getElementById('rule-toast');
+            toast.style.opacity = '1'; toast.style.transform = 'translateY(-20px)';
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(0)'; }, 2000);
+        } else {
+            fireLaser();
+        }
+    }
+
+    function fireLaser() {
+        playSound('laser'); drawLaser();
 
         let isI_Correct = getSelectedValue('i') === state.currentTarget.i;
         let isF_Correct = getSelectedValue('f') === state.currentTarget.f;
@@ -476,7 +439,7 @@
 
         if (isI_Correct && isF_Correct && isT_Correct) {
             tc.classList.remove('hit-wrong'); void tc.offsetWidth; tc.classList.add('hit-correct');
-            document.getElementById('target-char').innerText = state.currentTarget.py; 
+            document.getElementById('target-char').innerHTML = `${state.currentTarget.py}<span class="audio-icon">🔊</span>`; 
             
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
             new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg").play().catch(()=>{});
@@ -498,7 +461,6 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const tr = document.getElementById('target-char').getBoundingClientRect();
         const tX = tr.left + tr.width / 2; const tY = tr.top + tr.height / 2;
-        
         const ship = document.getElementById('btn-fire').getBoundingClientRect();
         const sX = ship.left + ship.width / 2; const sY = ship.top + ship.height / 2;
 
@@ -508,7 +470,6 @@
         
         ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
         ctx.lineWidth = 6; ctx.strokeStyle = '#fff'; ctx.shadowBlur = 10; ctx.stroke();
-        
         setTimeout(() => ctx.clearRect(0, 0, canvas.width, canvas.height), 150);
     }
 </script>
