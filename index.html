@@ -7,20 +7,22 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --panel-bg: rgba(15, 23, 42, 0.85);      
+            /* 飞船部分配色 */
             --accent-glow: #06b6d4;   
             --correct-color: #22c55e; 
             --wrong-color: #ef4444;   
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            /* 底部亮色面板配色 */
+            --panel-light-bg: rgba(248, 250, 252, 0.95);
+            --wheel-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted-light: #64748b;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-family: 'Nunito', 'Microsoft YaHei', sans-serif; }
         
         body { 
-            margin: 0; padding: 0; color: var(--text-main); 
+            margin: 0; padding: 0; color: #fff; 
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-            /* 纯 CSS 绘制的深邃星空背景 */
             background-color: #020617;
             background-image: 
                 radial-gradient(circle at 15% 50%, rgba(29, 78, 216, 0.15) 0%, transparent 50%),
@@ -33,7 +35,6 @@
             background-size: 100% 100%, 100% 100%, 150px 150px, 150px 150px, 150px 150px, 200px 200px, 200px 200px;
         }
 
-        /* --- 顶部信息栏 --- */
         header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 20px; background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(5px);
@@ -41,30 +42,26 @@
         }
         #btn-audio { 
             background: rgba(51, 65, 85, 0.8); border: 2px solid #475569; color: #38bdf8; 
-            padding: 8px 20px; border-radius: 20px; font-weight: 900; font-size: 16px; 
+            padding: 10px 20px; border-radius: 20px; font-weight: 900; font-size: 16px; 
             cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
         #btn-audio:active { transform: scale(0.95); background: #38bdf8; color: #fff; }
         
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
-        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: bold; letter-spacing: 2px; }
+        .stat-label { font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; }
         .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
 
-        /* --- 游戏星空主战场 --- */
         #game-board { flex: 1; display: flex; flex-direction: column; position: relative; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-        /* 🎯 目标汉字 (敌方陨石) */
         .target-zone { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 40px; position: relative; z-index: 2; }
         .enemy-target {
             width: 120px; height: 120px; border-radius: 20px;
             background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(4px);
-            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
             font-size: 60px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.8);
             box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
-            transform: rotate(45deg); 
-            transition: all 0.3s;
+            transform: rotate(45deg); transition: all 0.3s;
         }
         .enemy-text { transform: rotate(-45deg); } 
 
@@ -72,9 +69,7 @@
         .hit-wrong { animation: shake 0.4s both; border-color: var(--wrong-color) !important; background: rgba(239, 68, 68, 0.2) !important; color: var(--wrong-color) !important;}
         @keyframes shake { 10%, 90% { transform: rotate(45deg) translate3d(-5px, 0, 0); } 20%, 80% { transform: rotate(45deg) translate3d(8px, 0, 0); } 30%, 50%, 70% { transform: rotate(45deg) translate3d(-10px, 0, 0); } 40%, 60% { transform: rotate(45deg) translate3d(10px, 0, 0); } }
 
-        /* --- 🚀 飞船主机 (HUD) --- */
         .ship-zone { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; margin-bottom: 20px; }
-        
         .spaceship { position: relative; width: 220px; height: 120px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 80px; height: 40px; background: rgba(30, 41, 59, 0.9); top: 40px; box-shadow: inset 0 0 10px #000; border-bottom: 3px solid var(--accent-glow); backdrop-filter: blur(5px);}
         .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); border-radius: 10px 0 0 10px; }
@@ -94,59 +89,69 @@
         .ship-core.disabled { filter: grayscale(1); opacity: 0.5; pointer-events: none; border-color: #475569; }
         .hud-text { font-size: 42px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); letter-spacing: 2px;}
 
-        /* --- 🎛️ 底部三个雷达转盘 --- */
+        /* --- 🎛️ 底部浅色系雷达转盘 --- */
         .dashboard {
-            height: 230px; background: var(--panel-bg); border-top: 2px solid rgba(6, 182, 212, 0.5);
+            height: 260px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
             border-radius: 40px 40px 0 0; display: flex; justify-content: space-around; align-items: center;
-            padding: 20px 5px; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); position: relative; z-index: 10;
+            padding: 20px 10px; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); position: relative; z-index: 10;
             backdrop-filter: blur(10px);
         }
 
         .dial-container { display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; }
-        .dial-title { font-size: 16px; font-weight: 900; color: #e2e8f0; letter-spacing: 2px; text-shadow: 0 2px 4px #000;}
+        .dial-title { font-size: 18px; font-weight: 900; color: var(--text-dark); letter-spacing: 1px;}
         
+        /* 放大后的外圈容器 */
         .dial-wrapper {
-            width: 110px; height: 110px; border-radius: 50%; border: 4px solid #334155;
-            background: #020617; position: relative; box-shadow: inset 0 0 20px #000, 0 5px 15px rgba(0,0,0,0.6);
+            width: 140px; height: 140px; border-radius: 50%; border: 4px solid #cbd5e1;
+            background: var(--wheel-bg); position: relative; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.1);
             display: flex; justify-content: center; align-items: center;
+            cursor: grab; /* 提示可拖拽 */
         }
+        .dial-wrapper:active { cursor: grabbing; }
 
+        /* 中心的高亮指示框也跟着放大 */
         .dial-indicator {
             position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-            width: 44px; height: 44px; border: 2px solid var(--accent-glow); border-radius: 8px;
-            background: rgba(6, 182, 212, 0.15); z-index: 5; pointer-events: none;
-            box-shadow: 0 0 15px rgba(6,182,212,0.4);
+            width: 50px; height: 50px; border: 3px solid var(--accent-glow); border-radius: 12px;
+            background: rgba(6, 182, 212, 0.1); z-index: 5; pointer-events: none;
+            box-shadow: 0 0 15px rgba(6,182,212,0.3);
         }
 
-        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        
+        /* 转盘本体 */
+        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; }
+        /* 增加拖拽时的类，取消过渡动画以保证跟手 */
+        .dial-wheel.dragging { transition: none !important; }
+
         .dial-item {
-            position: absolute; top: 50%; left: 50%; width: 40px; height: 30px;
-            margin-top: -15px; margin-left: -20px;
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 40px;
+            margin-top: -20px; margin-left: -25px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 20px; font-weight: bold; color: #475569; transition: 0.3s;
+            font-size: 26px; font-weight: bold; color: var(--text-muted-light); transition: 0.2s;
+            pointer-events: none; /* 让事件穿透到背景环上 */
         }
-        .dial-item.active { color: #fff; font-size: 26px; font-weight: 900; text-shadow: 0 0 10px #fff; }
-        .dial-wrapper.tone-dial .dial-item.active { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
         
-        /* 针对“轻声”两字特殊缩小一点，防止溢出 */
-        .text-qingsheng { font-size: 16px !important; letter-spacing: -1px; }
-        .dial-item.active .text-qingsheng { font-size: 20px !important; }
+        /* 选中状态：大字号，深颜色 */
+        .dial-item.active { color: var(--text-dark); font-size: 40px; font-weight: 900; }
+        .dial-wrapper.tone-dial .dial-item.active { color: #d97706; } /* 声调选黄色系的琥珀色 */
+        .dial-wrapper.final-dial .dial-item.active { color: #0284c7; } /* 韵母选蓝色系 */
 
-        .dial-controls { display: flex; justify-content: space-between; width: 130px; margin-top: -20px; z-index: 10;}
-        .btn-spin { width: 45px; height: 35px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.1s; backdrop-filter: blur(4px);}
-        .btn-spin:active { background: rgba(255,255,255,0.25); transform: scale(0.9); }
+        /* 针对“轻声”的特殊调整 */
+        .text-qingsheng { font-size: 20px !important; letter-spacing: -1px; }
+        .dial-item.active .text-qingsheng { font-size: 26px !important; }
 
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px);}
         .start-btn { background: linear-gradient(135deg, #06b6d4, #0369a1); color: white; border: none; padding: 15px 50px; border-radius: 30px; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #075985; margin-top: 30px; transition: 0.1s;}
         .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #075985;}
 
         @media (max-height: 700px) {
-            .dashboard { height: 200px; padding: 10px 0; }
-            .dial-wrapper { width: 90px; height: 90px; }
-            .spaceship { transform: scale(0.85); }
+            .dashboard { height: 220px; padding: 10px 0; }
+            .dial-wrapper { width: 120px; height: 120px; }
+            .spaceship { transform: scale(0.8); }
             .enemy-target { width: 100px; height: 100px; font-size: 50px; }
-            .dial-title { font-size: 14px; }
+            .dial-title { font-size: 16px; }
+            .dial-item { font-size: 22px; }
+            .dial-item.active { font-size: 34px; }
         }
     </style>
 </head>
@@ -178,38 +183,26 @@
 
         <div class="dashboard">
             <div class="dial-container">
-                <div class="dial-title">声母</div>
-                <div class="dial-wrapper">
+                <div class="dial-title">声母 (Initial)</div>
+                <div class="dial-wrapper" id="wrap-i">
                     <div class="dial-indicator"></div>
                     <div class="dial-wheel" id="wheel-i"></div>
-                </div>
-                <div class="dial-controls">
-                    <button class="btn-spin" onclick="spinDial('i', -1)">◀</button>
-                    <button class="btn-spin" onclick="spinDial('i', 1)">▶</button>
                 </div>
             </div>
             
             <div class="dial-container">
-                <div class="dial-title" style="color:#06b6d4;">韵母</div>
-                <div class="dial-wrapper">
-                    <div class="dial-indicator" style="border-color:#06b6d4;"></div>
+                <div class="dial-title" style="color:#0284c7;">韵母 (Final)</div>
+                <div class="dial-wrapper final-dial" id="wrap-f">
+                    <div class="dial-indicator" style="border-color:#0284c7;"></div>
                     <div class="dial-wheel" id="wheel-f"></div>
-                </div>
-                <div class="dial-controls">
-                    <button class="btn-spin" onclick="spinDial('f', -1)">◀</button>
-                    <button class="btn-spin" onclick="spinDial('f', 1)">▶</button>
                 </div>
             </div>
 
             <div class="dial-container">
-                <div class="dial-title" style="color:#fbbf24;">声调</div>
-                <div class="dial-wrapper tone-dial">
-                    <div class="dial-indicator" style="border-color:#fbbf24;"></div>
+                <div class="dial-title" style="color:#d97706;">声调 (Tone)</div>
+                <div class="dial-wrapper tone-dial" id="wrap-t">
+                    <div class="dial-indicator" style="border-color:#d97706;"></div>
                     <div class="dial-wheel" id="wheel-t"></div>
-                </div>
-                <div class="dial-controls">
-                    <button class="btn-spin" onclick="spinDial('t', -1)">◀</button>
-                    <button class="btn-spin" onclick="spinDial('t', 1)">▶</button>
                 </div>
             </div>
         </div>
@@ -217,7 +210,7 @@
 
     <div id="overlay">
         <h1 style="font-size: 42px; color:#fff; margin-bottom: 10px; text-shadow: 0 0 20px #06b6d4; text-align: center;" id="end-title">Pinyin Shooting Lxxx Exxx</h1>
-        <p style="color:var(--text-muted); font-size:18px; margin-bottom: 20px;">自由练习模式 · 组合拼音并点击飞船开火</p>
+        <p style="color:var(--text-muted); font-size:18px; margin-bottom: 20px;">触屏转动拨轮进行选择</p>
         <button class="start-btn" onclick="startGame()">MISSION START</button>
     </div>
 
@@ -257,8 +250,8 @@
         let actx = new (window.AudioContext || window.webkitAudioContext)();
         let osc = actx.createOscillator(); let gain = actx.createGain();
         if (type === 'spin') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(600, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, actx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.05, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.05);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.02, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.05);
             osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.05);
         } else if (type === 'laser') {
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.15);
@@ -294,7 +287,6 @@
         while (state.currentTarget && next.char === state.currentTarget.char);
         state.currentTarget = next;
 
-        // 声母韵母生成 7 个选项，声调依然是 5 个选项
         state.i.opts = getDistractors(next.i, ALL_INITIALS, 7);
         state.f.opts = getDistractors(next.f, ALL_FINALS, 7);
         state.t.opts = [...ALL_TONES];
@@ -306,34 +298,109 @@
         document.getElementById('target-char').innerText = next.char;
     }
 
-    // --- 🧭 圆形雷达转盘逻辑 (动态计算角度) ---
-    const RADIUS = 38; // 稍微调大一点半径以适应7个字
+    // --- 🧭 圆形 iPod 触控逻辑 ---
+    const RADIUS = 50; // 因为外圈放大了，文字离圆心的半径也调大
 
     function buildDial(type, options) {
         const wheel = document.getElementById(`wheel-${type}`);
         let html = '';
-        state[type].step = 360 / options.length; // 根据选项数量自动计算每次旋转角度
+        state[type].step = 360 / options.length; 
 
         options.forEach((opt, index) => {
             let rot = index * state[type].step;
             let displayClass = opt === '轻声' ? 'text-qingsheng' : '';
             html += `
                 <div class="dial-item" id="item-${type}-${index}" style="transform: rotate(${rot}deg) translateY(-${RADIUS}px);">
-                    <span class="inner-text ${displayClass}" style="transform: rotate(${-rot}deg); display:block; transition: 0.3s;">${opt}</span>
+                    <span class="inner-text ${displayClass}" style="transform: rotate(${-rot}deg); display:block; transition: transform 0.2s;">${opt}</span>
                 </div>`;
         });
         wheel.innerHTML = html;
         state[type].angle = 0;
-        updateDialVisuals(type);
+        updateDialVisuals(type, false);
     }
 
-    function spinDial(type, dir) {
-        playSound('spin');
-        state[type].angle += dir * state[type].step;
-        updateDialVisuals(type);
+    // --- 核心：处理手指画圈拖拽 ---
+    function setupiPodWheel(type) {
+        const wrapper = document.getElementById(`wrap-${type}`);
+        const wheel = document.getElementById(`wheel-${type}`);
+        let isDragging = false;
+        let startAngle = 0;
+        let initialRotation = 0;
+        let center = { x: 0, y: 0 };
+        let lastPlayedIdx = -1; // 用于拖拽时发出滴答声
+
+        function getAngle(e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            // atan2 计算以圆心为原点的角度，乘以 180/PI 转为角度制
+            return Math.atan2(clientY - center.y, clientX - center.x) * (180 / Math.PI);
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            const rect = wrapper.getBoundingClientRect();
+            center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            startAngle = getAngle(e);
+            initialRotation = state[type].angle;
+            
+            wheel.classList.add('dragging'); // 取消 CSS 动画，保证绝对跟手
+            wheel.style.transition = 'none';
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            e.preventDefault(); 
+            
+            let currentAngle = getAngle(e);
+            let delta = currentAngle - startAngle;
+            
+            // 处理 atan2 在 180 到 -180 的突变边界
+            if (delta > 180) delta -= 360;
+            if (delta < -180) delta += 360;
+
+            // 这里使用 += 逻辑累加，手指顺时针画圈，整体角度减小（向右转）
+            state[type].angle = initialRotation - delta;
+            
+            // 拖拽过程中的即时视觉更新
+            updateDialVisuals(type, true);
+
+            // 拖拽时发出微小的机械滴答声
+            let currentIdx = Math.round(state[type].angle / state[type].step);
+            if (currentIdx !== lastPlayedIdx) {
+                playSound('spin');
+                lastPlayedIdx = currentIdx;
+            }
+        }
+
+        function endDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            wheel.classList.remove('dragging');
+            wheel.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            
+            // 松手时，吸附 (Snap) 到最近的格子
+            const step = state[type].step;
+            state[type].angle = Math.round(state[type].angle / step) * step;
+            
+            updateDialVisuals(type, false);
+            playSound('spin'); // 最终落位音效
+        }
+
+        wrapper.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', onDrag, { passive: false });
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('mouseleave', endDrag); // 鼠标移出屏幕外防卡死
+
+        wrapper.addEventListener('touchstart', startDrag, { passive: true });
+        window.addEventListener('touchmove', onDrag, { passive: false });
+        window.addEventListener('touchend', endDrag);
     }
 
-    function updateDialVisuals(type) {
+    // 初始化三个拨轮
+    setupiPodWheel('i'); setupiPodWheel('f'); setupiPodWheel('t');
+
+    function updateDialVisuals(type, isDragging) {
         const wheel = document.getElementById(`wheel-${type}`);
         wheel.style.transform = `rotate(${-state[type].angle}deg)`;
 
@@ -346,8 +413,10 @@
             let innerText = item.querySelector('.inner-text');
             let itemRot = i * state[type].step;
             
+            // 抵消外圈旋转，使文字永远正立
             innerText.style.transform = `rotate(${state[type].angle - itemRot}deg)`;
             
+            // 只有在非拖拽状态，或者拖拽但恰好位于正上方时才高亮
             if (i === activeIdx) item.classList.add('active');
             else item.classList.remove('active');
         }
@@ -375,7 +444,7 @@
         let combined = curI + curF;
         let tn = parseInt(curT);
 
-        // 处理轻声 (parseInt('轻声') 是 NaN，进不去这个判断，所以会自动保留无声调状态)
+        // 处理轻声
         if (!isNaN(tn) && tn >= 1 && tn <= 4 && curF) {
             let v = '';
             if (curF.includes('a')) v = 'a';
@@ -415,7 +484,6 @@
             let rect = tc.getBoundingClientRect();
             confetti({ particleCount: 60, spread: 80, origin: { x: (rect.left+rect.width/2)/window.innerWidth, y: (rect.top+rect.height/2)/window.innerHeight }, colors: ['#22c55e', '#06b6d4', '#fff'] });
             
-            // 无倒计时模式，答对后延迟 1.5 秒进入下一题
             setTimeout(() => { if (state.isPlaying) nextTarget(); }, 1500);
         } else {
             tc.classList.remove('hit-correct'); tc.classList.remove('hit-wrong'); void tc.offsetWidth; tc.classList.add('hit-wrong');
