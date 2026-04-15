@@ -72,7 +72,7 @@
         }
 
         /* --- 🚀 飞船主机 --- */
-        .ship-zone { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; margin-bottom: 30px; }
+        .ship-zone { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; margin-bottom: 20px; }
         .spaceship { position: relative; width: 220px; height: 120px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 80px; height: 40px; background: rgba(30, 41, 59, 0.9); top: 40px; box-shadow: inset 0 0 10px #000; border-bottom: 3px solid var(--accent-glow); backdrop-filter: blur(5px);}
         .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); border-radius: 10px 0 0 10px; }
@@ -91,47 +91,62 @@
         .ship-core:active { transform: scale(0.9); box-shadow: 0 0 15px rgba(6, 182, 212, 0.9); border-color: #fff; }
         .hud-text { font-size: 44px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); letter-spacing: 2px; transition: 0.2s;}
         
-        /* ⚠️ 待脱帽的红色警告状态 */
         .ship-core.needs-fix { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(0,0,0,0.8); animation: pulseRed 1s infinite alternate; }
         .ship-core.needs-fix .hud-text { color: #fca5a5; text-shadow: 0 0 15px #ef4444; }
         @keyframes pulseRed { from { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), inset 0 0 20px rgba(0,0,0,0.8); } to { box-shadow: 0 0 40px rgba(239, 68, 68, 0.8), inset 0 0 20px rgba(0,0,0,0.8); } }
 
-        /* --- 🎛️ 底部浅色系纯物理雷达转盘 --- */
+        /* --- 🎛️ 底部浅色系纯物理雷达转盘 (全新段落感设计) --- */
         .dashboard {
-            height: 240px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
+            height: 250px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
             border-radius: 40px 40px 0 0; display: flex; justify-content: space-evenly; align-items: center;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5); position: relative; z-index: 10;
             backdrop-filter: blur(10px);
         }
 
-        .dial-container { position: relative; display: flex; align-items: center; justify-content: center; width: 180px; }
+        .dial-container { position: relative; display: flex; align-items: center; justify-content: center; width: 200px; }
         
+        /* 外圈扩大，去掉粗边框，防止遮挡文字 */
         .dial-wrapper {
-            width: 150px; height: 150px; border-radius: 50%; border: 4px solid #cbd5e1;
+            width: 170px; height: 170px; border-radius: 50%; border: 2px solid #e2e8f0;
             background: var(--wheel-bg); position: relative; 
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.15);
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.05), 0 5px 20px rgba(0,0,0,0.15);
             display: flex; justify-content: center; align-items: center; cursor: grab; 
         }
         .dial-wrapper:active { cursor: grabbing; }
-        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; }
-        .dial-wheel.dragging { transition: none !important; }
+
+        /* 中心旋钮设计 (金属防滑齿轮感) */
+        .dial-knob {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85px; height: 85px; border-radius: 50%;
+            background: repeating-conic-gradient(from 0deg, #e2e8f0 0deg 10deg, #f1f5f9 10deg 20deg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 2px 5px #fff;
+            border: 1px solid #cbd5e1; z-index: 5; pointer-events: none; 
+        }
+        /* 旋钮中心的内凹圆 */
+        .dial-knob::after {
+            content: ''; position: absolute; top: 18px; left: 18px; right: 18px; bottom: 18px;
+            background: #f8fafc; border-radius: 50%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 纯物理轮盘 (保留了 transition 以实现机械弹簧般的段落感) */
+        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         .dial-item {
             position: absolute; top: 50%; left: 50%; width: 50px; height: 40px; margin-top: -20px; margin-left: -25px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 26px; font-weight: bold; color: var(--text-muted-light); transition: color 0.2s, font-size 0.2s; pointer-events: none; 
+            font-size: 26px; font-weight: bold; color: var(--text-muted-light); transition: color 0.15s, font-size 0.15s; pointer-events: none; 
         }
         
-        .dial-item.active { font-size: 40px; font-weight: 900; }
+        .dial-item.active { font-size: 42px; font-weight: 900; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
         .i-dial .dial-item.active { color: #334155; }
         .f-dial .dial-item.active { color: #0284c7; } 
         .t-dial .dial-item.active { color: #d97706; } 
 
-        .text-qingsheng { font-size: 20px !important; letter-spacing: -1px; }
-        .dial-item.active .text-qingsheng { font-size: 26px !important; }
+        .text-qingsheng { font-size: 22px !important; letter-spacing: -1px; }
+        .dial-item.active .text-qingsheng { font-size: 28px !important; }
 
         .dial-arrow {
-            position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+            position: absolute; right: 0px; top: 50%; transform: translateY(-50%);
             font-size: 30px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
         .i-dial-arrow { color: #475569; } .f-dial-arrow { color: #0284c7; } .t-dial-arrow { color: #d97706; }
@@ -155,8 +170,9 @@
         }
 
         @media (max-height: 700px) {
-            .dashboard { height: 180px; }
-            .dial-wrapper { width: 120px; height: 120px; }
+            .dashboard { height: 200px; }
+            .dial-wrapper { width: 140px; height: 140px; }
+            .dial-knob { width: 70px; height: 70px; }
             .spaceship { transform: scale(0.8); }
             .enemy-target { width: 100px; height: 100px; font-size: 50px; }
             .dial-item { font-size: 22px; }
@@ -192,17 +208,26 @@
 
         <div class="dashboard">
             <div class="dial-container">
-                <div class="dial-wrapper i-dial" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div></div>
+                <div class="dial-wrapper i-dial" id="wrap-i">
+                    <div class="dial-wheel" id="wheel-i"></div>
+                    <div class="dial-knob"></div>
+                </div>
                 <div class="dial-arrow i-dial-arrow">◀</div>
             </div>
             
             <div class="dial-container">
-                <div class="dial-wrapper f-dial" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div></div>
+                <div class="dial-wrapper f-dial" id="wrap-f">
+                    <div class="dial-wheel" id="wheel-f"></div>
+                    <div class="dial-knob"></div>
+                </div>
                 <div class="dial-arrow f-dial-arrow">◀</div>
             </div>
 
             <div class="dial-container">
-                <div class="dial-wrapper t-dial" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div></div>
+                <div class="dial-wrapper t-dial" id="wrap-t">
+                    <div class="dial-wheel" id="wheel-t"></div>
+                    <div class="dial-knob"></div>
+                </div>
                 <div class="dial-arrow t-dial-arrow">◀</div>
             </div>
         </div>
@@ -249,7 +274,7 @@
         let osc = actx.createOscillator(); let gain = actx.createGain();
         if (type === 'spin') {
             osc.type = 'triangle'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.02, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.03, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.05);
             osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.05);
         } else if (type === 'laser') {
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.15);
@@ -296,7 +321,7 @@
         document.getElementById('target-char').innerHTML = `${next.char}<span class="audio-icon">🔊</span>`;
     }
 
-    const RADIUS = 55; 
+    const RADIUS = 62; // 将文字推向外圈，完美适配加大的轮盘
 
     function buildDial(type, options) {
         const wheel = document.getElementById(`wheel-${type}`);
@@ -311,8 +336,7 @@
 
     function setupiPodWheel(type) {
         const wrapper = document.getElementById(`wrap-${type}`);
-        const wheel = document.getElementById(`wheel-${type}`);
-        let isDragging = false, startAngle = 0, initialRotation = 0, center = { x: 0, y: 0 }, lastPlayedIdx = -1; 
+        let isDragging = false, startAngle = 0, initialRotation = 0, center = { x: 0, y: 0 }; 
 
         function getAngle(e) {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -325,26 +349,32 @@
             const rect = wrapper.getBoundingClientRect();
             center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
             startAngle = getAngle(e); initialRotation = state[type].angle;
-            wheel.classList.add('dragging'); wheel.style.transition = 'none';
         }
 
         function onDrag(e) {
             if (!isDragging) return; e.preventDefault(); 
-            let delta = getAngle(e) - startAngle;
+            let currentRawAngle = getAngle(e);
+            let delta = currentRawAngle - startAngle;
+            
             if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
-            state[type].angle = initialRotation + delta;
-            state.hatRemoved = false; 
-            updateDialVisuals(type);
+            
+            // 💡 阻尼感核心：只取手指滑动距离的 80%，让滚轮感觉“很稳重”
+            let targetAngle = initialRotation + delta * 0.8;
+            
+            // 💡 段落感核心：拖拽时直接计算出应吸附的卡扣位置
+            let snappedAngle = Math.round(targetAngle / state[type].step) * state[type].step;
 
-            let currentIdx = Math.round(-state[type].angle / state[type].step);
-            if (currentIdx !== lastPlayedIdx) { playSound('spin'); lastPlayedIdx = currentIdx; }
+            // 只有当跨越了一个段落时，才更新视图和播放音效
+            if (state[type].angle !== snappedAngle) {
+                state[type].angle = snappedAngle;
+                state.hatRemoved = false; 
+                updateDialVisuals(type);
+                playSound('spin');
+            }
         }
 
         function endDrag() {
             if (!isDragging) return; isDragging = false;
-            wheel.classList.remove('dragging'); wheel.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            state[type].angle = Math.round(state[type].angle / state[type].step) * state[type].step;
-            updateDialVisuals(type); playSound('spin'); 
         }
 
         wrapper.addEventListener('mousedown', startDrag); window.addEventListener('mousemove', onDrag, { passive: false });
