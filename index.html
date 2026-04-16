@@ -59,11 +59,10 @@
         
         .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 22px; font-weight: 900; color: #fff; font-family: sans-serif;}
         
-        /* 红灯报警状态 */
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
         @keyframes pulseRed { from { transform: scale(1); } to { transform: scale(1.05); } }
 
-        /* 👇 脱帽手指提示 (延迟出现) */
+        /* 👇 脱帽手指提示 */
         #finger-hint {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
             font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
@@ -92,7 +91,6 @@
             100% { box-shadow: 0 0 20px rgba(255,255,255,0.1); filter: brightness(1); border-color: rgba(255,255,255,0.5); transform: rotate(45deg) scale(1);}
         }
 
-        /* 飘字提示 */
         #rule-toast {
             position: absolute; top: 20%; left: 0; width: 100%; text-align: center;
             color: #ff003c; font-size: 20px; font-weight: 900; opacity: 0; pointer-events: none;
@@ -114,39 +112,48 @@
             box-shadow: 0 0 10px rgba(0, 240, 255, 0.3), inset 0 0 8px rgba(0, 0, 0, 0.8); text-shadow: 0 0 5px var(--accent-glow);
         }
 
-        /* 💣 核心重写：3D 横向拨轮暗槽 */
+        /* 💣 核心重写：宽屏可视拨轮 */
         .thumbwheel-container { 
-            position: relative; width: 22vw; max-width: 140px; height: 50px; /* 扁平长方形 */
+            position: relative; width: 24vw; max-width: 170px; height: 50px; 
             background: #0b0f19; border-radius: 8px; border: 3px solid #64748b; 
             box-shadow: inset 0 15px 25px rgba(0,0,0,0.9), 0 2px 5px rgba(255,255,255,0.6); 
-            perspective: 800px; cursor: grab;
+            /* 🔥 加大视角深度，让圆柱看起来更平坦 */
+            perspective: 1200px; cursor: grab; overflow: hidden;
         }
         .thumbwheel-container:active { cursor: grabbing; }
 
-        /* 横向滚筒 */
         .thumbwheel-cylinder { 
             width: 100%; height: 100%; position: absolute; top: 0; left: 0;
             transform-style: preserve-3d; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
         .thumbwheel-cylinder.dragging { transition: none !important; }
 
-        /* 刻度字幕 */
         .thumbwheel-item { 
-            position: absolute; top: 0; left: 50%; width: 50px; height: 100%; margin-left: -25px; 
+            /* 🔥 加宽每个字母的占地面积 */
+            position: absolute; top: 0; left: 50%; width: 60px; height: 100%; margin-left: -30px; 
             display: flex; justify-content: center; align-items: center; 
-            font-size: 18px; font-weight: bold; color: #475569; backface-visibility: hidden; white-space: nowrap;
+            font-size: 18px; font-weight: bold; color: #64748b; backface-visibility: hidden; white-space: nowrap;
+            transition: font-size 0.2s, color 0.2s, text-shadow 0.2s; /* 字母大小平滑过渡 */
         }
-        .thumbwheel-item.active { font-size: 26px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow); filter: drop-shadow(0 2px 2px #000); }
+        .thumbwheel-item.active { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow); filter: drop-shadow(0 2px 2px #000); }
         
-        /* 🔥 两侧深邃渐变遮罩 (完美符合老式收音机调频的视觉) */
+        /* 🔥 光标准星框 (标明当前选中的是哪一个) */
+        .thumbwheel-selection {
+            position: absolute; top: 0; left: 50%; width: 60px; height: 100%; margin-left: -30px;
+            border-left: 2px solid rgba(0, 240, 255, 0.5); border-right: 2px solid rgba(0, 240, 255, 0.5);
+            background: rgba(0, 240, 255, 0.15); pointer-events: none; z-index: 11;
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        /* 🔥 两侧轻微渐变遮罩 (让前后项可见) */
         .thumbwheel-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 4px;
             background: linear-gradient(to right,
                 rgba(11, 15, 25, 1) 0%,
-                rgba(11, 15, 25, 0.8) 15%,
-                rgba(11, 15, 25, 0) 35%,
-                rgba(11, 15, 25, 0) 65%,
-                rgba(11, 15, 25, 0.8) 85%,
+                rgba(11, 15, 25, 0.6) 12%,
+                rgba(11, 15, 25, 0) 30%,
+                rgba(11, 15, 25, 0) 70%,
+                rgba(11, 15, 25, 0.6) 88%,
                 rgba(11, 15, 25, 1) 100%
             );
         }
@@ -183,6 +190,7 @@
             .dashboard { gap: 3vw; padding: 15px 10px 20px 10px; }
             .dial-readout { height: 28px; font-size: 16px; }
             .thumbwheel-container { height: 45px; border-width: 2px;}
+            .thumbwheel-selection { width: 50px; margin-left: -25px;}
             .thumbwheel-item.active { font-size: 22px; }
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
             #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
@@ -197,7 +205,6 @@
 
     <div id="combat-area">
         <canvas id="laser-canvas"></canvas>
-        
         <div id="rule-toast">警告信息</div>
 
         <div id="spaceship-container">
@@ -223,6 +230,7 @@
             <div class="dial-readout" id="readout-i">-</div>
             <div class="thumbwheel-container" id="wrap-i">
                 <div class="thumbwheel-overlay"></div>
+                <div class="thumbwheel-selection"></div>
                 <div class="thumbwheel-cylinder" id="wheel-i"></div>
             </div>
         </div>
@@ -230,6 +238,7 @@
             <div class="dial-readout" id="readout-f">-</div>
             <div class="thumbwheel-container" id="wrap-f">
                 <div class="thumbwheel-overlay"></div>
+                <div class="thumbwheel-selection"></div>
                 <div class="thumbwheel-cylinder" id="wheel-f"></div>
             </div>
         </div>
@@ -237,6 +246,7 @@
             <div class="dial-readout" id="readout-t">-</div>
             <div class="thumbwheel-container" id="wrap-t">
                 <div class="thumbwheel-overlay"></div>
+                <div class="thumbwheel-selection"></div>
                 <div class="thumbwheel-cylinder" id="wheel-t"></div>
             </div>
         </div>
@@ -254,12 +264,10 @@
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
-    
     const TONE_MAP = {'a':['','ā','á','ǎ','à'], 'o':['','ō','ó','ǒ','ò'], 'e':['','ē','é','ě','è'], 'i':['','ī','í','ǐ','ì'], 'u':['','ū','ú','ǔ','ù'], 'ü':['','ǖ','ǘ','ǚ','ǜ']};
     const TONE_DATA_REV = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
-    // 💡 拼音合法性规则表 (该声母可接的所有韵母)
     const VALID_MAP = {
         '': 'a,o,e,ai,ei,ao,ou,an,en,ang,eng,er',
         'b': 'a,o,i,u,ai,ei,ao,an,en,ang,eng,ian,iao,ie,in,ing',
@@ -372,19 +380,18 @@
         return res.sort(() => 0.5-Math.random());
     }
 
-    // 💣 构建 3D 横向拨轮
+    // 💣 构建宽视野 3D 横向拨轮
     function buildThumbwheel(type, opts) {
         state[type].opts = opts;
         state[type].step = 360 / opts.length;
         const wheel = document.getElementById(`wheel-${type}`);
         
-        // 动态计算横向圆柱的半径：确保文字宽度不重叠 (ItemWidth = 50)
-        let radius = Math.max((opts.length * 50) / (2 * Math.PI), 45);
+        // 🔥 拉大半径，让拨轮表面变得平缓，实现“宽履带”视觉
+        let radius = Math.max((opts.length * 60) / (2 * Math.PI), 75);
         state[type].radius = radius;
 
         let html = '';
         opts.forEach((o, idx) => {
-            // 绕 Y 轴旋转，将刻度沿圆周分布
             let rot = idx * state[type].step;
             html += `<div class="thumbwheel-item" style="transform: rotateY(${-rot}deg) translateZ(${radius}px)">${o}</div>`;
         });
@@ -394,7 +401,6 @@
         updateThumbwheelVisuals(type);
     }
 
-    // 💣 横向滑动交互物理引擎
     function setupThumbwheel(type) {
         const wrap = document.getElementById(`wrap-${type}`);
         const wheel = document.getElementById(`wheel-${type}`);
@@ -405,7 +411,6 @@
         const onStart = (e) => { 
             initAudio(); 
             isDragging = true; prevX = getX(e); wheel.classList.add('dragging'); 
-            // 清除之前的红灯状态
             state.hatRemoved = false;
             document.getElementById('ship-main').classList.remove('needs-fix');
             document.getElementById('finger-hint').style.display = 'none';
@@ -417,11 +422,10 @@
             let deltaX = currX - prevX; 
             prevX = currX;
 
-            // 滑动像素转换为角度 (阻尼系数 0.8)
-            let deltaAngle = (deltaX / 50) * state[type].step * 0.8;
+            // 依据变宽的 item 调整阻尼计算
+            let deltaAngle = (deltaX / 60) * state[type].step * 0.8;
             state[type].angle += deltaAngle;
             
-            // 实时跟手旋转
             wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
             
             let steps = Math.round(state[type].angle / state[type].step);
@@ -438,7 +442,6 @@
         const onEnd = () => { 
             if(!isDragging) return; isDragging = false; wheel.classList.remove('dragging'); 
             
-            // 自动回弹吸附刻度
             let steps = Math.round(state[type].angle / state[type].step);
             state[type].angle = steps * state[type].step;
             wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
@@ -503,7 +506,6 @@
         document.getElementById('readout-f').innerText = f;
         document.getElementById('readout-t').innerText = t === '' ? '-' : t;
 
-        // 平时操作时不马上报错，只需拼音展示
         let displayF = f;
         if (['j','q','x','y'].includes(i) && f.includes('ü') && state.hatRemoved) {
             displayF = f.replace(/ü/g, 'u');
@@ -511,7 +513,6 @@
         document.getElementById('hud-display').innerText = combineTruePinyin(i, displayF, t);
     }
 
-    // 🛡️ 手动脱帽交互
     function handleHudClick() {
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             state.hatRemoved = true; 
@@ -523,21 +524,18 @@
         }
     }
 
-    // 💥 FIRE 按钮：真正的规则校验中心
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
         
         let i = getVal('i'), f = getVal('f'), t = getVal('t');
 
-        // 1. 校验拼音是否存在
         let isValid = VALID_MAP[i] && VALID_MAP[i].split(',').includes(f);
         if (!isValid) {
             playSound('error');
             showToast("⚠️ 错误：不存在这个拼音组合！");
-            return; // 拦截开火
+            return; 
         }
 
-        // 2. 校验是否需要脱帽 (延迟警报机制)
         let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
         if (needsFix && !state.hatRemoved) {
             playSound('error');
@@ -545,20 +543,17 @@
             document.getElementById('ship-main').classList.add('needs-fix');
             document.getElementById('finger-hint').style.display = 'block';
             
-            // 闪动手指提示
             document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1.5)';
             setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1)', 200);
-            return; // 拦截开火
+            return; 
         }
 
-        // 3. 正常发射
         drawLaser();
         
         let isCorrect = (i === state.currentTarget.i && f === state.currentTarget.f && t === state.currentTarget.t);
         let tc = document.getElementById('target-container');
 
         if (isCorrect) {
-            // ✅ 完全正确：微缩爆炸消失
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
             
@@ -568,7 +563,6 @@
             
             setTimeout(() => { tc.classList.remove('explode'); nextTarget(); }, 1200);
         } else {
-            // 🛡️ 拼音合法，但不是目标答案：激活幽蓝护盾
             tc.classList.remove('shield'); void tc.offsetWidth; 
             tc.classList.add('shield');
             playSound('shield');
@@ -581,7 +575,6 @@
         if (state.targetActive) {
             state.targetX += state.targetSpeed;
             document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            // 怪物跑出屏幕外，扣分/重来
             if (state.targetX > 105) { 
                 state.targetActive = false; playSound('error'); setTimeout(nextTarget, 1000); 
             }
@@ -601,7 +594,6 @@
         setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 120);
     }
 
-    // 🎛️ 音频合成引擎
     function playSound(type) {
         if (!actx) return;
         let osc = actx.createOscillator(); let g = actx.createGain();
@@ -626,7 +618,6 @@
             osc.start(); osc.stop(actx.currentTime + 0.1);
         }
         else if(type === 'error'){ 
-            // 连续两声刺耳的低频蜂鸣
             osc.type = 'square'; osc.frequency.setValueAtTime(100, actx.currentTime); 
             g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
             osc.start(); osc.stop(actx.currentTime + 0.1);
@@ -638,14 +629,12 @@
             osc2.start(actx.currentTime + 0.15); osc2.stop(actx.currentTime + 0.25);
         }
         else if (type === 'shield') {
-            // 高频护盾反弹音
             osc.type = 'sine'; osc.frequency.setValueAtTime(1200, actx.currentTime); 
             osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.3);
             g.gain.setValueAtTime(0.4, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
             osc.start(); osc.stop(actx.currentTime + 0.3);
         }
         else if (type === 'explode') {
-            // 沉闷的爆炸轰鸣音爆
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, actx.currentTime); 
             osc.frequency.exponentialRampToValueAtTime(10, actx.currentTime + 0.5);
             g.gain.setValueAtTime(0.6, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.5);
