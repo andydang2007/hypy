@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pinyin Shooter: Laser Expedition</title>
+    
+    <link rel="apple-touch-icon" href="spaceship2.jpg">
+    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -109,7 +112,6 @@
         }
         @keyframes boomScaleLayers { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
 
-        /* 🔥 炫酷的 Combo 特效 */
         .combo-text {
             position: fixed; color: #fbbf24; font-size: 40px; font-weight: 900; font-family: 'Orbitron', sans-serif;
             text-shadow: 0 0 20px #fbbf24, 0 0 10px #ff0000; pointer-events: none; z-index: 70;
@@ -320,7 +322,6 @@
         document.getElementById('player-ship-img').src = SHIPS[currentShipIdx];
         document.getElementById('overlay').style.display = 'none';
         
-        // 🔥 初始化状态
         state.score = 0; state.combo = 0; state.timeLeft = 300; 
         state.isPlaying = true; state.dialsTouched = false;
         state.targets = []; state.targetIdCounter = 0; state.lasers = [];
@@ -351,7 +352,7 @@
         
         let startBtn = document.getElementById('btn-start');
         startBtn.innerText = "PLAY AGAIN";
-        startBtn.onclick = () => location.reload(); // 简单重置
+        startBtn.onclick = () => location.reload(); 
     }
 
     function getFixedOpts(correct, allArr) {
@@ -394,14 +395,12 @@
 
     function spawnTarget() {
         if (!DB_WORDS.length) return;
-        // 🔥 屏幕上最多允许同时存在 5 个怪物
         if (state.targets.length >= 5) return;
 
         let word = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
         let id = 'target-' + state.targetIdCounter++;
         
         let speed = (0.04 + Math.random() * 0.03) * 0.75; 
-        // 🔥 控制 Y 轴生成范围，防止跑到下面被遮挡
         let top = 15 + Math.random() * 50; 
         
         let randomMonsterImg = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
@@ -594,7 +593,6 @@
         }, 300);
     }
 
-    // 🔥 渲染炫酷的 Combo 特效
     function showComboEffect(targetElement, comboCount) {
         const rect = targetElement.getBoundingClientRect();
         const div = document.createElement('div');
@@ -611,7 +609,7 @@
         if (!state.dialsTouched) return; 
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            state.combo = 0; // 连击清零
+            state.combo = 0; 
             playSound('wrong');
             triggerWrongVisual();
             document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
@@ -626,11 +624,10 @@
             let hitTarget = state.targets[hitIndex];
             hitTarget.isTargeted = true; 
             
-            // 🔥 连击系统与分数计算
             state.combo++;
             let pointsEarned = 100;
             if (state.combo > 1) {
-                pointsEarned += 100; // 连击奖励 100
+                pointsEarned += 100; 
                 showComboEffect(hitTarget.element, state.combo);
             }
             state.score += pointsEarned; 
@@ -645,7 +642,7 @@
             state.lasers.push({ sX: sX, sY: sY, target: hitTarget, progress: 0 });
             playSound('laser');
         } else {
-            state.combo = 0; // 连击清零
+            state.combo = 0; 
             playSound('wrong');
             triggerWrongVisual(); 
         }
@@ -690,7 +687,6 @@
         
         let now = Date.now();
         
-        // 🔥 处理 5 分钟计时器
         if (now - state.lastTimerTick >= 1000) {
             state.timeLeft--;
             state.lastTimerTick = now;
@@ -701,7 +697,6 @@
             }
         }
 
-        // 每 5 秒生成新怪物
         if (now - state.lastSpawnTime > 5000) {
             spawnTarget();
             state.lastSpawnTime = now;
@@ -715,7 +710,7 @@
             if (t.x > 105) { 
                 t.element.remove();
                 state.targets.splice(i, 1);
-                state.combo = 0; // 🔥 怪物逃跑，连击清零
+                state.combo = 0; 
                 updateDialsForTargets();
             }
         }
