@@ -47,7 +47,6 @@
         #spaceship-container { position: absolute; left: 30px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
         .spaceship { position: relative; width: 80px; height: 50px; display: flex; justify-content: center; align-items: center; }
         
-        /* 🔥 新增：精准的发光激光炮口 */
         #laser-muzzle {
             position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
             width: 6px; height: 6px; background: #ffffff; border-radius: 50%;
@@ -94,15 +93,17 @@
         }
 
         .gauge-unit {
-            position: relative; flex: 1; max-width: 220px; height: 140px;
+            position: relative; flex: 1; height: 140px;
             background: rgba(0, 0, 0, 0.5); border: 2px solid #334155; border-radius: 20px 20px 40px 40px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5);
             overflow: hidden; cursor: grab;
         }
         .gauge-unit:active { cursor: grabbing; }
 
-        #box-i, #box-f { flex: 1.2; max-width: 240px; }
-        #box-t { flex: 0.8; max-width: 160px; }
+        /* 🔥 重新平衡尺寸：左右对称，中间微微加宽以防溢出 */
+        #box-i { max-width: 200px; }
+        #box-f { flex: 1.2; max-width: 240px; }
+        #box-t { max-width: 200px; }
 
         .gauge-glass {
             position: absolute; top: 10px; left: 10px; right: 10px; height: 90px;
@@ -258,7 +259,7 @@
 
     const ALL_INITIALS = ['','b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
     const ALL_FINALS = ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ün','ang','eng','ing','ong','iao','ia','ian','iang','ua','uo','uan','uang','uai'];
-    const ALL_TONES = ['1', '2', '', '3', '4']; // 轻声空字符串被我放在了正中间
+    const ALL_TONES = ['1', '2', '', '3', '4']; 
 
     const canvas = document.getElementById('laser-canvas');
     const ctx = canvas.getContext('2d');
@@ -314,7 +315,6 @@
         gameLoop();
     }
 
-    // 🔥 全随机算法，生成刚好 5 个选项
     function getFixedOpts(correct, allArr) {
         let res = allArr.filter(x => x !== correct).sort(() => 0.5-Math.random()).slice(0, 4);
         res.push(correct);
@@ -356,12 +356,10 @@
         let html = '';
         opts.forEach((o, idx) => {
             let A = minAngle + idx * state[type].step;
-            
             html += `
             <div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${A}deg) translateY(${-R_TICK}px);">
                 <div class="gauge-tick" id="tick-${type}-${idx}"></div>
             </div>`;
-            
             html += `
             <div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${A}deg) translateY(${-R_TEXT}px);">
                 <div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${-A}deg);">${o}</div>
@@ -369,8 +367,7 @@
         });
         
         origin.innerHTML = ptrHTML + html;
-        
-        state[type].angle = 0; // 默认停在正中间
+        state[type].angle = 0; 
         const ptr = document.getElementById(`ptr-${type}`);
         ptr.style.transition = 'none';
         ptr.style.transform = `rotate(${state[type].angle}deg)`;
@@ -512,7 +509,6 @@
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
             
-            // 🔥 定点火焰爆炸效果
             const targetRect = document.getElementById('target-container').getBoundingClientRect();
             const cx = (targetRect.left + targetRect.width / 2) / window.innerWidth;
             const cy = (targetRect.top + targetRect.height / 2) / window.innerHeight;
@@ -542,7 +538,6 @@
     function drawLaser() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         
-        // 🔥 获取实体炮口的绝对坐标，完美弹道
         const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
         const sX = muzzle.left + muzzle.width / 2; 
         const sY = muzzle.top + muzzle.height / 2;
