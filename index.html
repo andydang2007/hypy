@@ -20,8 +20,7 @@
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #050505;
-            /* 🔥 实景背景更新 */
-            background-image: url("Https://i.postimg.cc/k43Qq3MP/IMG-20260416-164456.png");
+            background-image: url("https://i.postimg.cc/k43Qq3MP/IMG-20260416-164456.png");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -43,54 +42,47 @@
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-        /* 🚀 飞船容器：已默认顺时针旋转90度 */
+        /* 🚀 飞船容器 */
         #spaceship-container { 
-            position: absolute; left: 20px; top: 50%; 
+            position: absolute; left: 30px; top: 50%; 
             transform: translateY(-50%) rotate(90deg); 
             z-index: 10; display: flex; justify-content: center; align-items: center;
         }
         
-        /* JPG 飞船图片 (滤色消除黑底) */
+        /* 🔥 飞船图片：通过对比度滤镜强制消除 JPG 的暗灰色残影边框 */
         #player-ship-img {
-            width: 100px; height: auto; 
+            height: 100px; width: auto; 
             mix-blend-mode: screen; 
             pointer-events: none;
-            filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.3));
-        }
-        
-        /* 精准炮口锚点 (正上方 = 旋转后的右方) */
-        #laser-muzzle {
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            width: 6px; height: 6px; background: #ffffff; border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow);
-            z-index: 20;
+            filter: contrast(1.5) brightness(0.8) drop-shadow(0 0 10px rgba(0, 240, 255, 0.3));
         }
 
-        /* 🔥 全息显示窗移到“尾部后方” (旋转后的视觉左侧) */
+        /* 🔥 矩形的科幻全息拼音框 (已反向旋转抵消，永远水平正立) */
         .ship-core {
             position: absolute; 
             top: 50%; 
-            left: -60px; /* 👈 关键点：设置负值，让它悬浮在飞船图片的尾焰排放口后面 */
-            transform: translateY(-50%); /* 垂直居中对齐飞船轴线 */
+            left: -65px; /* 悬浮在飞船尾部下方 */
+            transform: translate(-50%, -50%) rotate(-90deg); /* 抵消容器的90度旋转 */
             
-            width: 48px; height: 48px; background: rgba(5,5,5,0.7); 
-            border: 2px solid var(--accent-glow); border-radius: 50%;
+            min-width: 65px; height: 38px; padding: 0 12px;
+            background: rgba(5,5,5,0.75); 
+            border: 2px solid var(--accent-glow); border-radius: 6px;
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.4); 
-            backdrop-filter: blur(2px);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.5); 
+            backdrop-filter: blur(4px);
         }
         
-        .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 20px; font-weight: 900; color: #fff; font-family: sans-serif;}
+        .hud-text { font-size: 20px; font-weight: 900; color: #fff; font-family: sans-serif; white-space: nowrap;}
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
-        @keyframes pulseRed { from { transform: translateY(-50%) scale(1); } to { transform: translateY(-50%) scale(1.1); } }
+        @keyframes pulseRed { from { transform: translate(-50%, -50%) rotate(-90deg) scale(1); } to { transform: translate(-50%, -50%) rotate(-90deg) scale(1.1); } }
 
         #finger-hint {
-            position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
             font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
             animation: pointDown 0.6s infinite alternate cubic-bezier(0.25, 0.46, 0.45, 0.94);
             display: none; z-index: 20; pointer-events: none;
         }
-        @keyframes pointDown { from { top: -60px; } to { top: -40px; } }
+        @keyframes pointDown { from { top: -50px; } to { top: -35px; } }
 
         #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; }
         .enemy-target {
@@ -174,6 +166,7 @@
         }
         #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
+        /* --- 开始页面 UI --- */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
         .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 30px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
@@ -181,11 +174,13 @@
         #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
         @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
         
+        /* 🔥 选择器解除固定宽度限制，根据图片比例自适应 */
         .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 15px; color: #94a3b8; display: none; }
-        .ship-selector { display: none; gap: 15px; margin-bottom: 40px; }
+        .ship-selector { display: none; gap: 15px; margin-bottom: 40px; align-items: center; justify-content: center; }
         .ship-option {
-            width: 70px; height: 70px; border-radius: 10px; border: 2px solid #334155;
-            object-fit: cover; cursor: pointer; transition: 0.2s; mix-blend-mode: screen;
+            height: 70px; width: auto; max-width: 140px;
+            border-radius: 10px; border: 2px solid #334155;
+            object-fit: contain; cursor: pointer; transition: 0.2s; mix-blend-mode: screen;
             background: #000;
         }
         .ship-option.selected { border-color: var(--accent-glow); box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.15); }
@@ -218,7 +213,6 @@
 
         <div id="spaceship-container">
             <img id="player-ship-img" src="" alt="Fighter">
-            <div id="laser-muzzle"></div>
             <div class="ship-core" id="ship-main" onclick="handleHudClick()">
                 <div id="finger-hint">👇</div>
                 <span class="hud-text" id="hud-display"></span>
@@ -264,10 +258,10 @@
         
         <div class="ship-selector-title sci-fi-text" id="selector-title">SELECT YOUR FIGHTER</div>
         <div class="ship-selector" id="ship-selector">
-            <img class="ship-option selected" src="https://i.postimg.cc/Hj4jCRLw/Screenshot-2026-04-16-16-28-23-059-com-miui-gallery-edit.jpg" onclick="selectShip(0)">
-            <img class="ship-option" src="https://i.postimg.cc/kDFDdz5b/Screenshot-2026-04-16-16-28-40-480-com-miui-gallery-edit.jpg" onclick="selectShip(1)">
-            <img class="ship-option" src="https://i.postimg.cc/vDdDkbG6/Screenshot-2026-04-16-16-28-53-842-com-miui-gallery-edit.jpg" onclick="selectShip(2)">
-            <img class="ship-option" src="https://i.postimg.cc/jnhpkzt1/Screenshot-2026-04-16-16-29-09-336-com-miui-gallery-edit.jpg" onclick="selectShip(3)">
+            <img class="ship-option selected" src="https://i.postimg.cc/qzYyYWq0/Screenshot-2026-04-16-16-28-23-059-1776329768391edit.jpg" onclick="selectShip(0)">
+            <img class="ship-option" src="https://i.postimg.cc/N5VmVZFM/Screenshot-2026-04-16-16-28-40-480-1776329748234edit.jpg" onclick="selectShip(1)">
+            <img class="ship-option" src="https://i.postimg.cc/WhKgKxz2/Screenshot-2026-04-16-16-28-53-842-1776329730526edit.jpg" onclick="selectShip(2)">
+            <img class="ship-option" src="https://i.postimg.cc/cr6fFds9/Screenshot-2026-04-16-16-29-09-336-1776329673625edit.jpg" onclick="selectShip(3)">
         </div>
 
         <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">MISSION START</button>
@@ -276,11 +270,12 @@
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
     
+    // 更新为裁切后的高清飞船素材
     const SHIPS = [
-        'https://i.postimg.cc/Hj4jCRLw/Screenshot-2026-04-16-16-28-23-059-com-miui-gallery-edit.jpg',
-        'https://i.postimg.cc/kDFDdz5b/Screenshot-2026-04-16-16-28-40-480-com-miui-gallery-edit.jpg',
-        'https://i.postimg.cc/vDdDkbG6/Screenshot-2026-04-16-16-28-53-842-com-miui-gallery-edit.jpg',
-        'https://i.postimg.cc/jnhpkzt1/Screenshot-2026-04-16-16-29-09-336-com-miui-gallery-edit.jpg'
+        'https://i.postimg.cc/qzYyYWq0/Screenshot-2026-04-16-16-28-23-059-1776329768391edit.jpg',
+        'https://i.postimg.cc/N5VmVZFM/Screenshot-2026-04-16-16-28-40-480-1776329748234edit.jpg',
+        'https://i.postimg.cc/WhKgKxz2/Screenshot-2026-04-16-16-28-53-842-1776329730526edit.jpg',
+        'https://i.postimg.cc/cr6fFds9/Screenshot-2026-04-16-16-29-09-336-1776329673625edit.jpg'
     ];
     let currentShipIdx = 0;
 
@@ -359,7 +354,9 @@
     function startGame() {
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
         initAudio(); 
+        
         document.getElementById('player-ship-img').src = SHIPS[currentShipIdx];
+
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
         document.getElementById('ui-score').innerText = '0';
@@ -551,8 +548,8 @@
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             playSound('wrong');
-            document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
-            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1)', 200);
+            document.getElementById('finger-hint').style.transform = 'translateX(-50%) scale(1.5)';
+            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) scale(1)', 200);
             return;
         }
 
@@ -590,9 +587,10 @@
     function drawLaser() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         
-        const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
-        const sX = muzzle.left + muzzle.width / 2; 
-        const sY = muzzle.top + muzzle.height / 2;
+        // 🔥 获取实体图片的物理中心，100% 精准无偏移弹道
+        const shipImg = document.getElementById('player-ship-img').getBoundingClientRect();
+        const sX = shipImg.left + shipImg.width / 2; 
+        const sY = shipImg.top + shipImg.height / 2;
 
         const enemy = document.getElementById('target-container').getBoundingClientRect();
         const tX = enemy.left + enemy.width / 2;
