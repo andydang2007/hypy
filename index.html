@@ -20,11 +20,12 @@
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #000;
-            background-image: url("starspace.jpg");
+            /* 🔥 星空 PNG */
+            background-image: url("starspace.png");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            transition: box-shadow 0.1s; /* 配合红色警报闪烁 */
+            transition: box-shadow 0.1s;
         }
 
         .sci-fi-text { font-family: 'Orbitron', sans-serif; }
@@ -41,13 +42,12 @@
 
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         
-        /* 🔥 画布脱离文档流限制，覆盖全屏，彻底解决激光偏移 Bug */
+        /* 🔥 画布回到相对坐标系，尺寸由 JS 精确接管 */
         #laser-canvas { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             pointer-events: none; z-index: 50; 
         }
 
-        /* 🔥 错误视觉惩罚：红色警报闪烁与屏幕抖动 */
         .flash-error { animation: errorFlash 0.3s ease-out; }
         @keyframes errorFlash {
             0% { box-shadow: inset 0 0 100px var(--wrong-color); }
@@ -64,7 +64,7 @@
         }
         .shake-screen { animation: shake-screen 0.2s; animation-iteration-count: 1; }
 
-        /* 🚀 飞船容器 */
+        /* 🚀 飞船容器：100x100 方盒，完美旋转轴心 */
         #spaceship-container { 
             position: absolute; left: 30px; top: 50%; 
             width: 100px; height: 100px;
@@ -78,10 +78,9 @@
             pointer-events: none; filter: contrast(1.8) brightness(0.8); 
         }
 
-        /* 隐形的几何炮口 */
+        /* 🔥 隐形几何炮口：盒子正上方 = 旋转后的机头前沿 */
         #laser-muzzle { position: absolute; top: 0; left: 50%; width: 1px; height: 1px; pointer-events: none; }
 
-        /* 矩形全息拼音框：留在原本设定的“上方”以节约横向空间 */
         .ship-core {
             position: absolute; 
             top: 50%; left: -65px; 
@@ -104,19 +103,17 @@
         }
         @keyframes pointDown { from { top: -55px; } to { top: -40px; } }
 
-        /* 👾 怪物及其容器：使用你提供的 monster.jpg */
         #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; transition: opacity 0.1s ease-out, transform 0.1s ease-out;}
         
         .enemy-container {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        /* 🔥 汉字作为“帽子”顶在怪物头上 */
         .enemy-text { 
             font-size: 32px; font-weight: 900; color: #fff; 
             text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow); 
             margin-bottom: 2px; z-index: 2;
         }
-        /* 怪物本体图片 */
+        /* 🔥 monster 修正 */
         .enemy-img {
             width: 65px; height: 65px; object-fit: contain;
             mix-blend-mode: screen; filter: contrast(1.2);
@@ -124,7 +121,6 @@
 
         .fade-out-fast { opacity: 0 !important; transform: translateY(-50%) scale(0.01) !important; }
 
-        /* 💥 爆炸动画 */
         .explosion-effect-container { position: fixed; width: 150px; height: 150px; pointer-events: none; z-index: 60; mix-blend-mode: screen; }
         .explosion-layer {
             position: absolute; width: 100%; height: 100%;
@@ -239,30 +235,15 @@
         <div id="target-mover">
             <div class="enemy-container" id="target-container">
                 <div class="enemy-text" id="target-char">🎯</div>
-                <img class="enemy-img" src="monster.jpg" alt="Monster">
+                <img class="enemy-img" src="monster.jpg" alt="monster">
             </div>
         </div>
     </div>
 
     <div class="dashboard">
-        <div class="gauge-unit" id="box-i">
-            <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-i"></div>
-            <div class="gauge-knob"></div>
-        </div>
-        
-        <div class="gauge-unit" id="box-f">
-            <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-f"></div>
-            <div class="gauge-knob"></div>
-        </div>
-
-        <div class="gauge-unit" id="box-t">
-            <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-t"></div>
-            <div class="gauge-knob"></div>
-        </div>
-
+        <div class="gauge-unit" id="box-i"><div class="gauge-glass"></div><div class="gauge-origin" id="origin-i"></div><div class="gauge-knob"></div></div>
+        <div class="gauge-unit" id="box-f"><div class="gauge-glass"></div><div class="gauge-origin" id="origin-f"></div><div class="gauge-knob"></div></div>
+        <div class="gauge-unit" id="box-t"><div class="gauge-glass"></div><div class="gauge-origin" id="origin-t"></div><div class="gauge-knob"></div></div>
         <div class="action-container"><button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button></div>
     </div>
 
@@ -570,7 +551,6 @@
         }
     }
 
-    // 🔥 新增错误视觉惩罚函数
     function triggerWrongVisual() {
         const combatArea = document.getElementById('combat-area');
         combatArea.classList.add('shake-screen');
@@ -591,7 +571,7 @@
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             playSound('wrong');
-            triggerWrongVisual(); // 视觉惩罚
+            triggerWrongVisual();
             document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
             setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1)', 200);
             return;
@@ -608,7 +588,7 @@
             setTimeout(nextTarget, 600);
         } else {
             playSound('wrong');
-            triggerWrongVisual(); // 视觉惩罚
+            triggerWrongVisual(); 
         }
     }
 
@@ -623,7 +603,6 @@
 
         const container = document.createElement('div');
         container.className = 'explosion-effect-container';
-        // 绑定到 fixed 全局坐标
         container.style.left = cx + 'px';
         container.style.top = cy + 'px';
 
@@ -655,7 +634,7 @@
             if (state.targetX > 105) { 
                 state.targetActive = false; 
                 playSound('wrong'); 
-                triggerWrongVisual(); // 怪物逃跑的视觉惩罚
+                triggerWrongVisual(); 
                 setTimeout(nextTarget, 1000); 
             }
         }
@@ -663,16 +642,21 @@
     }
 
     function drawLaser() {
-        // 🔥 画布铺满全屏，与 getBoundingClientRect 坐标系 100% 对齐
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const combatArea = document.getElementById('combat-area');
+        const combatRect = combatArea.getBoundingClientRect();
+        
+        // 🔥 画布严格贴合 combat-area 的尺寸，不被污染
+        canvas.width = combatRect.width; 
+        canvas.height = combatRect.height;
         
         const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
-        const sX = muzzle.left + muzzle.width / 2;
-        const sY = muzzle.top + muzzle.height / 2;
+        // 🔥 降维计算：绝对屏幕坐标 减去 战斗区域坐标 = 纯粹相对坐标
+        const sX = muzzle.left + muzzle.width / 2 - combatRect.left;
+        const sY = muzzle.top + muzzle.height / 2 - combatRect.top;
         
         const enemy = document.getElementById('target-container').getBoundingClientRect();
-        const tX = enemy.left + enemy.width / 2;
-        const tY = enemy.top + enemy.height / 2;
+        const tX = enemy.left + enemy.width / 2 - combatRect.left;
+        const tY = enemy.top + enemy.height / 2 - combatRect.top;
 
         ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
         ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
