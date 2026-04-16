@@ -32,12 +32,13 @@
         header {
             display: flex; justify-content: flex-end; align-items: center;
             padding: 10px 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10;
+            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10; gap: 30px;
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
         .stat-label { font-size: 12px; color: var(--accent-glow); font-weight: bold; letter-spacing: 2px; }
         .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
+        #ui-time { color: #fbbf24; text-shadow: 0 0 15px #fbbf24; }
 
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         
@@ -62,7 +63,6 @@
         }
         .shake-screen { animation: shake-screen 0.2s; animation-iteration-count: 1; }
 
-        /* 飞船容器 */
         #spaceship-container { 
             position: absolute; left: 30px; top: 50%; 
             width: 100px; height: 100px;
@@ -71,20 +71,14 @@
             mix-blend-mode: screen; 
         }
         
-        #player-ship-img {
-            width: 100%; height: 100%; object-fit: contain;
-            pointer-events: none; filter: contrast(1.8) brightness(0.8); 
-        }
-
+        #player-ship-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: contrast(1.8) brightness(0.8); }
         #laser-muzzle { position: absolute; top: 0; left: 50%; width: 1px; height: 1px; pointer-events: none; }
 
         .ship-core {
-            position: absolute; 
-            top: 50%; left: -65px; 
+            position: absolute; top: 50%; left: -65px; 
             transform: translate(-50%, -50%) rotate(-90deg); 
             min-width: 70px; height: 38px; padding: 0 10px;
-            background: rgba(0,0,0,0.8); 
-            border: 2px solid var(--accent-glow); border-radius: 4px;
+            background: rgba(0,0,0,0.8); border: 2px solid var(--accent-glow); border-radius: 4px;
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
             box-shadow: 0 0 15px var(--accent-glow); backdrop-filter: blur(4px);
         }
@@ -95,29 +89,18 @@
 
         #finger-hint {
             position: absolute; top: -55px; left: 50%; transform: translateX(-50%);
-            font-size: 40px; animation: pointDown 0.5s infinite alternate;
-            display: none; z-index: 20;
+            font-size: 40px; animation: pointDown 0.5s infinite alternate; display: none; z-index: 20;
         }
         @keyframes pointDown { from { top: -55px; } to { top: -40px; } }
 
-        /* 多目标怪物容器 */
         .enemy-container {
-            position: absolute;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 8; transition: opacity 0.1s ease-out, transform 0.1s ease-out;
         }
-        .enemy-text { 
-            font-size: 32px; font-weight: 900; color: #fff; 
-            text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow); 
-            margin-bottom: 2px; z-index: 2;
-        }
-        .enemy-img {
-            width: 65px; height: 65px; object-fit: contain;
-            mix-blend-mode: screen; filter: contrast(1.2);
-        }
+        .enemy-text { font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow); margin-bottom: 2px; z-index: 2; }
+        .enemy-img { width: 65px; height: 65px; object-fit: contain; mix-blend-mode: screen; filter: contrast(1.2); }
         .fade-out-fast { opacity: 0 !important; transform: translateY(-50%) scale(0.01) !important; }
 
-        /* 爆炸动画 */
         .explosion-effect-container { position: fixed; width: 150px; height: 150px; pointer-events: none; z-index: 60; mix-blend-mode: screen; }
         .explosion-layer {
             position: absolute; width: 100%; height: 100%;
@@ -126,34 +109,29 @@
         }
         @keyframes boomScaleLayers { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
 
-        /* 仪表盘 */
+        /* 🔥 炫酷的 Combo 特效 */
+        .combo-text {
+            position: fixed; color: #fbbf24; font-size: 40px; font-weight: 900; font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 20px #fbbf24, 0 0 10px #ff0000; pointer-events: none; z-index: 70;
+            animation: comboPop 0.8s ease-out forwards; white-space: nowrap;
+        }
+        @keyframes comboPop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.5); }
+            100% { transform: translate(-50%, calc(-50% - 50px)) scale(1.8); opacity: 0; }
+        }
+
         .dashboard {
-            height: 25vh; min-height: 180px; 
-            background: linear-gradient(to bottom, #1e293b, #0f172a); 
-            border-top: 4px solid #334155;
-            display: flex; justify-content: center; align-items: flex-end; gap: 3vw; border-radius: 30px 30px 0 0;
-            box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -15px 40px rgba(0,0,0,0.8);
-            padding: 0 2vw 15px 2vw;
+            height: 25vh; min-height: 180px; background: linear-gradient(to bottom, #1e293b, #0f172a); 
+            border-top: 4px solid #334155; display: flex; justify-content: center; align-items: flex-end; gap: 3vw; border-radius: 30px 30px 0 0;
+            box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -15px 40px rgba(0,0,0,0.8); padding: 0 2vw 15px 2vw;
         }
 
-        .gauge-unit {
-            position: relative; flex: 1; max-width: 220px; height: 140px;
-            background: rgba(0, 0, 0, 0.5); border: 2px solid #334155; border-radius: 20px 20px 40px 40px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5);
-            overflow: hidden; cursor: grab;
-        }
+        .gauge-unit { position: relative; flex: 1; max-width: 220px; height: 140px; background: rgba(0, 0, 0, 0.5); border: 2px solid #334155; border-radius: 20px 20px 40px 40px; box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5); overflow: hidden; cursor: grab; }
         .gauge-unit:active { cursor: grabbing; }
+        #box-i, #box-f { flex: 1.2; max-width: 240px; } #box-t { flex: 0.8; max-width: 160px; }
 
-        #box-i, #box-f { flex: 1.2; max-width: 240px; }
-        #box-t { flex: 0.8; max-width: 160px; }
-
-        .gauge-glass {
-            position: absolute; top: 10px; left: 10px; right: 10px; height: 90px;
-            background: radial-gradient(ellipse at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
-            border-top: 2px solid rgba(0, 240, 255, 0.2); border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-            pointer-events: none; z-index: 1;
-        }
-
+        .gauge-glass { position: absolute; top: 10px; left: 10px; right: 10px; height: 90px; background: radial-gradient(ellipse at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 70%); border-top: 2px solid rgba(0, 240, 255, 0.2); border-radius: 50% 50% 0 0 / 100% 100% 0 0; pointer-events: none; z-index: 1; }
         .gauge-origin { position: absolute; bottom: 0px; left: 50%; width: 0; height: 0; z-index: 2; }
         .gauge-item { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap; text-shadow: 1px 1px 2px #000; transition: 0.2s; }
         .gauge-item.active { font-size: 26px; font-weight: 900; color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.8); filter: drop-shadow(0 2px 2px #000); }
@@ -166,11 +144,7 @@
         .gauge-knob::after { content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.3); box-shadow: inset 0 2px 4px rgba(255,255,255,0.4); }
 
         .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px;}
-        #btn-fire-action {
-            width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
-            border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; cursor: pointer; transition: 0.1s; letter-spacing: 2px;
-            box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.8); text-shadow: -1px -1px 0 rgba(0,0,0,0.4);
-        }
+        #btn-fire-action { width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c); border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; cursor: pointer; transition: 0.1s; letter-spacing: 2px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.8); text-shadow: -1px -1px 0 rgba(0,0,0,0.4); }
         #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
@@ -183,27 +157,16 @@
         
         .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 25px; color: #94a3b8; display: none; }
         .ship-selector { display: none; gap: 25px; margin-bottom: 60px; align-items: center; justify-content: center; }
-        
-        .ship-option {
-            width: 80px; height: 80px; padding: 5px; box-sizing: border-box;
-            border-radius: 10px; border: 2px solid #334155;
-            object-fit: contain; cursor: pointer; transition: 0.2s; mix-blend-mode: screen; background: #000;
-        }
+        .ship-option { width: 80px; height: 80px; padding: 5px; box-sizing: border-box; border-radius: 10px; border: 2px solid #334155; object-fit: contain; cursor: pointer; transition: 0.2s; mix-blend-mode: screen; background: #000; }
         .ship-option.selected { border-color: var(--accent-glow); box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.15); }
-
-        .start-btn { 
-            padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); 
-            font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2);
-            letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; display: none;
-        }
+        .start-btn { padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2); letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; display: none; }
         .start-btn:active { transform: scale(0.95); }
 
         @media (max-width: 800px) {
             .game-title { font-size: 5vw; margin-bottom: 40px; gap: 10px; } .psle-cap { font-size: 9vw; }
             .ship-selector { margin-bottom: 40px;}
             .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 22vh; min-height: 140px;}
-            .gauge-unit { height: 110px; }
-            .gauge-pointer { height: 55px; } 
+            .gauge-unit { height: 110px; } .gauge-pointer { height: 55px; } 
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
             #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
         }
@@ -212,7 +175,14 @@
 <body>
 
     <header>
-        <div class="stat-box"><span class="stat-label sci-fi-text">SCORE</span><span class="stat-value sci-fi-text" id="ui-score">0</span></div>
+        <div class="stat-box" style="margin-right: 20px;">
+            <span class="stat-label sci-fi-text">TIME</span>
+            <span class="stat-value sci-fi-text" id="ui-time">05:00</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label sci-fi-text">SCORE</span>
+            <span class="stat-value sci-fi-text" id="ui-score">0</span>
+        </div>
     </header>
 
     <div id="combat-area">
@@ -237,7 +207,7 @@
     </div>
 
     <div id="overlay">
-        <h1 class="game-title sci-fi-text">
+        <h1 class="game-title sci-fi-text" id="main-title">
             <div class="title-line"><span><span class="psle-cap">P</span>INYIN</span><span><span class="psle-cap">S</span>HOOTER</span></div>
             <div class="title-line"><span><span class="psle-cap">L</span>ASER</span><span><span class="psle-cap">E</span>XPEDITION</span></div>
         </h1>
@@ -258,7 +228,6 @@
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
     
     const SHIPS = ['spaceship1.jpg', 'spaceship2.jpg', 'spaceship3.jpg'];
-    // 🔥 五大随机怪物图库
     const MONSTERS = ['monster1.jpg', 'monster2.jpg', 'monster3.jpg', 'monster4.jpg', 'monster5.jpg'];
     let currentShipIdx = 0;
 
@@ -280,10 +249,10 @@
     let DB_WORDS = [];
     
     let state = {
-        score: 0, isPlaying: false, hatRemoved: false, dialsTouched: false,
+        score: 0, combo: 0, timeLeft: 300, isPlaying: false, hatRemoved: false, dialsTouched: false,
         i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
-        targets: [], targetIdCounter: 0, lastSpawnTime: 0,
-        lasers: [] // 管理正在飞行的绿色短束激光
+        targets: [], targetIdCounter: 0, lastSpawnTime: 0, lastTimerTick: 0,
+        lasers: [] 
     };
 
     let actx = null;
@@ -338,6 +307,12 @@
         if (actx.state === 'suspended') actx.resume();
     }
 
+    function formatTime(seconds) {
+        let m = Math.floor(seconds / 60);
+        let s = seconds % 60;
+        return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
     function startGame() {
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
         initAudio(); 
@@ -345,12 +320,14 @@
         document.getElementById('player-ship-img').src = SHIPS[currentShipIdx];
         document.getElementById('overlay').style.display = 'none';
         
-        state.score = 0; state.isPlaying = true;
+        // 🔥 初始化状态
+        state.score = 0; state.combo = 0; state.timeLeft = 300; 
+        state.isPlaying = true; state.dialsTouched = false;
         state.targets = []; state.targetIdCounter = 0; state.lasers = [];
-        state.dialsTouched = false;
-        state.lastSpawnTime = 0; 
+        state.lastSpawnTime = 0; state.lastTimerTick = Date.now();
         
         document.getElementById('ui-score').innerText = '0';
+        document.getElementById('ui-time').innerText = formatTime(state.timeLeft);
         document.querySelectorAll('.enemy-container').forEach(el => el.remove());
 
         buildGauge('i', getFixedOpts('', ALL_INITIALS));
@@ -359,6 +336,22 @@
         
         updateHUD();
         gameLoop();
+    }
+
+    function endGame() {
+        state.isPlaying = false;
+        document.getElementById('overlay').style.display = 'flex';
+        
+        document.getElementById('main-title').innerHTML = `
+            <div style="font-size: 48px; color: #fbbf24; text-shadow: 0 0 20px #fbbf24;">TIME'S UP</div>
+            <div style="font-size: 24px; color: #fff; margin-top: 10px;">FINAL SCORE: ${state.score}</div>
+        `;
+        document.getElementById('selector-title').style.display = 'none';
+        document.getElementById('ship-selector').style.display = 'none';
+        
+        let startBtn = document.getElementById('btn-start');
+        startBtn.innerText = "PLAY AGAIN";
+        startBtn.onclick = () => location.reload(); // 简单重置
     }
 
     function getFixedOpts(correct, allArr) {
@@ -401,13 +394,16 @@
 
     function spawnTarget() {
         if (!DB_WORDS.length) return;
+        // 🔥 屏幕上最多允许同时存在 5 个怪物
+        if (state.targets.length >= 5) return;
+
         let word = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
         let id = 'target-' + state.targetIdCounter++;
         
         let speed = (0.04 + Math.random() * 0.03) * 0.75; 
-        let top = 15 + Math.random() * 70;
+        // 🔥 控制 Y 轴生成范围，防止跑到下面被遮挡
+        let top = 15 + Math.random() * 50; 
         
-        // 🔥 随机从五个怪物里抽一个
         let randomMonsterImg = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
 
         let div = document.createElement('div');
@@ -428,17 +424,14 @@
 
     function buildGauge(type, opts) {
         state[type].opts = opts;
-        const N = 5; 
-        const minAngle = -35;
-        const maxAngle = 35;
-        state[type].step = (maxAngle - minAngle) / (N - 1);
+        const minAngle = -35, maxAngle = 35;
+        state[type].step = (maxAngle - minAngle) / 4;
         
         const origin = document.getElementById(`origin-${type}`);
         
         if (origin.innerHTML.trim() === '') {
             const boxH = document.getElementById(`box-${type}`).offsetHeight;
-            const R_TEXT = boxH * 0.85; 
-            const R_TICK = R_TEXT - 22; 
+            const R_TEXT = boxH * 0.85, R_TICK = R_TEXT - 22; 
 
             let ptrHTML = `<div class="gauge-pointer-wrapper" id="ptr-${type}"><div class="gauge-pointer"></div></div>`;
             let html = '';
@@ -601,13 +594,24 @@
         }, 300);
     }
 
+    // 🔥 渲染炫酷的 Combo 特效
+    function showComboEffect(targetElement, comboCount) {
+        const rect = targetElement.getBoundingClientRect();
+        const div = document.createElement('div');
+        div.className = 'combo-text';
+        div.innerText = 'COMBO x' + comboCount + '!';
+        div.style.left = (rect.left + rect.width / 2) + 'px';
+        div.style.top = rect.top + 'px';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 800);
+    }
+
     function handleFireClick() {
         if (!state.isPlaying) return;
-        
-        // 🔥 空枪保护绝对静默：如果一局开始或者刚打完，没碰旋钮直接开火，完全无视指令
         if (!state.dialsTouched) return; 
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
+            state.combo = 0; // 连击清零
             playSound('wrong');
             triggerWrongVisual();
             document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
@@ -616,33 +620,32 @@
         }
 
         let iVal = getVal('i'), fVal = getVal('f'), tVal = getVal('t');
-        
-        // 扫描怪物寻找匹配目标
         let hitIndex = state.targets.findIndex(t => t.word.i === iVal && t.word.f === fVal && t.word.t === tVal && !t.isTargeted);
 
         if (hitIndex !== -1) {
             let hitTarget = state.targets[hitIndex];
-            hitTarget.isTargeted = true; // 锁定目标，防止多发激光重复打一个
-            state.score += 10; 
+            hitTarget.isTargeted = true; 
+            
+            // 🔥 连击系统与分数计算
+            state.combo++;
+            let pointsEarned = 100;
+            if (state.combo > 1) {
+                pointsEarned += 100; // 连击奖励 100
+                showComboEffect(hitTarget.element, state.combo);
+            }
+            state.score += pointsEarned; 
             document.getElementById('ui-score').innerText = state.score;
             
-            // 🔥 获取激光的精确起始坐标
             const combatArea = document.getElementById('combat-area');
             const combatRect = combatArea.getBoundingClientRect();
             const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
             const sX = muzzle.left + muzzle.width / 2 - combatRect.left;
             const sY = muzzle.top + muzzle.height / 2 - combatRect.top;
             
-            // 将这道激光加入飞行队列
-            state.lasers.push({
-                sX: sX, sY: sY,
-                target: hitTarget,
-                progress: 0
-            });
+            state.lasers.push({ sX: sX, sY: sY, target: hitTarget, progress: 0 });
             playSound('laser');
-            
-            // 选定目标后，可以选择是否需要玩家重新拨盘。这里我们保留拨盘状态。
         } else {
+            state.combo = 0; // 连击清零
             playSound('wrong');
             triggerWrongVisual(); 
         }
@@ -686,27 +689,37 @@
         if (!state.isPlaying) return;
         
         let now = Date.now();
+        
+        // 🔥 处理 5 分钟计时器
+        if (now - state.lastTimerTick >= 1000) {
+            state.timeLeft--;
+            state.lastTimerTick = now;
+            document.getElementById('ui-time').innerText = formatTime(state.timeLeft);
+            if (state.timeLeft <= 0) {
+                endGame();
+                return;
+            }
+        }
+
         // 每 5 秒生成新怪物
         if (now - state.lastSpawnTime > 5000) {
             spawnTarget();
             state.lastSpawnTime = now;
         }
 
-        // 1. 移动怪物
         for (let i = state.targets.length - 1; i >= 0; i--) {
             let t = state.targets[i];
             t.x += t.speed;
             t.element.style.right = t.x + 'vw';
             
-            // 成功逃跑
             if (t.x > 105) { 
                 t.element.remove();
                 state.targets.splice(i, 1);
-                updateDialsForTargets(); // 刷新刻度盘
+                state.combo = 0; // 🔥 怪物逃跑，连击清零
+                updateDialsForTargets();
             }
         }
         
-        // 2. 绘制和更新激光
         const combatArea = document.getElementById('combat-area');
         const combatRect = combatArea.getBoundingClientRect();
         
@@ -719,11 +732,9 @@
 
         for (let i = state.lasers.length - 1; i >= 0; i--) {
             let l = state.lasers[i];
-            l.progress += 0.08; // 激光飞行速度
+            l.progress += 0.08; 
 
-            // 动态获取目标当前位置（因为怪物在移动）
             if(!document.body.contains(l.target.element)){
-                // 目标如果正好逃跑了，激光消失
                 state.lasers.splice(i, 1);
                 continue;
             }
@@ -731,35 +742,24 @@
             let tX = enemyRect.left + enemyRect.width / 2 - combatRect.left;
             let tY = enemyRect.top + enemyRect.height / 2 - combatRect.top;
 
-            // 计算激光当前的头和尾
             let currX = l.sX + (tX - l.sX) * l.progress;
             let currY = l.sY + (tY - l.sY) * l.progress;
             
-            // 激光尾巴长度约束 (0.15 决定了光束的长短)
             let tailP = Math.max(0, l.progress - 0.15);
             let tailX = l.sX + (tX - l.sX) * tailP;
             let tailY = l.sY + (tY - l.sY) * tailP;
 
-            // 绘制绿色短束激光
-            ctx.beginPath();
-            ctx.moveTo(tailX, tailY);
-            ctx.lineTo(currX, currY);
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = "#39ff14"; // 纯绿色
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "#39ff14";
-            ctx.lineCap = "round";
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(tailX, tailY); ctx.lineTo(currX, currY);
+            ctx.lineWidth = 8; ctx.strokeStyle = "#39ff14"; 
+            ctx.shadowBlur = 15; ctx.shadowColor = "#39ff14";
+            ctx.lineCap = "round"; ctx.stroke();
 
-            // 击中目标
             if (l.progress >= 1) {
                 l.target.element.classList.add('fade-out-fast');
                 triggerExplosionAt(l.target.element);
                 
                 let tIdx = state.targets.indexOf(l.target);
-                if (tIdx !== -1) {
-                    state.targets.splice(tIdx, 1);
-                }
+                if (tIdx !== -1) state.targets.splice(tIdx, 1);
                 
                 setTimeout(() => {
                     if(l.target.element) l.target.element.remove();
@@ -779,11 +779,9 @@
         osc.connect(g); g.connect(actx.destination);
         
         if(type === 'select'){ 
-            osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(600, actx.currentTime); 
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, actx.currentTime); 
             osc.frequency.exponentialRampToValueAtTime(1200, actx.currentTime + 0.1);
-            g.gain.setValueAtTime(0.3, actx.currentTime); 
-            g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
+            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
             osc.start(); osc.stop(actx.currentTime + 0.1);
         }
         else if(type === 'mech'){ 
