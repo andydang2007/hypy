@@ -20,7 +20,6 @@
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #000;
-            /* 🔥 星空 PNG */
             background-image: url("starspace.png");
             background-size: cover;
             background-position: center;
@@ -42,7 +41,6 @@
 
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         
-        /* 🔥 画布回到相对坐标系，尺寸由 JS 精确接管 */
         #laser-canvas { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             pointer-events: none; z-index: 50; 
@@ -64,7 +62,7 @@
         }
         .shake-screen { animation: shake-screen 0.2s; animation-iteration-count: 1; }
 
-        /* 🚀 飞船容器：100x100 方盒，完美旋转轴心 */
+        /* 飞船容器 */
         #spaceship-container { 
             position: absolute; left: 30px; top: 50%; 
             width: 100px; height: 100px;
@@ -78,7 +76,6 @@
             pointer-events: none; filter: contrast(1.8) brightness(0.8); 
         }
 
-        /* 🔥 隐形几何炮口：盒子正上方 = 旋转后的机头前沿 */
         #laser-muzzle { position: absolute; top: 0; left: 50%; width: 1px; height: 1px; pointer-events: none; }
 
         .ship-core {
@@ -103,24 +100,24 @@
         }
         @keyframes pointDown { from { top: -55px; } to { top: -40px; } }
 
-        #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; transition: opacity 0.1s ease-out, transform 0.1s ease-out;}
-        
+        /* 多目标怪物容器 */
         .enemy-container {
+            position: absolute;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 8; transition: opacity 0.1s ease-out, transform 0.1s ease-out;
         }
         .enemy-text { 
             font-size: 32px; font-weight: 900; color: #fff; 
             text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow); 
             margin-bottom: 2px; z-index: 2;
         }
-        /* 🔥 monster 修正 */
         .enemy-img {
             width: 65px; height: 65px; object-fit: contain;
             mix-blend-mode: screen; filter: contrast(1.2);
         }
-
         .fade-out-fast { opacity: 0 !important; transform: translateY(-50%) scale(0.01) !important; }
 
+        /* 爆炸动画 */
         .explosion-effect-container { position: fixed; width: 150px; height: 150px; pointer-events: none; z-index: 60; mix-blend-mode: screen; }
         .explosion-layer {
             position: absolute; width: 100%; height: 100%;
@@ -177,7 +174,6 @@
         #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
-        
         .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 60px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
         .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
@@ -231,13 +227,6 @@
                 <span class="hud-text" id="hud-display"></span>
             </div>
         </div>
-
-        <div id="target-mover">
-            <div class="enemy-container" id="target-container">
-                <div class="enemy-text" id="target-char">🎯</div>
-                <img class="enemy-img" src="monster.jpg" alt="monster">
-            </div>
-        </div>
     </div>
 
     <div class="dashboard">
@@ -269,6 +258,8 @@
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
     
     const SHIPS = ['spaceship1.jpg', 'spaceship2.jpg', 'spaceship3.jpg'];
+    // 🔥 五大随机怪物图库
+    const MONSTERS = ['monster1.jpg', 'monster2.jpg', 'monster3.jpg', 'monster4.jpg', 'monster5.jpg'];
     let currentShipIdx = 0;
 
     function selectShip(idx) {
@@ -287,10 +278,12 @@
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
     let DB_WORDS = [];
+    
     let state = {
-        score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, dialsTouched: false,
+        score: 0, isPlaying: false, hatRemoved: false, dialsTouched: false,
         i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
-        targetX: -20, targetSpeed: 0.05, targetActive: false 
+        targets: [], targetIdCounter: 0, lastSpawnTime: 0,
+        lasers: [] // 管理正在飞行的绿色短束激光
     };
 
     let actx = null;
@@ -351,9 +344,20 @@
         
         document.getElementById('player-ship-img').src = SHIPS[currentShipIdx];
         document.getElementById('overlay').style.display = 'none';
+        
         state.score = 0; state.isPlaying = true;
+        state.targets = []; state.targetIdCounter = 0; state.lasers = [];
+        state.dialsTouched = false;
+        state.lastSpawnTime = 0; 
+        
         document.getElementById('ui-score').innerText = '0';
-        nextTarget();
+        document.querySelectorAll('.enemy-container').forEach(el => el.remove());
+
+        buildGauge('i', getFixedOpts('', ALL_INITIALS));
+        buildGauge('f', getFixedOpts('', ALL_FINALS));
+        buildGauge('t', ALL_TONES);
+        
+        updateHUD();
         gameLoop();
     }
 
@@ -363,22 +367,63 @@
         return res.sort(() => 0.5-Math.random());
     }
 
-    function nextTarget() {
-        if (!DB_WORDS.length) return;
-        state.currentTarget = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
-        state.targetX = -10;
-        state.targetActive = true;
-        state.hatRemoved = false;
-        
-        state.dialsTouched = false;
-        document.getElementById('target-mover').classList.remove('fade-out-fast');
+    function fillOptionsSmartly(type, neededSet, allArr) {
+        let currentOpts = state[type].opts || [];
+        if (currentOpts.length !== 5) {
+            let arr = Array.from(neededSet);
+            let available = allArr.filter(x => !arr.includes(x)).sort(() => 0.5 - Math.random());
+            while(arr.length < 5) arr.push(available.pop());
+            return arr.sort(() => 0.5 - Math.random());
+        }
 
-        state.targetSpeed = 0.04 + Math.random() * 0.03; 
-        document.getElementById('target-char').innerText = state.currentTarget.char;
+        let needed = Array.from(neededSet);
+        let newOpts = [...currentOpts];
+        let missing = needed.filter(n => !newOpts.includes(n));
+        let replaceableIndices = newOpts.map((val, idx) => !needed.includes(val) ? idx : -1).filter(idx => idx !== -1);
+
+        while (missing.length > 0 && replaceableIndices.length > 0) {
+            newOpts[replaceableIndices.shift()] = missing.shift();
+        }
+
+        let available = allArr.filter(x => !newOpts.includes(x) && !needed.includes(x)).sort(() => 0.5 - Math.random());
+        while (replaceableIndices.length > 0 && available.length > 0) {
+            newOpts[replaceableIndices.shift()] = available.shift();
+        }
+        return newOpts;
+    }
+
+    function updateDialsForTargets() {
+        let iSet = new Set(state.targets.map(t => t.word.i));
+        let fSet = new Set(state.targets.map(t => t.word.f));
+        buildGauge('i', fillOptionsSmartly('i', iSet, ALL_INITIALS));
+        buildGauge('f', fillOptionsSmartly('f', fSet, ALL_FINALS));
+    }
+
+    function spawnTarget() {
+        if (!DB_WORDS.length) return;
+        let word = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
+        let id = 'target-' + state.targetIdCounter++;
         
-        buildGauge('i', getFixedOpts(state.currentTarget.i, ALL_INITIALS));
-        buildGauge('f', getFixedOpts(state.currentTarget.f, ALL_FINALS));
-        buildGauge('t', ALL_TONES); 
+        let speed = (0.04 + Math.random() * 0.03) * 0.75; 
+        let top = 15 + Math.random() * 70;
+        
+        // 🔥 随机从五个怪物里抽一个
+        let randomMonsterImg = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
+
+        let div = document.createElement('div');
+        div.id = id;
+        div.className = 'enemy-container';
+        div.style.top = top + '%';
+        div.style.right = '-100px';
+
+        div.innerHTML = `
+            <div class="enemy-text">${word.char}</div>
+            <img class="enemy-img" src="${randomMonsterImg}" alt="monster">
+        `;
+        document.getElementById('combat-area').appendChild(div);
+
+        state.targets.push({ id: id, word: word, x: -10, y: top, speed: speed, element: div, isTargeted: false });
+        updateDialsForTargets();
     }
 
     function buildGauge(type, opts) {
@@ -389,36 +434,31 @@
         state[type].step = (maxAngle - minAngle) / (N - 1);
         
         const origin = document.getElementById(`origin-${type}`);
-        const boxH = document.getElementById(`box-${type}`).offsetHeight;
-        const R_TEXT = boxH * 0.85; 
-        const R_TICK = R_TEXT - 22; 
+        
+        if (origin.innerHTML.trim() === '') {
+            const boxH = document.getElementById(`box-${type}`).offsetHeight;
+            const R_TEXT = boxH * 0.85; 
+            const R_TICK = R_TEXT - 22; 
 
-        let ptrHTML = `
-            <div class="gauge-pointer-wrapper" id="ptr-${type}">
-                <div class="gauge-pointer"></div>
-            </div>`;
-            
-        let html = '';
-        opts.forEach((o, idx) => {
-            let A = minAngle + idx * state[type].step;
-            html += `
-            <div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${A}deg) translateY(${-R_TICK}px);">
-                <div class="gauge-tick" id="tick-${type}-${idx}"></div>
-            </div>`;
-            html += `
-            <div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${A}deg) translateY(${-R_TEXT}px);">
-                <div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${-A}deg);">${o}</div>
-            </div>`;
-        });
-        
-        origin.innerHTML = ptrHTML + html;
-        state[type].angle = 0; 
-        const ptr = document.getElementById(`ptr-${type}`);
-        ptr.style.transition = 'none';
-        ptr.style.transform = `rotate(${state[type].angle}deg)`;
-        
+            let ptrHTML = `<div class="gauge-pointer-wrapper" id="ptr-${type}"><div class="gauge-pointer"></div></div>`;
+            let html = '';
+            opts.forEach((o, idx) => {
+                html += `<div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${minAngle + idx * state[type].step}deg) translateY(${-R_TICK}px);"><div class="gauge-tick" id="tick-${type}-${idx}"></div></div>`;
+                html += `<div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${minAngle + idx * state[type].step}deg) translateY(${-R_TEXT}px);"><div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${-(minAngle + idx * state[type].step)}deg);">${o}</div></div>`;
+            });
+            origin.innerHTML = ptrHTML + html;
+            state[type].angle = 0; 
+            const ptr = document.getElementById(`ptr-${type}`);
+            ptr.style.transition = 'none';
+            ptr.style.transform = `rotate(${state[type].angle}deg)`;
+            setupGaugeInteraction(type);
+        } else {
+            opts.forEach((o, idx) => {
+                let item = document.getElementById(`item-${type}-${idx}`);
+                if(item) item.innerText = o;
+            });
+        }
         updateGaugeVisuals(type);
-        setupGaugeInteraction(type);
     }
 
     function setupGaugeInteraction(type) {
@@ -562,12 +602,10 @@
     }
 
     function handleFireClick() {
-        if (!state.isPlaying || !state.targetActive) return;
+        if (!state.isPlaying) return;
         
-        if (!state.dialsTouched) {
-            state.dialsTouched = true;
-            updateHUD();
-        }
+        // 🔥 空枪保护绝对静默：如果一局开始或者刚打完，没碰旋钮直接开火，完全无视指令
+        if (!state.dialsTouched) return; 
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             playSound('wrong');
@@ -577,27 +615,45 @@
             return;
         }
 
-        drawLaser();
-        if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
-            state.targetActive = false;
-            state.score += 10; document.getElementById('ui-score').innerText = state.score;
+        let iVal = getVal('i'), fVal = getVal('f'), tVal = getVal('t');
+        
+        // 扫描怪物寻找匹配目标
+        let hitIndex = state.targets.findIndex(t => t.word.i === iVal && t.word.f === fVal && t.word.t === tVal && !t.isTargeted);
+
+        if (hitIndex !== -1) {
+            let hitTarget = state.targets[hitIndex];
+            hitTarget.isTargeted = true; // 锁定目标，防止多发激光重复打一个
+            state.score += 10; 
+            document.getElementById('ui-score').innerText = state.score;
             
-            document.getElementById('target-mover').classList.add('fade-out-fast');
-            triggerExplosion();
+            // 🔥 获取激光的精确起始坐标
+            const combatArea = document.getElementById('combat-area');
+            const combatRect = combatArea.getBoundingClientRect();
+            const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
+            const sX = muzzle.left + muzzle.width / 2 - combatRect.left;
+            const sY = muzzle.top + muzzle.height / 2 - combatRect.top;
             
-            setTimeout(nextTarget, 600);
+            // 将这道激光加入飞行队列
+            state.lasers.push({
+                sX: sX, sY: sY,
+                target: hitTarget,
+                progress: 0
+            });
+            playSound('laser');
+            
+            // 选定目标后，可以选择是否需要玩家重新拨盘。这里我们保留拨盘状态。
         } else {
             playSound('wrong');
             triggerWrongVisual(); 
         }
     }
 
-    function triggerExplosion() {
+    function triggerExplosionAt(targetElement) {
         const combatArea = document.getElementById('combat-area');
         combatArea.classList.add('shake-screen');
         setTimeout(() => combatArea.classList.remove('shake-screen'), 200);
 
-        const targetRect = document.getElementById('target-container').getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
         const cx = targetRect.left + targetRect.width / 2;
         const cy = targetRect.top + targetRect.height / 2;
 
@@ -628,41 +684,93 @@
 
     function gameLoop() {
         if (!state.isPlaying) return;
-        if (state.targetActive) {
-            state.targetX += state.targetSpeed;
-            document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            if (state.targetX > 105) { 
-                state.targetActive = false; 
-                playSound('wrong'); 
-                triggerWrongVisual(); 
-                setTimeout(nextTarget, 1000); 
+        
+        let now = Date.now();
+        // 每 5 秒生成新怪物
+        if (now - state.lastSpawnTime > 5000) {
+            spawnTarget();
+            state.lastSpawnTime = now;
+        }
+
+        // 1. 移动怪物
+        for (let i = state.targets.length - 1; i >= 0; i--) {
+            let t = state.targets[i];
+            t.x += t.speed;
+            t.element.style.right = t.x + 'vw';
+            
+            // 成功逃跑
+            if (t.x > 105) { 
+                t.element.remove();
+                state.targets.splice(i, 1);
+                updateDialsForTargets(); // 刷新刻度盘
             }
         }
-        requestAnimationFrame(gameLoop);
-    }
-
-    function drawLaser() {
+        
+        // 2. 绘制和更新激光
         const combatArea = document.getElementById('combat-area');
         const combatRect = combatArea.getBoundingClientRect();
         
-        // 🔥 画布严格贴合 combat-area 的尺寸，不被污染
-        canvas.width = combatRect.width; 
-        canvas.height = combatRect.height;
-        
-        const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
-        // 🔥 降维计算：绝对屏幕坐标 减去 战斗区域坐标 = 纯粹相对坐标
-        const sX = muzzle.left + muzzle.width / 2 - combatRect.left;
-        const sY = muzzle.top + muzzle.height / 2 - combatRect.top;
-        
-        const enemy = document.getElementById('target-container').getBoundingClientRect();
-        const tX = enemy.left + enemy.width / 2 - combatRect.left;
-        const tY = enemy.top + enemy.height / 2 - combatRect.top;
+        if (canvas.width !== combatRect.width || canvas.height !== combatRect.height) {
+            canvas.width = combatRect.width;
+            canvas.height = combatRect.height;
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
-        ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
-        ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
-        ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
-        playSound('laser');
-        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
+        for (let i = state.lasers.length - 1; i >= 0; i--) {
+            let l = state.lasers[i];
+            l.progress += 0.08; // 激光飞行速度
+
+            // 动态获取目标当前位置（因为怪物在移动）
+            if(!document.body.contains(l.target.element)){
+                // 目标如果正好逃跑了，激光消失
+                state.lasers.splice(i, 1);
+                continue;
+            }
+            let enemyRect = l.target.element.getBoundingClientRect();
+            let tX = enemyRect.left + enemyRect.width / 2 - combatRect.left;
+            let tY = enemyRect.top + enemyRect.height / 2 - combatRect.top;
+
+            // 计算激光当前的头和尾
+            let currX = l.sX + (tX - l.sX) * l.progress;
+            let currY = l.sY + (tY - l.sY) * l.progress;
+            
+            // 激光尾巴长度约束 (0.15 决定了光束的长短)
+            let tailP = Math.max(0, l.progress - 0.15);
+            let tailX = l.sX + (tX - l.sX) * tailP;
+            let tailY = l.sY + (tY - l.sY) * tailP;
+
+            // 绘制绿色短束激光
+            ctx.beginPath();
+            ctx.moveTo(tailX, tailY);
+            ctx.lineTo(currX, currY);
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = "#39ff14"; // 纯绿色
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#39ff14";
+            ctx.lineCap = "round";
+            ctx.stroke();
+
+            // 击中目标
+            if (l.progress >= 1) {
+                l.target.element.classList.add('fade-out-fast');
+                triggerExplosionAt(l.target.element);
+                
+                let tIdx = state.targets.indexOf(l.target);
+                if (tIdx !== -1) {
+                    state.targets.splice(tIdx, 1);
+                }
+                
+                setTimeout(() => {
+                    if(l.target.element) l.target.element.remove();
+                    updateDialsForTargets();
+                }, 100);
+                
+                state.lasers.splice(i, 1);
+            }
+        }
+        
+        requestAnimationFrame(gameLoop);
     }
 
     function playSound(type) {
