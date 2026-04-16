@@ -41,7 +41,6 @@
         .stat-label { font-size: 12px; color: var(--accent-glow); font-weight: bold; letter-spacing: 2px; }
         .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
 
-        /* ⚔️ 战斗区域 */
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
@@ -61,7 +60,7 @@
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
         @keyframes pulseRed { from { transform: scale(1); } to { transform: scale(1.05); } }
 
-        /* 👇 脱帽手指提示 */
+        /* 👇 脱帽手指 */
         #finger-hint {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
             font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
@@ -79,99 +78,80 @@
         }
         .enemy-text { transform: rotate(-45deg); font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* 🎛️ 仪表盘底座 */
+        /* 🎛️ 仪表盘 */
         .dashboard {
             height: 25vh; min-height: 180px; 
             background: linear-gradient(to bottom, #1e293b, #0f172a); 
             border-top: 4px solid #334155;
-            display: flex; justify-content: center; align-items: flex-end; gap: 3vw; border-radius: 30px 30px 0 0;
+            display: flex; justify-content: center; align-items: flex-end; gap: 2vw; border-radius: 30px 30px 0 0;
             box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -15px 40px rgba(0,0,0,0.8);
             padding: 0 2vw 15px 2vw;
         }
 
-        /* 🔥 长方形宽大仪表模块 */
         .gauge-unit {
-            position: relative;
-            height: 140px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #334155;
-            border-radius: 20px 20px 40px 40px;
+            position: relative; height: 140px; background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #334155; border-radius: 20px 20px 40px 40px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5);
-            overflow: hidden;
-            cursor: grab;
+            overflow: hidden; cursor: grab;
         }
         .gauge-unit:active { cursor: grabbing; }
 
-        /* 声母、韵母做得更宽 */
-        #box-i, #box-f { flex: 1.2; max-width: 240px; }
-        /* 声调选择少，窄一点 */
-        #box-t { flex: 0.8; max-width: 160px; }
+        /* 🔥 非对称宽度分配：让韵母(f)极度宽广，放得下 iang */
+        #box-i { flex: 1.1; max-width: 200px; }
+        #box-f { flex: 1.8; max-width: 380px; } 
+        #box-t { flex: 0.8; max-width: 140px; }
 
-        /* 弧形透明玻璃窗 */
         .gauge-glass {
             position: absolute; top: 10px; left: 10px; right: 10px; height: 90px;
             background: radial-gradient(ellipse at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
             border-top: 2px solid rgba(0, 240, 255, 0.2);
-            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-            pointer-events: none; z-index: 1;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0; pointer-events: none; z-index: 1;
         }
 
-        /* 刻度盘原点下沉，创造“平缓大弧度” */
+        /* 原点统一锚定在底部下方 30px 处，确保文字和指针完美同心同轴 */
         .gauge-origin {
-            position: absolute; bottom: 0px; left: 50%;
+            position: absolute; bottom: -30px; left: 50%;
             width: 0; height: 0; z-index: 2;
         }
 
-        /* 固定的刻度文字 */
         .gauge-item {
-            position: absolute; 
-            display: flex; justify-content: center; align-items: center; 
+            position: absolute; display: flex; justify-content: center; align-items: center; 
             font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap;
             text-shadow: 1px 1px 2px #000; transition: 0.2s;
         }
-        .gauge-item.active {
-            font-size: 26px; font-weight: 900; color: #00f0ff; 
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
-            filter: drop-shadow(0 2px 2px #000);
-        }
+        .gauge-item.active { font-size: 26px; font-weight: 900; color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.8); filter: drop-shadow(0 2px 2px #000); }
 
-        /* 发光刻度小点 */
         .gauge-tick {
             position: absolute; width: 4px; height: 8px; background: #475569;
             transform-origin: bottom center; border-radius: 2px;
         }
         .gauge-tick.active { background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
 
-        /* 🔥 极短实体指针，绝不遮挡字母 */
+        /* 🔥 极光悬浮指针，底部彻底透明化 */
         .gauge-pointer {
-            position: absolute; bottom: 15px; left: 50%;
-            width: 4px; height: 50px; /* 大幅改短 */
-            background: linear-gradient(to top, transparent 5%, #ff003c 80%, #ff003c 100%);
+            position: absolute; bottom: -30px; left: 50%;
+            width: 4px; height: 110px; 
+            background: linear-gradient(to top, transparent 40%, #ff003c 75%, #ff003c 100%);
             transform-origin: bottom center; transform: translateX(-50%) rotate(0deg);
-            z-index: 10; filter: drop-shadow(0 0 6px #ff003c);
-            pointer-events: none;
+            z-index: 10; filter: drop-shadow(0 0 6px #ff003c); pointer-events: none;
         }
         .gauge-pointer::after {
             content: ''; position: absolute; top: -3px; left: -3px; width: 10px; height: 10px;
             background: #ff003c; border-radius: 50%; box-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
         }
 
-        /* 底部物理控制大旋钮，稍微下沉露出一半 */
         .gauge-knob {
             position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
             width: 60px; height: 60px; border-radius: 50%;
-            background: radial-gradient(circle, #e2e8f0, #64748b);
-            border: 2px solid #0f172a;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.8), inset 0 -3px 5px rgba(0,0,0,0.3);
-            z-index: 15; pointer-events: none;
+            background: radial-gradient(circle, #e2e8f0, #64748b); border: 2px solid #0f172a;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.8), inset 0 -3px 5px rgba(0,0,0,0.3); z-index: 15; pointer-events: none;
         }
         .gauge-knob::after {
             content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
             border-radius: 50%; border: 1px solid rgba(0,0,0,0.3); box-shadow: inset 0 2px 4px rgba(255,255,255,0.4);
         }
 
-        /* FIRE 按钮 */
-        .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px;}
+        .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; margin-left: 2vw;}
         #btn-fire-action {
             width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
@@ -180,11 +160,8 @@
             box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.8);
             text-shadow: -1px -1px 0 rgba(0,0,0,0.4);
         }
-        #btn-fire-action:active { 
-            transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d);
-        }
+        #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
-        /* Loading */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
         .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
@@ -202,7 +179,7 @@
             .game-title { font-size: 5vw; gap: 10px; } .psle-cap { font-size: 9vw; }
             .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 20vh; min-height: 140px;}
             .gauge-unit { height: 110px; }
-            .gauge-pointer { height: 40px; }
+            .gauge-pointer { height: 85px; } /* 移动端适配缩小高度 */
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
             #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
         }
@@ -238,22 +215,25 @@
     <div class="dashboard">
         <div class="gauge-unit" id="box-i">
             <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-i"></div>
-            <div class="gauge-pointer" id="ptr-i"></div>
+            <div class="gauge-origin" id="origin-i">
+                <div class="gauge-pointer" id="ptr-i"></div>
+            </div>
             <div class="gauge-knob"></div>
         </div>
         
         <div class="gauge-unit" id="box-f">
             <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-f"></div>
-            <div class="gauge-pointer" id="ptr-f"></div>
+            <div class="gauge-origin" id="origin-f">
+                <div class="gauge-pointer" id="ptr-f"></div>
+            </div>
             <div class="gauge-knob"></div>
         </div>
 
         <div class="gauge-unit" id="box-t">
             <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-t"></div>
-            <div class="gauge-pointer" id="ptr-t"></div>
+            <div class="gauge-origin" id="origin-t">
+                <div class="gauge-pointer" id="ptr-t"></div>
+            </div>
             <div class="gauge-knob"></div>
         </div>
 
@@ -364,34 +344,37 @@
         return res.sort(() => 0.5-Math.random());
     }
 
-    // 🔥 生成大平弧度刻度盘
+    // 动态获取每个转盘的扫射范围
+    function getGaugeBounds(type) {
+        // 韵母(f)容器很大，范围拉开到 -45 至 45度
+        return type === 'f' ? { min: -45, max: 45 } : { min: -35, max: 35 };
+    }
+
     function buildGauge(type, opts) {
         state[type].opts = opts;
         const N = opts.length;
-        
-        // 刻度散布缩减为 -35 到 35 度，形成极其舒展的平滑扇面
-        const minAngle = -35;
-        const maxAngle = 35;
-        state[type].step = N > 1 ? (maxAngle - minAngle) / (N - 1) : 0;
+        const bounds = getGaugeBounds(type);
+        state[type].step = N > 1 ? (bounds.max - bounds.min) / (N - 1) : 0;
         
         const origin = document.getElementById(`origin-${type}`);
-        // 增加 R 半径，把选项推到视窗上方边缘
         const boxH = document.getElementById(`box-${type}`).offsetHeight;
-        const R = boxH * 0.85; 
+        const R = boxH * 1.1; // 自适应极大的活动半径
         
+        // 保留原有的 pointer
+        const ptrHTML = `<div class="gauge-pointer" id="ptr-${type}"></div>`;
         let html = '';
         opts.forEach((o, idx) => {
-            let A = minAngle + idx * state[type].step;
+            let A = bounds.min + idx * state[type].step;
             html += `<div class="gauge-tick" id="tick-${type}-${idx}" style="transform: rotate(${A}deg) translateY(${-R - 15}px)"></div>`;
             html += `<div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${A}deg) translateY(${-R}px) rotate(${-A}deg)">${o}</div>`;
         });
         
-        origin.innerHTML = html;
+        origin.innerHTML = ptrHTML + html;
         
-        let defaultIdx = Math.round((0 - minAngle) / state[type].step);
+        let defaultIdx = Math.round((0 - bounds.min) / state[type].step);
         if (defaultIdx < 0) defaultIdx = 0;
         if (defaultIdx >= N) defaultIdx = N - 1;
-        state[type].angle = minAngle + defaultIdx * state[type].step;
+        state[type].angle = bounds.min + defaultIdx * state[type].step;
         
         const ptr = document.getElementById(`ptr-${type}`);
         ptr.style.transition = 'none';
@@ -403,6 +386,7 @@
 
     function setupGaugeInteraction(type) {
         const box = document.getElementById(`box-${type}`);
+        const bounds = getGaugeBounds(type);
         let isDragging = false, startX = 0, startAngle = 0, lastIdx = -1;
 
         const onStart = (e) => { 
@@ -418,15 +402,14 @@
             let currX = e.touches ? e.touches[0].clientX : e.clientX;
             let deltaX = currX - startX;
             
-            // 阻尼跟手换算
             let targetAngle = startAngle + deltaX * 0.8; 
-            if (targetAngle < -35) targetAngle = -35;
-            if (targetAngle > 35) targetAngle = 35;
+            if (targetAngle < bounds.min) targetAngle = bounds.min;
+            if (targetAngle > bounds.max) targetAngle = bounds.max;
             
             state[type].angle = targetAngle;
             document.getElementById(`ptr-${type}`).style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
             
-            let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
+            let activeIdx = Math.round((state[type].angle - bounds.min) / state[type].step);
             if (activeIdx !== lastIdx) {
                 if (lastIdx !== -1) playSound('mech'); 
                 lastIdx = activeIdx;
@@ -437,8 +420,8 @@
         
         const onEnd = () => { 
             if(!isDragging) return; isDragging = false; 
-            let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
-            state[type].angle = -35 + activeIdx * state[type].step;
+            let activeIdx = Math.round((state[type].angle - bounds.min) / state[type].step);
+            state[type].angle = bounds.min + activeIdx * state[type].step;
             
             const ptr = document.getElementById(`ptr-${type}`);
             ptr.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -464,13 +447,15 @@
     function updateGaugeVisuals(type) {
         const ptr = document.getElementById(`ptr-${type}`);
         ptr.style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
-        let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
+        const bounds = getGaugeBounds(type);
+        let activeIdx = Math.round((state[type].angle - bounds.min) / state[type].step);
         updateGaugeClassesOnly(type, activeIdx);
         updateHUD();
     }
 
     function getVal(type) {
-        let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
+        const bounds = getGaugeBounds(type);
+        let activeIdx = Math.round((state[type].angle - bounds.min) / state[type].step);
         if (activeIdx < 0) activeIdx = 0;
         if (activeIdx >= state[type].opts.length) activeIdx = state[type].opts.length - 1;
         return state[type].opts[activeIdx];
@@ -535,7 +520,6 @@
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
             
-            // 🔥 获取怪物当下的精准坐标，让烟花在怪物的脸上炸开！
             const targetRect = document.getElementById('target-container').getBoundingClientRect();
             const cx = (targetRect.left + targetRect.width / 2) / window.innerWidth;
             const cy = (targetRect.top + targetRect.height / 2) / window.innerHeight;
