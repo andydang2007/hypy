@@ -45,7 +45,7 @@
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-        /* 🚀 飞船 (左侧横向) */
+        /* 🚀 飞船 */
         #spaceship-container { position: absolute; left: 30px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
         .spaceship { position: relative; width: 80px; height: 50px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 30px; height: 15px; background: rgba(15, 23, 42, 0.9); top: 18px; border-bottom: 2px solid var(--accent-glow); }
@@ -61,6 +61,7 @@
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
         @keyframes pulseRed { from { transform: scale(1); } to { transform: scale(1.05); } }
 
+        /* 👇 脱帽手指提示 */
         #finger-hint {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
             font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
@@ -78,41 +79,46 @@
         }
         .enemy-text { transform: rotate(-45deg); font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* 🎛️ 全新：“雷达扫射仪表盘”区 */
+        /* 🎛️ 仪表盘底座 */
         .dashboard {
-            height: 25vh; min-height: 200px; 
+            height: 25vh; min-height: 180px; 
             background: linear-gradient(to bottom, #1e293b, #0f172a); 
             border-top: 4px solid #334155;
-            display: flex; justify-content: center; align-items: flex-end; gap: 4vw; border-radius: 30px 30px 0 0;
+            display: flex; justify-content: center; align-items: flex-end; gap: 3vw; border-radius: 30px 30px 0 0;
             box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -15px 40px rgba(0,0,0,0.8);
-            padding: 0 2vw 20px 2vw;
+            padding: 0 2vw 15px 2vw;
         }
 
-        /* 每一个独立的仪表模块 */
+        /* 🔥 长方形宽大仪表模块 */
         .gauge-unit {
             position: relative;
-            flex: 1; max-width: 170px; height: 160px;
-            background: rgba(0, 0, 0, 0.4);
+            height: 140px;
+            background: rgba(0, 0, 0, 0.5);
             border: 2px solid #334155;
-            border-radius: 15px 15px 40px 40px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 5px 10px rgba(0,0,0,0.5);
+            border-radius: 20px 20px 40px 40px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5);
             overflow: hidden;
             cursor: grab;
         }
         .gauge-unit:active { cursor: grabbing; }
 
-        /* 弧形透明玻璃窗 (装饰) */
+        /* 声母、韵母做得更宽 */
+        #box-i, #box-f { flex: 1.2; max-width: 240px; }
+        /* 声调选择少，窄一点 */
+        #box-t { flex: 0.8; max-width: 160px; }
+
+        /* 弧形透明玻璃窗 */
         .gauge-glass {
-            position: absolute; top: 10px; left: 10px; right: 10px; height: 100px;
-            background: radial-gradient(circle at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 80%);
-            border-top: 2px solid rgba(0, 240, 255, 0.3);
+            position: absolute; top: 10px; left: 10px; right: 10px; height: 90px;
+            background: radial-gradient(ellipse at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+            border-top: 2px solid rgba(0, 240, 255, 0.2);
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
             pointer-events: none; z-index: 1;
         }
 
-        /* 刻度盘原点 (位于底部旋钮中心) */
+        /* 刻度盘原点下沉，创造“平缓大弧度” */
         .gauge-origin {
-            position: absolute; bottom: 30px; left: 50%;
+            position: absolute; bottom: 0px; left: 50%;
             width: 0; height: 0; z-index: 2;
         }
 
@@ -123,53 +129,51 @@
             font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap;
             text-shadow: 1px 1px 2px #000; transition: 0.2s;
         }
-        /* 选中高亮 */
         .gauge-item.active {
             font-size: 26px; font-weight: 900; color: #00f0ff; 
             text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
             filter: drop-shadow(0 2px 2px #000);
         }
 
-        /* 刻度小点 (保证抽到空声母时也有明确的刻度位置) */
+        /* 发光刻度小点 */
         .gauge-tick {
             position: absolute; width: 4px; height: 8px; background: #475569;
             transform-origin: bottom center; border-radius: 2px;
         }
         .gauge-tick.active { background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
 
-        /* 扫射的红色实体指针 */
+        /* 🔥 极短实体指针，绝不遮挡字母 */
         .gauge-pointer {
-            position: absolute; bottom: 30px; left: 50%;
-            width: 4px; height: 95px;
-            background: linear-gradient(to top, transparent 10%, #ff003c 60%, #ff003c 100%);
+            position: absolute; bottom: 15px; left: 50%;
+            width: 4px; height: 50px; /* 大幅改短 */
+            background: linear-gradient(to top, transparent 5%, #ff003c 80%, #ff003c 100%);
             transform-origin: bottom center; transform: translateX(-50%) rotate(0deg);
             z-index: 10; filter: drop-shadow(0 0 6px #ff003c);
             pointer-events: none;
         }
-        /* 指针尖端的小圆点 */
         .gauge-pointer::after {
-            content: ''; position: absolute; top: -2px; left: -3px; width: 10px; height: 10px;
+            content: ''; position: absolute; top: -3px; left: -3px; width: 10px; height: 10px;
             background: #ff003c; border-radius: 50%; box-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
         }
 
-        /* 底部物理控制旋钮 */
+        /* 底部物理控制大旋钮，稍微下沉露出一半 */
         .gauge-knob {
-            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 40px; border-radius: 50%;
-            background: radial-gradient(circle, #f8fafc, #94a3b8);
-            border: 2px solid #1e293b;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.8), inset 0 -3px 5px rgba(0,0,0,0.3);
+            position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 60px; border-radius: 50%;
+            background: radial-gradient(circle, #e2e8f0, #64748b);
+            border: 2px solid #0f172a;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.8), inset 0 -3px 5px rgba(0,0,0,0.3);
             z-index: 15; pointer-events: none;
         }
         .gauge-knob::after {
-            content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border-radius: 50%; border: 1px solid rgba(0,0,0,0.3); box-shadow: inset 0 2px 4px rgba(255,255,255,0.4);
         }
 
-        /* 🔥 FIRE 大按钮 */
-        .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 20px;}
+        /* FIRE 按钮 */
+        .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px;}
         #btn-fire-action {
-            width: 20vw; max-width: 120px; aspect-ratio: 1; border-radius: 50%;
+            width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
             border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; 
             cursor: pointer; transition: 0.1s; letter-spacing: 2px;
@@ -196,9 +200,9 @@
 
         @media (max-width: 800px) {
             .game-title { font-size: 5vw; gap: 10px; } .psle-cap { font-size: 9vw; }
-            .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 22vh;}
-            .gauge-unit { height: 130px; }
-            .gauge-pointer { height: 75px; }
+            .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 20vh; min-height: 140px;}
+            .gauge-unit { height: 110px; }
+            .gauge-pointer { height: 40px; }
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
             #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
         }
@@ -360,41 +364,35 @@
         return res.sort(() => 0.5-Math.random());
     }
 
-    // 🔥 全新的弧形仪表盘绘制逻辑 (字不动，针动)
+    // 🔥 生成大平弧度刻度盘
     function buildGauge(type, opts) {
         state[type].opts = opts;
         const N = opts.length;
         
-        // 我们把所有选项均匀散布在 -60度 到 60度 之间 (总弧度120度)
-        const minAngle = -60;
-        const maxAngle = 60;
+        // 刻度散布缩减为 -35 到 35 度，形成极其舒展的平滑扇面
+        const minAngle = -35;
+        const maxAngle = 35;
         state[type].step = N > 1 ? (maxAngle - minAngle) / (N - 1) : 0;
         
         const origin = document.getElementById(`origin-${type}`);
-        // 动态计算文字离圆心的半径 (自适应屏幕大小)
-        const R = document.getElementById(`box-${type}`).offsetHeight * 0.55; 
+        // 增加 R 半径，把选项推到视窗上方边缘
+        const boxH = document.getElementById(`box-${type}`).offsetHeight;
+        const R = boxH * 0.85; 
         
         let html = '';
         opts.forEach((o, idx) => {
             let A = minAngle + idx * state[type].step;
-            
-            // 绘制底层的发光刻度小点 (应对空字符)
             html += `<div class="gauge-tick" id="tick-${type}-${idx}" style="transform: rotate(${A}deg) translateY(${-R - 15}px)"></div>`;
-            
-            // 绘制永远正立的文字 (巧妙利用反向 rotate 抵消)
             html += `<div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${A}deg) translateY(${-R}px) rotate(${-A}deg)">${o}</div>`;
         });
         
         origin.innerHTML = html;
         
-        // 指针默认指向正上方 (0度)，也就是最中间的选项
         let defaultIdx = Math.round((0 - minAngle) / state[type].step);
         if (defaultIdx < 0) defaultIdx = 0;
         if (defaultIdx >= N) defaultIdx = N - 1;
-        
         state[type].angle = minAngle + defaultIdx * state[type].step;
         
-        // 初始化指针位置
         const ptr = document.getElementById(`ptr-${type}`);
         ptr.style.transition = 'none';
         ptr.style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
@@ -403,7 +401,6 @@
         setupGaugeInteraction(type);
     }
 
-    // 🔥 全新滑动手感逻辑 (左右横滑控制指针)
     function setupGaugeInteraction(type) {
         const box = document.getElementById(`box-${type}`);
         let isDragging = false, startX = 0, startAngle = 0, lastIdx = -1;
@@ -421,17 +418,15 @@
             let currX = e.touches ? e.touches[0].clientX : e.clientX;
             let deltaX = currX - startX;
             
-            // 线性映射：手指横向移动 1px，指针转动 1.2度 (超级跟手)
-            let targetAngle = startAngle + deltaX * 1.2; 
-            
-            // 限制指针摆动范围在 -60 到 60 之间
-            if (targetAngle < -60) targetAngle = -60;
-            if (targetAngle > 60) targetAngle = 60;
+            // 阻尼跟手换算
+            let targetAngle = startAngle + deltaX * 0.8; 
+            if (targetAngle < -35) targetAngle = -35;
+            if (targetAngle > 35) targetAngle = 35;
             
             state[type].angle = targetAngle;
             document.getElementById(`ptr-${type}`).style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
             
-            let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
+            let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
             if (activeIdx !== lastIdx) {
                 if (lastIdx !== -1) playSound('mech'); 
                 lastIdx = activeIdx;
@@ -442,10 +437,8 @@
         
         const onEnd = () => { 
             if(!isDragging) return; isDragging = false; 
-            
-            // 松手瞬间：弹簧吸附到最近的刻度槽 (段落感)
-            let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
-            state[type].angle = -60 + activeIdx * state[type].step;
+            let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
+            state[type].angle = -35 + activeIdx * state[type].step;
             
             const ptr = document.getElementById(`ptr-${type}`);
             ptr.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -471,13 +464,13 @@
     function updateGaugeVisuals(type) {
         const ptr = document.getElementById(`ptr-${type}`);
         ptr.style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
-        let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
+        let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
         updateGaugeClassesOnly(type, activeIdx);
         updateHUD();
     }
 
     function getVal(type) {
-        let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
+        let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
         if (activeIdx < 0) activeIdx = 0;
         if (activeIdx >= state[type].opts.length) activeIdx = state[type].opts.length - 1;
         return state[type].opts[activeIdx];
@@ -541,7 +534,13 @@
         if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            confetti({ particleCount: 40, origin: { x: 0.8, y: 0.5 }, colors:['#39ff14','#00f0ff','#fff'] });
+            
+            // 🔥 获取怪物当下的精准坐标，让烟花在怪物的脸上炸开！
+            const targetRect = document.getElementById('target-container').getBoundingClientRect();
+            const cx = (targetRect.left + targetRect.width / 2) / window.innerWidth;
+            const cy = (targetRect.top + targetRect.height / 2) / window.innerHeight;
+            
+            confetti({ particleCount: 60, spread: 60, origin: { x: cx, y: cy }, colors:['#39ff14','#00f0ff','#fff'] });
             setTimeout(nextTarget, 1000);
         } else {
             playSound('wrong');
