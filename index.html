@@ -19,8 +19,8 @@
             margin: 0; padding: 0; color: #fff; 
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-            background-color: #050505;
-            /* 🔥 星空背景格式改为 .png */
+            background-color: #000;
+            /* 确保你的星空图片名为 starspace.jpg 与下面一致 */
             background-image: url("starspace.png");
             background-size: cover;
             background-position: center;
@@ -31,9 +31,8 @@
 
         header {
             display: flex; justify-content: flex-end; align-items: center;
-            padding: 10px 20px; background: rgba(5, 5, 5, 0.7); backdrop-filter: blur(5px);
+            padding: 10px 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
             border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
@@ -43,101 +42,73 @@
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-        /* 🔥 战斗区域屏幕抖动效果，击中目标时添加 */
-        @keyframes shake-screen {
-            0% { transform: translate(1px, 1px); }
-            10% { transform: translate(-1px, -1px); }
-            20% { transform: translate(-3px, 0px); }
-            30% { transform: translate(3px, 2px); }
-            40% { transform: translate(1px, -1px); }
-            50% { transform: translate(-1px, 2px); }
-            60% { transform: translate(-3px, 1px); }
-            70% { transform: translate(3px, 1px); }
-            80% { transform: translate(-1px, -1px); }
-            90% { transform: translate(1px, 2px); }
-            100% { transform: translate(0px, 0px); }
-        }
-        .shake-screen {
-            animation: shake-screen 0.2s;
-            animation-iteration-count: 1;
-        }
-
-        /* 🚀 飞船容器 */
+        /* 🚀 飞船“黑盒”容器：100x100 正方形确保旋转轴心完美 */
         #spaceship-container { 
             position: absolute; left: 30px; top: 50%; 
+            width: 100px; height: 100px;
             transform: translateY(-50%) rotate(90deg); 
             z-index: 10; display: flex; justify-content: center; align-items: center;
+            mix-blend-mode: screen; 
         }
         
-        /* 🔥 飞船图片：移除发光阴影，彻底消除幽灵方框，强力压黑背景 */
         #player-ship-img {
-            width: 100px; height: 100px; object-fit: contain;
-            mix-blend-mode: screen; 
+            width: 100%; height: 100%; object-fit: contain;
             pointer-events: none;
-            filter: contrast(1.8) brightness(0.6); 
+            filter: contrast(1.8) brightness(0.8);
         }
 
-        /* 绝对居中的隐形炮口，位于图片的顶部中心（旋转后即为右侧鼻端） */
+        /* 🔥 隐形的绝对居中炮口：放在黑盒子的正上方。当盒子旋转90度时，它就是机头正前方！ */
         #laser-muzzle {
-            position: absolute; top: 0; left: 50%;
+            position: absolute;
+            top: 0; /* 黑盒子的正上方边缘 */
+            left: 50%; /* 水平居中 */
+            transform: translateX(-50%);
             width: 1px; height: 1px;
             pointer-events: none;
         }
 
-        /* 矩形的科幻全息拼音框 */
+        /* 矩形全息拼音框：悬浮在飞船后方 */
         .ship-core {
             position: absolute; 
             top: 50%; left: -65px; 
             transform: translate(-50%, -50%) rotate(-90deg); 
-            min-width: 65px; height: 38px; padding: 0 12px;
-            background: rgba(5,5,5,0.75); 
-            border: 2px solid var(--accent-glow); border-radius: 6px;
+            min-width: 70px; height: 38px; padding: 0 10px;
+            background: rgba(0,0,0,0.8); 
+            border: 2px solid var(--accent-glow); border-radius: 4px;
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.5); 
+            box-shadow: 0 0 15px var(--accent-glow);
             backdrop-filter: blur(4px);
         }
         
-        .hud-text { font-size: 20px; font-weight: 900; color: #fff; font-family: sans-serif; white-space: nowrap;}
-        .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
-        @keyframes pulseRed { from { transform: translate(-50%, -50%) rotate(-90deg) scale(1); } to { transform: translate(-50%, -50%) rotate(-90deg) scale(1.1); } }
+        .hud-text { font-size: 18px; font-weight: 900; color: #fff; font-family: sans-serif; white-space: nowrap;}
+        .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 20px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
+        @keyframes pulseRed { from { opacity: 0.7; } to { opacity: 1; } }
 
         #finger-hint {
-            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
-            font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
-            animation: pointDown 0.6s infinite alternate cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            display: none; z-index: 20; pointer-events: none;
+            position: absolute; top: -55px; left: 50%; transform: translateX(-50%);
+            font-size: 40px; animation: pointDown 0.5s infinite alternate;
+            display: none; z-index: 20;
         }
-        @keyframes pointDown { from { top: -50px; } to { top: -35px; } }
+        @keyframes pointDown { from { top: -55px; } to { top: -40px; } }
 
-        #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; transition: opacity 0.1s ease, transform 0.1s ease;}
+        /* 👾 怪物 */
+        #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; }
         .enemy-target {
-            width: 45px; height: 45px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.5);
+            width: 50px; height: 50px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 2px solid #fff;
             transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1); backdrop-filter: blur(4px);
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
         }
-        .enemy-text { transform: rotate(-45deg); font-size: 24px; font-weight: 900; color: #fff; }
+        .enemy-text { transform: rotate(-45deg); font-size: 28px; font-weight: 900; color: #fff; }
 
-        /* 🔥 目标被击中时的快速淡出和缩小动画，实现“目标消失快” */
-        .fade-out-fast {
-            opacity: 0 !important;
-            transform: translateY(-50%) scale(0.1) !important;
-        }
-
-        /* 🔥 震撼的爆炸动画容器，包含多个图层叠加，实现“爆炸效果明显” */
-        .explosion-effect-container {
-            position: absolute; width: 150px; height: 150px;
-            pointer-events: none; z-index: 30; mix-blend-mode: screen;
-        }
-        /* 爆炸动画层，使用PNG格式支持透明背景 */
-        .explosion-layer {
-            position: absolute; width: 100%; height: 100%;
+        /* 💥 爆炸动画：确保名称为 explosion.png */
+        .explosion-effect {
+            position: absolute; width: 140px; height: 140px;
             background-image: url("explosion.png");
             background-size: contain; background-repeat: no-repeat; background-position: center;
-            opacity: 0;
-            animation: boomScaleLayers 0.6s ease-out forwards;
+            pointer-events: none; z-index: 30; mix-blend-mode: screen;
+            animation: boomScale 0.5s ease-out forwards;
         }
-        /* 核心缩放淡出动画 */
-        @keyframes boomScaleLayers {
+        @keyframes boomScale {
             0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
         }
@@ -148,109 +119,60 @@
             background: linear-gradient(to bottom, #1e293b, #0f172a); 
             border-top: 4px solid #334155;
             display: flex; justify-content: center; align-items: flex-end; gap: 3vw; border-radius: 30px 30px 0 0;
-            box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -15px 40px rgba(0,0,0,0.8);
             padding: 0 2vw 15px 2vw;
         }
 
         .gauge-unit {
             position: relative; flex: 1; max-width: 220px; height: 140px;
             background: rgba(0, 0, 0, 0.5); border: 2px solid #334155; border-radius: 20px 20px 40px 40px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 5px 10px rgba(0,0,0,0.5);
-            overflow: hidden; cursor: grab;
-        }
-        .gauge-unit:active { cursor: grabbing; }
-
-        #box-i, #box-f { flex: 1.2; max-width: 240px; }
-        #box-t { flex: 0.8; max-width: 160px; }
-
-        .gauge-glass {
-            position: absolute; top: 10px; left: 10px; right: 10px; height: 90px;
-            background: radial-gradient(ellipse at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
-            border-top: 2px solid rgba(0, 240, 255, 0.2); border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-            pointer-events: none; z-index: 1;
+            box-shadow: inset 0 0 20px #000; overflow: hidden; cursor: grab;
         }
 
-        .gauge-origin {
-            position: absolute; bottom: 0px; left: 50%;
-            width: 0; height: 0; z-index: 2;
-        }
-
-        .gauge-item {
-            position: absolute; display: flex; justify-content: center; align-items: center; 
-            font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap;
-            text-shadow: 1px 1px 2px #000; transition: 0.2s;
-        }
-        .gauge-item.active { font-size: 26px; font-weight: 900; color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.8); filter: drop-shadow(0 2px 2px #000); }
-
-        .gauge-tick {
-            position: absolute; top: -5px; left: -2px; width: 4px; height: 10px; background: #475569;
-            border-radius: 2px; transition: 0.2s;
-        }
+        .gauge-origin { position: absolute; bottom: 0px; left: 50%; width: 0; height: 0; z-index: 2; }
+        .gauge-item { position: absolute; font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap; text-shadow: 1px 1px 2px #000; transition: 0.2s; }
+        .gauge-item.active { font-size: 26px; font-weight: 900; color: #00f0ff; text-shadow: 0 0 10px #00f0ff; }
+        .gauge-tick { position: absolute; top: -5px; left: -2px; width: 4px; height: 10px; background: #475569; border-radius: 2px; }
         .gauge-tick.active { background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
+        .gauge-pointer-wrapper { position: absolute; top: 0; left: 0; width: 0; height: 0; z-index: 10; transition: transform 0.2s; }
+        .gauge-pointer { position: absolute; bottom: 0; left: -2px; width: 4px; height: 70px; background: linear-gradient(to top, transparent, #ff003c); filter: drop-shadow(0 0 6px #ff003c); }
+        .gauge-knob { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle, #e2e8f0, #64748b); border: 2px solid #0f172a; z-index: 15; }
 
-        .gauge-pointer-wrapper { position: absolute; top: 0; left: 0; width: 0; height: 0; z-index: 10; pointer-events: none; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .gauge-pointer {
-            position: absolute; bottom: 0; left: -2px; width: 4px; height: 70px; 
-            background: linear-gradient(to top, transparent 15%, #ff003c 70%, #ff003c 100%);
-            transform-origin: bottom center; filter: drop-shadow(0 0 6px #ff003c);
-        }
-        .gauge-pointer::after {
-            content: ''; position: absolute; top: -3px; left: -3px; width: 10px; height: 10px;
-            background: #ff003c; border-radius: 50%; box-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
-        }
-
-        .gauge-knob {
-            position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle, #e2e8f0, #64748b);
-            border: 2px solid #0f172a; box-shadow: 0 -3px 10px rgba(0,0,0,0.8), inset 0 -3px 5px rgba(0,0,0,0.3);
-            z-index: 15; pointer-events: none;
-        }
-        .gauge-knob::after { content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.3); box-shadow: inset 0 2px 4px rgba(255,255,255,0.4); }
-
-        .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px;}
         #btn-fire-action {
             width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
-            border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; 
-            cursor: pointer; transition: 0.1s; letter-spacing: 2px;
-            box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.8); text-shadow: -1px -1px 0 rgba(0,0,0,0.4);
+            border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.8);
         }
-        #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
+        #btn-fire-action:active { transform: translateY(8px); box-shadow: 0 2px 0 #7f1d1d; }
 
-        /* --- 启动页面 UI --- */
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
-        .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 30px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
-        .title-line { display: flex; gap: 20px; }
-        .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
-        #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
-        @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
+        /* --- 🚀 启动页面 UI (大幅压缩垂直间距以防溢出) --- */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
+        .game-title { text-align: center; margin-bottom: 15px; text-shadow: 0 0 20px var(--accent-glow); line-height: 1.1; }
+        .psle-cap { color: #fbbf24; font-size: 56px; } /* 稍微缩小标题防溢出 */
         
-        .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 15px; color: #94a3b8; display: none; }
-        .ship-selector { display: none; gap: 20px; margin-bottom: 40px; align-items: center; justify-content: center; }
-        
-        /* 固定方块大小，保证三个飞船整齐排列 */
-        .ship-option {
-            width: 80px; height: 80px;
-            border-radius: 10px; border: 2px solid #334155;
-            object-fit: contain; cursor: pointer; transition: 0.2s; mix-blend-mode: screen;
-            background: #000;
+        #loading-ui { margin-bottom: 10px; }
+
+        .ship-selector { display: none; gap: 15px; margin-bottom: 25px; }
+        .ship-option-container {
+            width: 75px; height: 75px; /* 缩小选框体积 */
+            background: #000; border: 2px solid #334155; border-radius: 10px;
+            padding: 8px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;
         }
-        .ship-option.selected { border-color: var(--accent-glow); box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.15); }
+        .ship-option-container img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: screen; pointer-events: none; }
+        .ship-option-container.selected { border-color: var(--accent-glow); box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.1); }
 
         .start-btn { 
-            padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); 
-            font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2);
-            letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; display: none;
+            padding: 15px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.1); color: var(--accent-glow); 
+            font-size: 24px; font-weight: 900; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); display: none;
         }
-        .start-btn:active { transform: scale(0.95); }
 
+        /* 移动端适配 */
         @media (max-width: 800px) {
-            .game-title { font-size: 5vw; gap: 10px; } .psle-cap { font-size: 9vw; }
-            .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 22vh; min-height: 140px;}
-            .gauge-unit { height: 110px; }
-            .gauge-pointer { height: 55px; } 
-            #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
-            #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
+            .psle-cap { font-size: 42px; }
+            .game-title { font-size: 28px; }
+            .dashboard { height: 22vh; gap: 2vw; }
+            .gauge-pointer { height: 50px; }
+            #btn-fire-action { width: 18vw; font-size: 16px; }
         }
     </style>
 </head>
@@ -264,9 +186,9 @@
         <canvas id="laser-canvas"></canvas>
 
         <div id="spaceship-container">
-            <img id="player-ship-img" src="" alt="Fighter">
+            <img id="player-ship-img" src="" alt="Ship">
             <div id="laser-muzzle"></div>
-            
+
             <div class="ship-core" id="ship-main" onclick="handleHudClick()">
                 <div id="finger-hint">👇</div>
                 <span class="hud-text" id="hud-display"></span>
@@ -281,62 +203,35 @@
     </div>
 
     <div class="dashboard">
-        <div class="gauge-unit" id="box-i">
-            <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-i"></div>
-            <div class="gauge-knob"></div>
-        </div>
-        
-        <div class="gauge-unit" id="box-f">
-            <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-f"></div>
-            <div class="gauge-knob"></div>
-        </div>
-
-        <div class="gauge-unit" id="box-t">
-            <div class="gauge-glass"></div>
-            <div class="gauge-origin" id="origin-t"></div>
-            <div class="gauge-knob"></div>
-        </div>
-
-        <div class="action-container"><button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button></div>
+        <div class="gauge-unit" id="box-i"><div class="gauge-origin" id="origin-i"></div><div class="gauge-knob"></div></div>
+        <div class="gauge-unit" id="box-f"><div class="gauge-origin" id="origin-f"></div><div class="gauge-knob"></div></div>
+        <div class="gauge-unit" id="box-t"><div class="gauge-origin" id="origin-t"></div><div class="gauge-knob"></div></div>
+        <button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button>
     </div>
 
     <div id="overlay">
         <h1 class="game-title sci-fi-text"><span class="psle-cap">P</span>INYIN <span class="psle-cap">S</span>HOOTER<br><span class="psle-cap">L</span>ASER <span class="psle-cap">E</span>XPEDITION</h1>
-        
         <div id="loading-ui" class="sci-fi-text">CONNECTING TO HANGAR...</div>
-        
-        <div class="ship-selector-title sci-fi-text" id="selector-title">SELECT YOUR FIGHTER</div>
         <div class="ship-selector" id="ship-selector">
-            <img class="ship-option selected" src="spaceship1.jpg" onclick="selectShip(0)">
-            <img class="ship-option" src="spaceship2.jpg" onclick="selectShip(1)">
-            <img class="ship-option" src="spaceship3.jpg" onclick="selectShip(2)">
+            <div class="ship-option-container selected" onclick="selectShip(0)"><img src="spaceship1.jpg"></div>
+            <div class="ship-option-container" onclick="selectShip(1)"><img src="spaceship2.jpg"></div>
+            <div class="ship-option-container" onclick="selectShip(2)"><img src="spaceship3.jpg"></div>
         </div>
-
-        <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">MISSION START</button>
+        <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">LAUNCH MISSION</button>
     </div>
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
     
-    // 更新数组，只保留3艘
-    const SHIPS = [
-        'spaceship1.jpg',
-        'spaceship2.jpg',
-        'spaceship3.jpg'
-    ];
+    const SHIPS = ['spaceship1.jpg', 'spaceship2.jpg', 'spaceship3.jpg'];
     let currentShipIdx = 0;
 
+    // 🔥 点击选船触发
     function selectShip(idx) {
+        initAudio(); // 强行唤醒音频引擎，突破浏览器限制
         currentShipIdx = idx;
-        const options = document.querySelectorAll('.ship-option');
-        options.forEach((opt, i) => {
-            if(i === idx) opt.classList.add('selected');
-            else opt.classList.remove('selected');
-        });
-        // 🔥 选中飞船时播放科幻音效
-        playSound('mech');
+        document.querySelectorAll('.ship-option-container').forEach((el, i) => el.classList.toggle('selected', i === idx));
+        playSound('mech'); // 播放科幻锁定音效
     }
 
     const TONE_MAP = {'a':['','ā','á','ǎ','à'], 'o':['','ō','ó','ǒ','ò'], 'e':['','ē','é','ě','è'], 'i':['','ī','í','ǐ','ì'], 'u':['','ū','ú','ǔ','ù'], 'ü':['','ǖ','ǘ','ǚ','ǜ']};
@@ -344,14 +239,8 @@
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
     let DB_WORDS = [];
-    let state = {
-        score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
-        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
-        targetX: -20, targetSpeed: 0.05, targetActive: false 
-    };
-
+    let state = { score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, i:{angle:0,opts:[],step:0}, f:{angle:0,opts:[],step:0}, t:{angle:0,opts:[],step:0}, targetX: -20, targetSpeed: 0.05, targetActive: false };
     let actx = null;
-
     const ALL_INITIALS = ['','b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
     const ALL_FINALS = ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ün','ang','eng','ing','ong','iao','ia','ian','iang','ua','uo','uan','uang','uai'];
     const ALL_TONES = ['1', '2', '', '3', '4']; 
@@ -362,16 +251,9 @@
     function parsePinyin(py) {
         if (py === 'de') return { i:'d', f:'e', t:'' };
         let clean = py, tone = ''; 
-        for (let char in TONE_DATA_REV) { 
-            if (py.includes(char)) { tone = TONE_DATA_REV[char].slice(-1); clean = py.replace(char, TONE_DATA_REV[char][0]); break; } 
-        }
+        for (let char in TONE_DATA_REV) { if (py.includes(char)) { tone = TONE_DATA_REV[char].slice(-1); clean = py.replace(char, TONE_DATA_REV[char][0]); break; } }
         let initial = ''; 
-        for (let i of INITIALS_LIST) {
-            if (clean.startsWith(i)) {
-                if (i.length === 2) { initial = i; break; }
-                if (i.length === 1) { initial = i; }
-            }
-        }
+        for (let i of INITIALS_LIST) { if (clean.startsWith(i)) { if (i.length === 2) { initial = i; break; } if (i.length === 1) { initial = i; } } }
         let final = initial === '' ? clean : clean.slice(initial.length);
         if (['j','q','x','y'].includes(initial) && final === 'u') final = 'ü';
         return { i: initial, f: final, t: tone };
@@ -382,32 +264,24 @@
             const resp = await fetch(CSV_URL);
             const text = await resp.text();
             DB_WORDS = text.split('\n').slice(1).map(row => {
-                const cols = row.split(',');
-                if (cols.length < 7) return null;
+                const cols = row.split(','); if (cols.length < 7) return null;
                 const py = cols[6].trim().split(' / ')[0];
                 return { char: cols[4].trim(), ...parsePinyin(py), py: py };
             }).filter(w => w);
-            
             if(DB_WORDS.length > 0){
                 document.getElementById('loading-ui').style.display = 'none';
-                document.getElementById('selector-title').style.display = 'block';
                 document.getElementById('ship-selector').style.display = 'flex';
                 document.getElementById('btn-start').style.display = 'block';
             }
-        } catch (e) { document.getElementById('loading-ui').innerText = "DB CONNECTION FAILED"; }
+        } catch (e) { document.getElementById('loading-ui').innerText = "DB CONNECTION LOST"; }
     }
 
-    function initAudio() {
-        if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-        if (actx.state === 'suspended') actx.resume();
-    }
+    function initAudio() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); }
 
     function startGame() {
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
         initAudio(); 
-        
         document.getElementById('player-ship-img').src = SHIPS[currentShipIdx];
-
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
         document.getElementById('ui-score').innerText = '0';
@@ -415,66 +289,37 @@
         gameLoop();
     }
 
-    function getFixedOpts(correct, allArr) {
-        let res = allArr.filter(x => x !== correct).sort(() => 0.5-Math.random()).slice(0, 4);
-        res.push(correct);
-        return res.sort(() => 0.5-Math.random());
-    }
-
     function nextTarget() {
         if (!DB_WORDS.length) return;
         state.currentTarget = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
-        state.targetX = -10;
-        state.targetActive = true;
-        state.hatRemoved = false;
-        
-        // 确保目标容器不带有淡出类
-        document.getElementById('target-mover').classList.remove('fade-out-fast');
-
+        state.targetX = -10; state.targetActive = true; state.hatRemoved = false;
         state.targetSpeed = 0.04 + Math.random() * 0.03; 
         document.getElementById('target-char').innerText = state.currentTarget.char;
-        
         buildGauge('i', getFixedOpts(state.currentTarget.i, ALL_INITIALS));
         buildGauge('f', getFixedOpts(state.currentTarget.f, ALL_FINALS));
         buildGauge('t', ALL_TONES); 
     }
 
+    function getFixedOpts(correct, allArr) {
+        let res = allArr.filter(x => x !== correct).sort(() => 0.5-Math.random()).slice(0, 4);
+        res.push(correct); return res.sort(() => 0.5-Math.random());
+    }
+
     function buildGauge(type, opts) {
         state[type].opts = opts;
-        const N = 5; 
-        const minAngle = -35;
-        const maxAngle = 35;
-        state[type].step = (maxAngle - minAngle) / (N - 1);
-        
+        const N = 5, minA = -35, maxA = 35;
+        state[type].step = (maxA - minA) / (N - 1);
         const origin = document.getElementById(`origin-${type}`);
         const boxH = document.getElementById(`box-${type}`).offsetHeight;
-        const R_TEXT = boxH * 0.85; 
-        const R_TICK = R_TEXT - 22; 
-
-        let ptrHTML = `
-            <div class="gauge-pointer-wrapper" id="ptr-${type}">
-                <div class="gauge-pointer"></div>
-            </div>`;
-            
-        let html = '';
+        const R_TEXT = boxH * 0.85, R_TICK = R_TEXT - 22; 
+        let html = `<div class="gauge-pointer-wrapper" id="ptr-${type}"><div class="gauge-pointer"></div></div>`;
         opts.forEach((o, idx) => {
-            let A = minAngle + idx * state[type].step;
-            html += `
-            <div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${A}deg) translateY(${-R_TICK}px);">
-                <div class="gauge-tick" id="tick-${type}-${idx}"></div>
-            </div>`;
-            html += `
-            <div style="position:absolute; top:0; left:0; width:0; height:0; transform: rotate(${A}deg) translateY(${-R_TEXT}px);">
-                <div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${-A}deg);">${o}</div>
-            </div>`;
+            let A = minA + idx * state[type].step;
+            html += `<div style="position:absolute;top:0;left:0;width:0;height:0;transform:rotate(${A}deg) translateY(${-R_TICK}px);"><div class="gauge-tick" id="tick-${type}-${idx}"></div></div>`;
+            html += `<div style="position:absolute;top:0;left:0;width:0;height:0;transform:rotate(${A}deg) translateY(${-R_TEXT}px);"><div class="gauge-item" id="item-${type}-${idx}" style="transform:translate(-50%,-50%) rotate(${-A}deg);">${o}</div></div>`;
         });
-        
-        origin.innerHTML = ptrHTML + html;
-        state[type].angle = 0; 
-        const ptr = document.getElementById(`ptr-${type}`);
-        ptr.style.transition = 'none';
-        ptr.style.transform = `rotate(${state[type].angle}deg)`;
-        
+        origin.innerHTML = html;
+        state[type].angle = 0;
         updateGaugeVisuals(type);
         setupGaugeInteraction(type);
     }
@@ -482,188 +327,78 @@
     function setupGaugeInteraction(type) {
         const box = document.getElementById(`box-${type}`);
         let isDragging = false, startX = 0, startAngle = 0, lastIdx = -1;
-
-        const onStart = (e) => { 
-            initAudio(); 
-            isDragging = true; 
-            startX = e.touches ? e.touches[0].clientX : e.clientX;
-            startAngle = state[type].angle;
-            document.getElementById(`ptr-${type}`).style.transition = 'none';
-        };
-        
+        const onStart = (e) => { initAudio(); isDragging = true; startX = e.touches ? e.touches[0].clientX : e.clientX; startAngle = state[type].angle; };
         const onMove = (e) => {
             if (!isDragging) return; e.preventDefault();
-            let currX = e.touches ? e.touches[0].clientX : e.clientX;
-            let deltaX = currX - startX;
-            
-            let targetAngle = startAngle + deltaX * 0.8; 
-            if (targetAngle < -35) targetAngle = -35;
-            if (targetAngle > 35) targetAngle = 35;
-            
-            state[type].angle = targetAngle;
-            document.getElementById(`ptr-${type}`).style.transform = `rotate(${state[type].angle}deg)`;
-            
+            let deltaX = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+            let targetA = startAngle + deltaX * 0.8;
+            state[type].angle = Math.max(-35, Math.min(35, targetA));
+            updateGaugeVisuals(type);
             let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
-            if (activeIdx !== lastIdx) {
-                if (lastIdx !== -1) playSound('mech'); 
-                lastIdx = activeIdx;
-                updateGaugeClassesOnly(type, activeIdx);
-                updateHUD();
-            }
+            if (activeIdx !== lastIdx) { if(lastIdx!==-1) playSound('mech'); lastIdx = activeIdx; updateHUD(); }
         };
-        
-        const onEnd = () => { 
-            if(!isDragging) return; isDragging = false; 
-            let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
-            state[type].angle = -35 + activeIdx * state[type].step;
-            
-            const ptr = document.getElementById(`ptr-${type}`);
-            ptr.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            ptr.style.transform = `rotate(${state[type].angle}deg)`;
-            
-            updateGaugeClassesOnly(type, activeIdx);
-            updateHUD();
-        };
-
+        const onEnd = () => { if(!isDragging) return; isDragging = false; let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step); state[type].angle = -35 + activeIdx * state[type].step; updateGaugeVisuals(type); updateHUD(); };
         box.onmousedown = box.ontouchstart = onStart;
-        window.addEventListener('mousemove', onMove, {passive:false});
-        window.addEventListener('touchmove', onMove, {passive:false});
-        window.addEventListener('mouseup', onEnd);
-        window.addEventListener('touchend', onEnd);
-    }
-
-    function updateGaugeClassesOnly(type, activeIdx) {
-        const origin = document.getElementById(`origin-${type}`);
-        Array.from(origin.querySelectorAll('.gauge-item')).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
-        Array.from(origin.querySelectorAll('.gauge-tick')).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+        window.addEventListener('mousemove', onMove, {passive:false}); window.addEventListener('touchmove', onMove, {passive:false}); window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
     }
 
     function updateGaugeVisuals(type) {
         const ptr = document.getElementById(`ptr-${type}`);
         ptr.style.transform = `rotate(${state[type].angle}deg)`;
         let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
-        updateGaugeClassesOnly(type, activeIdx);
-        updateHUD();
+        const origin = document.getElementById(`origin-${type}`);
+        Array.from(origin.querySelectorAll('.gauge-item')).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+        Array.from(origin.querySelectorAll('.gauge-tick')).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
     }
 
     function getVal(type) {
         let activeIdx = Math.round((state[type].angle - (-35)) / state[type].step);
-        if (activeIdx < 0) activeIdx = 0;
-        if (activeIdx >= state[type].opts.length) activeIdx = state[type].opts.length - 1;
-        return state[type].opts[activeIdx];
+        return state[type].opts[Math.max(0, Math.min(4, activeIdx))];
     }
 
     function combineTruePinyin(i, f, tStr) {
-        let initial = i;
-        let toneNum = parseInt(tStr);
-        if (isNaN(toneNum)) return initial + f; 
-        
-        let v = '';
-        if (f.includes('a')) v = 'a'; else if (f.includes('e')) v = 'e'; else if (f.includes('o')) v = 'o';
-        else if (f.includes('ui')) v = 'i'; else if (f.includes('iu')) v = 'u'; else if (f.includes('i')) v = 'i';
-        else if (f.includes('u')) v = 'u'; else if (f.includes('ü')) v = 'ü';
-        
-        let final = f;
-        if (v) final = f.replace(v, TONE_MAP[v][toneNum]);
-        return initial + final;
+        let initial = i, toneNum = parseInt(tStr); if (isNaN(toneNum)) return initial + f; 
+        let v = ''; if (f.includes('a')) v = 'a'; else if (f.includes('e')) v = 'e'; else if (f.includes('o')) v = 'o'; else if (f.includes('ui')) v = 'i'; else if (f.includes('iu')) v = 'u'; else if (f.includes('i')) v = 'i'; else if (f.includes('u')) v = 'u'; else if (f.includes('ü')) v = 'ü';
+        let final = f; if (v) final = f.replace(v, TONE_MAP[v][toneNum]); return initial + final;
     }
 
     function updateHUD() {
         let i = getVal('i'), f = getVal('f'), t = getVal('t');
         let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
-        
         let displayF = f;
         if (needsFix) {
-            if (!state.hatRemoved) {
-                document.getElementById('ship-main').classList.add('needs-fix');
-                document.getElementById('finger-hint').style.display = 'block';
-            } else {
-                displayF = f.replace(/ü/g, 'u');
-                document.getElementById('ship-main').classList.remove('needs-fix');
-                document.getElementById('finger-hint').style.display = 'none';
-            }
-        } else {
-            document.getElementById('ship-main').classList.remove('needs-fix');
-            document.getElementById('finger-hint').style.display = 'none';
-        }
-
+            if (!state.hatRemoved) { document.getElementById('ship-main').classList.add('needs-fix'); document.getElementById('finger-hint').style.display = 'block'; }
+            else { displayF = f.replace(/ü/g, 'u'); document.getElementById('ship-main').classList.remove('needs-fix'); document.getElementById('finger-hint').style.display = 'none'; }
+        } else { document.getElementById('ship-main').classList.remove('needs-fix'); document.getElementById('finger-hint').style.display = 'none'; }
         document.getElementById('hud-display').innerText = combineTruePinyin(i, displayF, t);
     }
 
     function handleHudClick() {
-        if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            state.hatRemoved = true; updateHUD();
-            confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 }, colors:['#fff','#00f0ff'], startVelocity: 15, ticks: 50 });
-        }
+        if (document.getElementById('ship-main').classList.contains('needs-fix')) { state.hatRemoved = true; updateHUD(); }
     }
 
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
-        
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            playSound('wrong');
-            document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
-            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1)', 200);
-            return;
+            playSound('wrong'); document.getElementById('finger-hint').style.transform = 'translateX(-50%) scale(1.5)';
+            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) scale(1)', 200); return;
         }
-
         drawLaser();
         if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
-            state.targetActive = false;
-            state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            
-            // 🔥 让目标瞬时淡出缩小消失，实现“消失快”
-            document.getElementById('target-mover').classList.add('fade-out-fast');
-            
-            // 🔥 触发更明显的实景爆炸效果
+            state.targetActive = false; state.score += 10; document.getElementById('ui-score').innerText = state.score;
             triggerExplosion();
-            
             setTimeout(nextTarget, 1000);
-        } else {
-            playSound('wrong');
-        }
+        } else playSound('wrong');
     }
 
-    // 🔥 震撼的实景爆炸和屏幕抖动效果
     function triggerExplosion() {
-        // 1. 屏幕抖动效果，击中瞬间触发，运行0.2s
-        const combatArea = document.getElementById('combat-area');
-        combatArea.classList.add('shake-screen');
-        setTimeout(() => combatArea.classList.remove('shake-screen'), 200);
-
-        // 2. 震撼的3层PNG爆炸叠加效果
         const targetRect = document.getElementById('target-container').getBoundingClientRect();
-        const cx = targetRect.left + targetRect.width / 2;
-        const cy = targetRect.top + targetRect.height / 2;
-
-        const container = document.createElement('div');
-        container.className = 'explosion-effect-container';
-        container.style.left = cx + 'px';
-        container.style.top = cy + 'px';
-
-        // 核心层（最大，最早淡出）
-        const core = document.createElement('div');
-        core.className = 'explosion-layer core';
-        container.appendChild(core);
-
-        // 次级层（稍小，带随机偏移，稍晚淡出）
-        const secondary = document.createElement('div');
-        secondary.className = 'explosion-layer secondary';
-        secondary.style.animationDelay = '0.05s';
-        secondary.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg) translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
-        container.appendChild(secondary);
-
-        // 微小碎屑层（最小，带更大随机偏移，最晚淡出）
-        const sparks = document.createElement('div');
-        sparks.className = 'explosion-layer sparks';
-        sparks.style.animationDelay = '0.1s';
-        sparks.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg) scale(0.6) translate(${Math.random() * 30 - 15}px, ${Math.random() * 30 - 15}px)`;
-        container.appendChild(sparks);
-
-        document.body.appendChild(container);
-
-        // 0.6s 动画结束后移除容器
-        setTimeout(() => container.remove(), 600);
+        const exp = document.createElement('div');
+        exp.className = 'explosion-effect';
+        exp.style.left = (targetRect.left + targetRect.width / 2) + 'px';
+        exp.style.top = (targetRect.top + targetRect.height / 2) + 'px';
+        document.body.appendChild(exp);
+        setTimeout(() => exp.remove(), 500);
     }
 
     function gameLoop() {
@@ -679,45 +414,26 @@
     function drawLaser() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         
-        // 🔥 获取实体飞船（黑盒）图片的物理中心，实现绝对弹道居中
-        const shipContainer = document.getElementById('spaceship-container').getBoundingClientRect();
-        const sX = shipContainer.right - 5; // 黑盒的右边缘，往回缩5个像素作为发射原点
-        const sY = shipContainer.top + shipContainer.height / 2; // 黑盒的垂直绝对中轴线
-
+        // 🔥 获取物理坐标锚点，计算绝对中心开火位置
+        const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
+        const sX = muzzle.left + muzzle.width / 2;
+        const sY = muzzle.top + muzzle.height / 2;
+        
         const enemy = document.getElementById('target-container').getBoundingClientRect();
-        const tX = enemy.left + enemy.width / 2;
-        const tY = enemy.top + enemy.height / 2;
-
+        const tX = enemy.left + enemy.width / 2, tY = enemy.top + enemy.height / 2;
+        
         ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
-        ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
-        ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
-        playSound('laser');
-        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
+        ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
+        playSound('laser'); setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
     }
 
     function playSound(type) {
         if (!actx) return;
-        let osc = actx.createOscillator(); let g = actx.createGain();
+        let osc = actx.createOscillator(), g = actx.createGain();
         osc.connect(g); g.connect(actx.destination);
-        
-        // 科幻选择锁定音效：快速频率下降
-        if(type === 'mech'){ 
-            osc.type = 'square'; osc.frequency.setValueAtTime(800, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.05);
-            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.05);
-            osc.start(); osc.stop(actx.currentTime + 0.05);
-        }
-        else if(type === 'laser'){ 
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.2);
-            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
-            osc.start(); osc.stop(actx.currentTime + 0.2);
-        }
-        else if(type === 'wrong'){ 
-            osc.type = 'square'; osc.frequency.setValueAtTime(120, actx.currentTime); 
-            g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
-            osc.start(); osc.stop(actx.currentTime + 0.3);
-        }
+        if(type === 'mech'){ osc.type = 'square'; osc.frequency.setValueAtTime(400, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.1); g.gain.setValueAtTime(0.1, actx.currentTime); osc.start(); osc.stop(actx.currentTime + 0.1); }
+        else if(type === 'laser'){ osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.2); g.gain.setValueAtTime(0.2, actx.currentTime); osc.start(); osc.stop(actx.currentTime + 0.2); }
+        else if(type === 'wrong'){ osc.type = 'square'; osc.frequency.setValueAtTime(100, actx.currentTime); g.gain.setValueAtTime(0.1, actx.currentTime); osc.start(); osc.stop(actx.currentTime + 0.3); }
     }
 
     loadDB();
