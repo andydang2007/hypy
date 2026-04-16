@@ -33,8 +33,7 @@
         header {
             display: flex; justify-content: flex-end; align-items: center;
             padding: 10px 20px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(5px);
-            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
@@ -45,7 +44,7 @@
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-        /* 🚀 飞船 (左侧横向) */
+        /* 🚀 飞船 */
         #spaceship-container { position: absolute; left: 30px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
         .spaceship { position: relative; width: 80px; height: 50px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 30px; height: 15px; background: rgba(15, 23, 42, 0.9); top: 18px; border-bottom: 2px solid var(--accent-glow); }
@@ -60,10 +59,11 @@
         
         .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 22px; font-weight: 900; color: #fff; font-family: sans-serif;}
         
+        /* 红灯报警状态 */
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
         @keyframes pulseRed { from { transform: scale(1); } to { transform: scale(1.05); } }
 
-        /* 👇 脱帽手指提示 */
+        /* 👇 脱帽手指提示 (延迟出现) */
         #finger-hint {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
             font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
@@ -77,83 +77,92 @@
         .enemy-target {
             width: 45px; height: 45px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.5);
             transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1); backdrop-filter: blur(4px);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: transform 0.3s;
         }
         .enemy-text { transform: rotate(-45deg); font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* 🎛️ 拟物化重金属仪表盘 */
+        /* 💥 爆炸动画 (正确) */
+        .enemy-target.explode { transform: rotate(45deg) scale(0) !important; opacity: 0; transition: all 0.3s ease-in; }
+        
+        /* 🛡️ 护盾闪光动画 (错误) */
+        .enemy-target.shield { animation: shieldFlash 0.5s ease-out; }
+        @keyframes shieldFlash {
+            0% { box-shadow: 0 0 0px #00f0ff, inset 0 0 0px #00f0ff; filter: brightness(1); }
+            50% { box-shadow: 0 0 40px #00f0ff, inset 0 0 30px #00f0ff; filter: brightness(2); border-color: #00f0ff; transform: rotate(45deg) scale(1.1);}
+            100% { box-shadow: 0 0 20px rgba(255,255,255,0.1); filter: brightness(1); border-color: rgba(255,255,255,0.5); transform: rotate(45deg) scale(1);}
+        }
+
+        /* 飘字提示 */
+        #rule-toast {
+            position: absolute; top: 20%; left: 0; width: 100%; text-align: center;
+            color: #ff003c; font-size: 20px; font-weight: 900; opacity: 0; pointer-events: none;
+            transition: all 0.3s; text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50; letter-spacing: 2px;
+        }
+
+        /* 🎛️ 底部仪表盘区 */
         .dashboard {
-            height: 22vh; min-height: 180px; 
-            background: linear-gradient(to bottom, #d1d5db, #9ca3af); 
-            border-top: 6px solid #f3f4f6;
-            /* 🔥 拉宽间距：使用 space-between 配合 padding 把元件彻底散开 */
-            display: flex; justify-content: center; align-items: center; gap: 5vw; border-radius: 30px 30px 0 0;
-            box-shadow: inset 0 5px 15px rgba(255,255,255,0.7), 0 -15px 40px rgba(0,0,0,0.8);
-            padding: 0 5vw;
+            height: 26vh; min-height: 220px; background: linear-gradient(to bottom, #d1d5db, #9ca3af); 
+            border-top: 6px solid #f3f4f6; display: flex; justify-content: center; align-items: flex-end; gap: 4vw; border-radius: 30px 30px 0 0;
+            box-shadow: inset 0 5px 15px rgba(255,255,255,0.7), 0 -15px 40px rgba(0,0,0,0.8); padding: 20px 4vw 30px 4vw;
         }
 
-        .dial-container { position: relative; width: 18vw; max-width: 140px; aspect-ratio: 1; }
+        .control-unit { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+
+        .dial-readout {
+            width: 90%; height: 35px; background: #0f172a; border: 2px solid var(--accent-glow); border-radius: 6px;
+            display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: 900; color: #fff; font-family: sans-serif;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3), inset 0 0 8px rgba(0, 0, 0, 0.8); text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        /* 💣 核心重写：3D 横向拨轮暗槽 */
+        .thumbwheel-container { 
+            position: relative; width: 22vw; max-width: 140px; height: 50px; /* 扁平长方形 */
+            background: #0b0f19; border-radius: 8px; border: 3px solid #64748b; 
+            box-shadow: inset 0 15px 25px rgba(0,0,0,0.9), 0 2px 5px rgba(255,255,255,0.6); 
+            perspective: 800px; cursor: grab;
+        }
+        .thumbwheel-container:active { cursor: grabbing; }
+
+        /* 横向滚筒 */
+        .thumbwheel-cylinder { 
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            transform-style: preserve-3d; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .thumbwheel-cylinder.dragging { transition: none !important; }
+
+        /* 刻度字幕 */
+        .thumbwheel-item { 
+            position: absolute; top: 0; left: 50%; width: 50px; height: 100%; margin-left: -25px; 
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 18px; font-weight: bold; color: #475569; backface-visibility: hidden; white-space: nowrap;
+        }
+        .thumbwheel-item.active { font-size: 26px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow); filter: drop-shadow(0 2px 2px #000); }
         
-        .dial-wrapper { 
-            width: 100%; height: 100%; border-radius: 50%; 
-            background: #cbd5e1;
-            border: 4px solid #64748b; position: relative; display: flex; justify-content: center; align-items: center; cursor: grab; 
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.4), 0 5px 15px rgba(0,0,0,0.5); 
-            overflow: hidden;
+        /* 🔥 两侧深邃渐变遮罩 (完美符合老式收音机调频的视觉) */
+        .thumbwheel-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 4px;
+            background: linear-gradient(to right,
+                rgba(11, 15, 25, 1) 0%,
+                rgba(11, 15, 25, 0.8) 15%,
+                rgba(11, 15, 25, 0) 35%,
+                rgba(11, 15, 25, 0) 65%,
+                rgba(11, 15, 25, 0.8) 85%,
+                rgba(11, 15, 25, 1) 100%
+            );
         }
 
-        /* 梯形格子的内圈轨道线 */
-        .dial-track {
-            position: absolute; top: 22%; left: 22%; right: 22%; bottom: 22%;
-            border-radius: 50%; border: 2px solid rgba(100, 116, 139, 0.5);
-            pointer-events: none; z-index: 2;
-        }
-
-        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .dial-wheel.dragging { transition: none !important; }
-        
-        /* 放射状分隔线 (通过 JS 动态生成) */
-        .dial-spoke {
-            position: absolute; top: 50%; left: 50%; width: 50%; height: 2px;
-            background: rgba(100, 116, 139, 0.6); transform-origin: 0% 50%; z-index: 1;
-        }
-
-        .dial-item { 
-            position: absolute; top: 50%; left: 50%; width: 70px; height: 30px; 
-            margin-top: -15px; margin-left: -35px; display: flex; justify-content: center; align-items: center; 
-            font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.8); z-index: 3;
-            transition: 0.1s;
-        }
-        /* 选中态：字变大变深色 */
-        .dial-item.active { font-size: 26px; font-weight: 900; color: #0f172a; text-shadow: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));}
-        
-        .dial-knob { 
-            position: absolute; width: 44%; height: 44%; 
-            background: radial-gradient(circle at 30% 30%, #ffffff, #94a3b8);
-            border-radius: 50%; border: 2px solid #475569; 
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5), inset 0 -3px 5px rgba(0,0,0,0.2); 
-            pointer-events: none; z-index: 5; 
-        }
-        
-        /* 🔥 拉开指示箭头的距离，防止遮挡格子 */
-        .dial-arrow { position: absolute; right: -38px; top: 50%; transform: translateY(-50%); font-size: 26px; color: #334155; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 2px #fff); }
-
-        /* 🔥 FIRE 按钮与旋钮大幅拉开距离 */
-        .action-container { display: flex; justify-content: center; align-items: center; margin-left: 3vw;}
+        .action-container { display: flex; justify-content: center; align-items: center; margin-left: 2vw; margin-bottom: 25px;}
         #btn-fire-action {
-            width: 22vw; max-width: 130px; aspect-ratio: 1; border-radius: 50%;
+            width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
-            border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; 
+            border: 6px solid #450a0a; color: white; font-size: 20px; font-weight: 900; 
             cursor: pointer; transition: 0.1s; letter-spacing: 2px;
             box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.6);
             text-shadow: -1px -1px 0 rgba(0,0,0,0.4);
         }
-        #btn-fire-action:active { 
-            transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d);
-        }
+        #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
-        /* --- 🎮 Loading 与 启动页面 --- */
+        /* Loading */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
         .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
@@ -171,8 +180,10 @@
 
         @media (max-width: 800px) {
             .game-title { font-size: 5vw; gap: 10px; } .psle-cap { font-size: 9vw; }
-            .dashboard { gap: 4vw; padding: 0 10px; }
-            .dial-arrow { right: -30px; font-size: 20px;}
+            .dashboard { gap: 3vw; padding: 15px 10px 20px 10px; }
+            .dial-readout { height: 28px; font-size: 16px; }
+            .thumbwheel-container { height: 45px; border-width: 2px;}
+            .thumbwheel-item.active { font-size: 22px; }
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
             #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
         }
@@ -186,6 +197,8 @@
 
     <div id="combat-area">
         <canvas id="laser-canvas"></canvas>
+        
+        <div id="rule-toast">警告信息</div>
 
         <div id="spaceship-container">
             <div class="spaceship">
@@ -206,9 +219,27 @@
     </div>
 
     <div class="dashboard">
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div><div class="dial-track"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div><div class="dial-track"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div><div class="dial-track"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="control-unit">
+            <div class="dial-readout" id="readout-i">-</div>
+            <div class="thumbwheel-container" id="wrap-i">
+                <div class="thumbwheel-overlay"></div>
+                <div class="thumbwheel-cylinder" id="wheel-i"></div>
+            </div>
+        </div>
+        <div class="control-unit">
+            <div class="dial-readout" id="readout-f">-</div>
+            <div class="thumbwheel-container" id="wrap-f">
+                <div class="thumbwheel-overlay"></div>
+                <div class="thumbwheel-cylinder" id="wheel-f"></div>
+            </div>
+        </div>
+        <div class="control-unit">
+            <div class="dial-readout" id="readout-t">-</div>
+            <div class="thumbwheel-container" id="wrap-t">
+                <div class="thumbwheel-overlay"></div>
+                <div class="thumbwheel-cylinder" id="wheel-t"></div>
+            </div>
+        </div>
         <div class="action-container"><button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button></div>
     </div>
 
@@ -228,10 +259,38 @@
     const TONE_DATA_REV = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
+    // 💡 拼音合法性规则表 (该声母可接的所有韵母)
+    const VALID_MAP = {
+        '': 'a,o,e,ai,ei,ao,ou,an,en,ang,eng,er',
+        'b': 'a,o,i,u,ai,ei,ao,an,en,ang,eng,ian,iao,ie,in,ing',
+        'p': 'a,o,i,u,ai,ei,ao,ou,an,en,ang,eng,ian,iao,ie,in,ing',
+        'm': 'a,o,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ian,iao,ie,in,ing,iu',
+        'f': 'a,o,u,ei,ou,an,en,ang,eng',
+        'd': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,ia,ian,iao,ie,iu,ing,uo,ui,uan,un',
+        't': 'a,e,i,u,ai,ao,ou,an,ang,eng,ong,ian,iao,ie,ing,uo,ui,uan,un',
+        'n': 'a,e,i,u,ü,ai,ei,ao,ou,an,en,ang,eng,ong,ian,iang,iao,ie,in,ing,iu,uo,uan,un,üe',
+        'l': 'a,e,i,u,ü,ai,ei,ao,ou,an,ang,eng,ong,ia,ian,iang,iao,ie,in,ing,iu,uo,uan,un,üe',
+        'g': 'a,e,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
+        'k': 'a,e,u,ai,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
+        'h': 'a,e,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
+        'j': 'i,ia,ian,iang,iao,ie,in,ing,iong,iu,ü,üan,üe,ün',
+        'q': 'i,ia,ian,iang,iao,ie,in,ing,iong,iu,ü,üan,üe,ün',
+        'x': 'i,ia,ian,iang,iao,ie,in,ing,iong,iu,ü,üan,üe,ün',
+        'zh': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
+        'ch': 'a,e,i,u,ai,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
+        'sh': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
+        'r': 'e,i,u,ao,ou,an,en,ang,eng,ong,ua,uan,ui,un,uo',
+        'z': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,uan,ui,un,uo',
+        'c': 'a,e,i,u,ai,ao,ou,an,en,ang,eng,ong,uan,ui,un,uo',
+        's': 'a,e,i,u,ai,ao,ou,an,en,ang,eng,ong,uan,ui,un,uo',
+        'y': 'a,e,i,o,ao,ou,an,en,ang,eng,ong,ü,üan,üe,ün',
+        'w': 'a,o,u,ai,ei,an,en,ang,eng'
+    };
+
     let DB_WORDS = [];
     let state = {
         score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
-        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
+        i: { angle: 0, opts: [], step: 0, radius: 0 }, f: { angle: 0, opts: [], step: 0, radius: 0 }, t: { angle: 0, opts: [], step: 0, radius: 0 },
         targetX: -20, targetSpeed: 0.05, targetActive: false 
     };
 
@@ -252,10 +311,7 @@
         }
         let initial = ''; 
         for (let i of INITIALS_LIST) {
-            if (clean.startsWith(i)) {
-                if (i.length === 2) { initial = i; break; }
-                if (i.length === 1) { initial = i; }
-            }
+            if (clean.startsWith(i)) { if (i.length === 2) { initial = i; break; } if (i.length === 1) { initial = i; } }
         }
         let final = initial === '' ? clean : clean.slice(initial.length);
         if (['j','q','x','y'].includes(initial) && final === 'u') final = 'ü';
@@ -298,16 +354,16 @@
     function nextTarget() {
         if (!DB_WORDS.length) return;
         state.currentTarget = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
-        state.targetX = -10;
-        state.targetActive = true;
-        state.hatRemoved = false;
+        state.targetX = -10; state.targetActive = true; state.hatRemoved = false;
+        document.getElementById('ship-main').classList.remove('needs-fix');
+        document.getElementById('finger-hint').style.display = 'none';
         
         state.targetSpeed = 0.04 + Math.random() * 0.03; 
         document.getElementById('target-char').innerText = state.currentTarget.char;
         
-        buildDial('i', getOpts(state.currentTarget.i, ALL_INITIALS));
-        buildDial('f', getOpts(state.currentTarget.f, ALL_FINALS));
-        buildDial('t', ALL_TONES); 
+        buildThumbwheel('i', getOpts(state.currentTarget.i, ALL_INITIALS));
+        buildThumbwheel('f', getOpts(state.currentTarget.f, ALL_FINALS));
+        buildThumbwheel('t', ALL_TONES); 
     }
 
     function getOpts(correct, all) {
@@ -316,73 +372,79 @@
         return res.sort(() => 0.5-Math.random());
     }
 
-    // 🔥 绘制“扇形/梯形格子”的核心：通过生成 Spoke (辐条) 来分割背景
-    function buildDial(type, opts) {
+    // 💣 构建 3D 横向拨轮
+    function buildThumbwheel(type, opts) {
         state[type].opts = opts;
         state[type].step = 360 / opts.length;
         const wheel = document.getElementById(`wheel-${type}`);
-        const radius = document.getElementById(`wrap-${type}`).offsetWidth * 0.38;
         
+        // 动态计算横向圆柱的半径：确保文字宽度不重叠 (ItemWidth = 50)
+        let radius = Math.max((opts.length * 50) / (2 * Math.PI), 45);
+        state[type].radius = radius;
+
         let html = '';
         opts.forEach((o, idx) => {
+            // 绕 Y 轴旋转，将刻度沿圆周分布
             let rot = idx * state[type].step;
-            // 画分隔线 (Spoke)，放在每一格的中间边界
-            let spokeRot = rot - state[type].step / 2;
-            html += `<div class="dial-spoke" style="transform: rotate(${spokeRot}deg) translateY(-50%);"></div>`;
-            // 画文字
-            html += `<div class="dial-item" style="transform: rotate(${rot}deg) translateX(${radius}px)">${o}</div>`;
+            html += `<div class="thumbwheel-item" style="transform: rotateY(${-rot}deg) translateZ(${radius}px)">${o}</div>`;
         });
         
         wheel.innerHTML = html;
         state[type].angle = 0;
-        updateDialVisuals(type);
+        updateThumbwheelVisuals(type);
     }
 
-    function setupiPod(type) {
+    // 💣 横向滑动交互物理引擎
+    function setupThumbwheel(type) {
         const wrap = document.getElementById(`wrap-${type}`);
         const wheel = document.getElementById(`wheel-${type}`);
-        let isDragging = false, prevA = 0, lastIdx = -1;
+        let isDragging = false, prevX = 0, lastIdx = -1;
 
-        const getA = (e) => {
-            const r = wrap.getBoundingClientRect();
-            const x = (e.touches ? e.touches[0].clientX : e.clientX) - (r.left + r.width/2);
-            const y = (e.touches ? e.touches[0].clientY : e.clientY) - (r.top + r.height/2);
-            return Math.atan2(y, x) * 180 / Math.PI;
-        };
+        const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
 
         const onStart = (e) => { 
             initAudio(); 
-            isDragging = true; prevA = getA(e); wheel.classList.add('dragging'); 
+            isDragging = true; prevX = getX(e); wheel.classList.add('dragging'); 
+            // 清除之前的红灯状态
+            state.hatRemoved = false;
+            document.getElementById('ship-main').classList.remove('needs-fix');
+            document.getElementById('finger-hint').style.display = 'none';
         };
         
         const onMove = (e) => {
             if (!isDragging) return; e.preventDefault();
-            let currA = getA(e); let delta = currA - prevA;
-            if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
+            let currX = getX(e); 
+            let deltaX = currX - prevX; 
+            prevX = currX;
+
+            // 滑动像素转换为角度 (阻尼系数 0.8)
+            let deltaAngle = (deltaX / 50) * state[type].step * 0.8;
+            state[type].angle += deltaAngle;
             
-            state[type].angle += delta * 0.8; 
-            prevA = currA;
-            wheel.style.transform = `rotate(${state[type].angle}deg)`;
+            // 实时跟手旋转
+            wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
             
-            let steps = Math.round(-state[type].angle / state[type].step);
+            let steps = Math.round(state[type].angle / state[type].step);
             let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
             
             if (activeIdx !== lastIdx) {
                 if (lastIdx !== -1) playSound('mech'); 
                 lastIdx = activeIdx;
-                updateDialSelectionClassOnly(type, activeIdx);
+                updateSelection(type, activeIdx);
                 updateHUD();
             }
         };
         
         const onEnd = () => { 
             if(!isDragging) return; isDragging = false; wheel.classList.remove('dragging'); 
+            
+            // 自动回弹吸附刻度
             let steps = Math.round(state[type].angle / state[type].step);
             state[type].angle = steps * state[type].step;
-            wheel.style.transform = `rotate(${state[type].angle}deg)`;
+            wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
             
-            let finalIdx = (Math.round(-state[type].angle / state[type].step) % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
-            updateDialSelectionClassOnly(type, finalIdx);
+            let finalIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+            updateSelection(type, finalIdx);
             updateHUD();
         };
 
@@ -393,90 +455,124 @@
         window.addEventListener('touchend', onEnd);
     }
 
-    function updateDialSelectionClassOnly(type, activeIdx) {
+    function updateSelection(type, activeIdx) {
         const wheel = document.getElementById(`wheel-${type}`);
-        // 因为包含了 spoke，过滤出 item
-        const items = Array.from(wheel.querySelectorAll('.dial-item'));
+        const items = Array.from(wheel.querySelectorAll('.thumbwheel-item'));
         items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
     }
 
-    function updateDialVisuals(type) {
+    function updateThumbwheelVisuals(type) {
         const wheel = document.getElementById(`wheel-${type}`);
-        wheel.style.transform = `rotate(${state[type].angle}deg)`;
-        let steps = Math.round(-state[type].angle / state[type].step);
+        wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
+        let steps = Math.round(state[type].angle / state[type].step);
         let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
-        updateDialSelectionClassOnly(type, activeIdx);
+        updateSelection(type, activeIdx);
         updateHUD();
     }
 
     function getVal(type) {
-        let steps = Math.round(-state[type].angle / state[type].step);
+        let steps = Math.round(state[type].angle / state[type].step);
         let idx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
         return state[type].opts[idx];
     }
 
     function combineTruePinyin(i, f, tStr) {
-        let initial = i;
-        let toneNum = parseInt(tStr);
+        let initial = i; let toneNum = parseInt(tStr);
         if (isNaN(toneNum)) return initial + f; 
-        
         let v = '';
         if (f.includes('a')) v = 'a'; else if (f.includes('e')) v = 'e'; else if (f.includes('o')) v = 'o';
         else if (f.includes('ui')) v = 'i'; else if (f.includes('iu')) v = 'u'; else if (f.includes('i')) v = 'i';
         else if (f.includes('u')) v = 'u'; else if (f.includes('ü')) v = 'ü';
-        
         let final = f;
         if (v) final = f.replace(v, TONE_MAP[v][toneNum]);
         return initial + final;
     }
 
+    function showToast(msg) {
+        const toast = document.getElementById('rule-toast');
+        toast.innerText = msg;
+        toast.style.opacity = 1;
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => { toast.style.opacity = 0; toast.style.transform = 'translateY(0)'; }, 2000);
+    }
+
     function updateHUD() {
         let i = getVal('i'), f = getVal('f'), t = getVal('t');
-        let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
         
-        let displayF = f;
-        if (needsFix) {
-            if (!state.hatRemoved) {
-                document.getElementById('ship-main').classList.add('needs-fix');
-                document.getElementById('finger-hint').style.display = 'block';
-            } else {
-                displayF = f.replace(/ü/g, 'u');
-                document.getElementById('ship-main').classList.remove('needs-fix');
-                document.getElementById('finger-hint').style.display = 'none';
-            }
-        } else {
-            document.getElementById('ship-main').classList.remove('needs-fix');
-            document.getElementById('finger-hint').style.display = 'none';
-        }
+        document.getElementById('readout-i').innerText = i === '' ? '-' : i;
+        document.getElementById('readout-f').innerText = f;
+        document.getElementById('readout-t').innerText = t === '' ? '-' : t;
 
+        // 平时操作时不马上报错，只需拼音展示
+        let displayF = f;
+        if (['j','q','x','y'].includes(i) && f.includes('ü') && state.hatRemoved) {
+            displayF = f.replace(/ü/g, 'u');
+        }
         document.getElementById('hud-display').innerText = combineTruePinyin(i, displayF, t);
     }
 
+    // 🛡️ 手动脱帽交互
     function handleHudClick() {
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            state.hatRemoved = true; updateHUD();
+            state.hatRemoved = true; 
+            document.getElementById('ship-main').classList.remove('needs-fix');
+            document.getElementById('finger-hint').style.display = 'none';
+            updateHUD();
+            playSound('pop');
             confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 }, colors:['#fff','#00f0ff'], startVelocity: 15, ticks: 50 });
         }
     }
 
+    // 💥 FIRE 按钮：真正的规则校验中心
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
         
-        if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            playSound('wrong');
-            document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1.5)';
-            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1)', 200);
-            return;
+        let i = getVal('i'), f = getVal('f'), t = getVal('t');
+
+        // 1. 校验拼音是否存在
+        let isValid = VALID_MAP[i] && VALID_MAP[i].split(',').includes(f);
+        if (!isValid) {
+            playSound('error');
+            showToast("⚠️ 错误：不存在这个拼音组合！");
+            return; // 拦截开火
         }
 
+        // 2. 校验是否需要脱帽 (延迟警报机制)
+        let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
+        if (needsFix && !state.hatRemoved) {
+            playSound('error');
+            showToast("⚠️ j q x y 遇到 ü 要脱帽！");
+            document.getElementById('ship-main').classList.add('needs-fix');
+            document.getElementById('finger-hint').style.display = 'block';
+            
+            // 闪动手指提示
+            document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1.5)';
+            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1)', 200);
+            return; // 拦截开火
+        }
+
+        // 3. 正常发射
         drawLaser();
-        if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
+        
+        let isCorrect = (i === state.currentTarget.i && f === state.currentTarget.f && t === state.currentTarget.t);
+        let tc = document.getElementById('target-container');
+
+        if (isCorrect) {
+            // ✅ 完全正确：微缩爆炸消失
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            confetti({ particleCount: 40, origin: { x: 0.8, y: 0.5 }, colors:['#39ff14','#00f0ff','#fff'] });
-            setTimeout(nextTarget, 1000);
+            
+            tc.classList.add('explode');
+            playSound('explode');
+            confetti({ particleCount: 60, spread: 80, origin: { x: 0.8, y: 0.5 }, colors:['#39ff14','#00f0ff','#fff'] });
+            
+            setTimeout(() => { tc.classList.remove('explode'); nextTarget(); }, 1200);
         } else {
-            playSound('wrong');
+            // 🛡️ 拼音合法，但不是目标答案：激活幽蓝护盾
+            tc.classList.remove('shield'); void tc.offsetWidth; 
+            tc.classList.add('shield');
+            playSound('shield');
+            showToast("❌ 拼音正确，但不是这个字！");
         }
     }
 
@@ -485,7 +581,10 @@
         if (state.targetActive) {
             state.targetX += state.targetSpeed;
             document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            if (state.targetX > 105) { state.targetActive = false; playSound('wrong'); setTimeout(nextTarget, 1000); }
+            // 怪物跑出屏幕外，扣分/重来
+            if (state.targetX > 105) { 
+                state.targetActive = false; playSound('error'); setTimeout(nextTarget, 1000); 
+            }
         }
         requestAnimationFrame(gameLoop);
     }
@@ -496,21 +595,23 @@
         const enemy = document.getElementById('target-container').getBoundingClientRect();
         ctx.beginPath(); ctx.moveTo(ship.left+ship.width, ship.top+ship.height/2);
         ctx.lineTo(enemy.left+enemy.width/2, enemy.top+enemy.height/2);
-        ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
+        ctx.lineWidth = 8; ctx.strokeStyle = "#00f0ff"; 
         ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
         playSound('laser');
-        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
+        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 120);
     }
 
+    // 🎛️ 音频合成引擎
     function playSound(type) {
         if (!actx) return;
         let osc = actx.createOscillator(); let g = actx.createGain();
         osc.connect(g); g.connect(actx.destination);
+
         if(type === 'mech'){ 
-            osc.type = 'square'; osc.frequency.setValueAtTime(150, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(40, actx.currentTime + 0.03);
-            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.03);
-            osc.start(); osc.stop(actx.currentTime + 0.03);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(200, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(50, actx.currentTime + 0.04);
+            g.gain.setValueAtTime(0.4, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.04);
+            osc.start(); osc.stop(actx.currentTime + 0.04);
         }
         else if(type === 'laser'){ 
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); 
@@ -518,14 +619,41 @@
             g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
             osc.start(); osc.stop(actx.currentTime + 0.2);
         }
-        else if(type === 'wrong'){ 
-            osc.type = 'square'; osc.frequency.setValueAtTime(120, actx.currentTime); 
-            g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
+        else if(type === 'pop'){ 
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(1200, actx.currentTime + 0.05);
+            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
+            osc.start(); osc.stop(actx.currentTime + 0.1);
+        }
+        else if(type === 'error'){ 
+            // 连续两声刺耳的低频蜂鸣
+            osc.type = 'square'; osc.frequency.setValueAtTime(100, actx.currentTime); 
+            g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
+            osc.start(); osc.stop(actx.currentTime + 0.1);
+            
+            let osc2 = actx.createOscillator(); let g2 = actx.createGain();
+            osc2.type = 'square'; osc2.frequency.setValueAtTime(100, actx.currentTime + 0.15); 
+            g2.gain.setValueAtTime(0.2, actx.currentTime + 0.15); g2.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.25);
+            osc2.connect(g2); g2.connect(actx.destination);
+            osc2.start(actx.currentTime + 0.15); osc2.stop(actx.currentTime + 0.25);
+        }
+        else if (type === 'shield') {
+            // 高频护盾反弹音
+            osc.type = 'sine'; osc.frequency.setValueAtTime(1200, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.3);
+            g.gain.setValueAtTime(0.4, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
             osc.start(); osc.stop(actx.currentTime + 0.3);
+        }
+        else if (type === 'explode') {
+            // 沉闷的爆炸轰鸣音爆
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(10, actx.currentTime + 0.5);
+            g.gain.setValueAtTime(0.6, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.5);
+            osc.start(); osc.stop(actx.currentTime + 0.5);
         }
     }
 
-    setupiPod('i'); setupiPod('f'); setupiPod('t');
+    setupThumbwheel('i'); setupThumbwheel('f'); setupThumbwheel('t');
     loadDB();
 </script>
 </body>
