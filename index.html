@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinyin Shooting: Laser Explorer</title>
+    <title>Pinyin Shooting: Laser Defender</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -35,7 +35,7 @@
 
         header {
             display: flex; justify-content: flex-end; align-items: center;
-            padding: 15px 20px; background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(5px);
+            padding: 10px 20px; background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(5px);
             border-bottom: 1px solid rgba(6, 182, 212, 0.3); z-index: 10;
         }
 
@@ -43,141 +43,144 @@
         .stat-label { font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; }
         .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
 
-        #game-board { flex: 1; display: flex; flex-direction: column; position: relative; }
+        /* ⚔️ 战斗区域 (横向布局) */
+        #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-
-        /* 🎯 目标汉字 */
-        .target-zone { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 40px; position: relative; z-index: 2; }
-        .enemy-target {
-            width: 120px; height: 120px; border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
-            font-size: 60px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.8);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
-            transform: rotate(45deg); transition: all 0.2s; cursor: pointer;
-        }
-        .enemy-target:active { transform: rotate(45deg) scale(0.9); background: rgba(255, 255, 255, 0.15); border-color: #38bdf8; box-shadow: 0 0 30px rgba(56, 189, 248, 0.5); }
-        .enemy-text { transform: rotate(-45deg); position: relative;} 
-        .audio-icon { position: absolute; right: -15px; top: -10px; font-size: 18px; filter: drop-shadow(0 2px 2px #000); }
-
-        .hit-correct { transform: rotate(45deg) scale(1.2) !important; border-color: var(--correct-color) !important; background: rgba(34, 197, 94, 0.2) !important; box-shadow: 0 0 40px var(--correct-color) !important; color: var(--correct-color) !important; pointer-events: none;}
-        .hit-wrong { animation: shake 0.4s both; border-color: var(--wrong-color) !important; background: rgba(239, 68, 68, 0.2) !important; color: var(--wrong-color) !important;}
-        @keyframes shake { 10%, 90% { transform: rotate(45deg) translate3d(-5px, 0, 0); } 20%, 80% { transform: rotate(45deg) translate3d(8px, 0, 0); } 30%, 50%, 70% { transform: rotate(45deg) translate3d(-10px, 0, 0); } 40%, 60% { transform: rotate(45deg) translate3d(10px, 0, 0); } }
 
         /* 口诀提示飘字 */
         #rule-toast {
-            position: absolute; top: 25%; width: 100%; text-align: center;
-            color: #fbbf24; font-size: 24px; font-weight: 900; opacity: 0; pointer-events: none;
+            position: absolute; top: 20%; left: 0; width: 100%; text-align: center;
+            color: #fbbf24; font-size: clamp(16px, 4vw, 24px); font-weight: 900; opacity: 0; pointer-events: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50;
         }
 
-        /* --- 🚀 飞船主机 --- */
-        .ship-zone { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; margin-bottom: 20px; }
-        .spaceship { position: relative; width: 220px; height: 120px; display: flex; justify-content: center; align-items: center; }
-        .wing { position: absolute; width: 80px; height: 40px; background: rgba(30, 41, 59, 0.9); top: 40px; box-shadow: inset 0 0 10px #000; border-bottom: 3px solid var(--accent-glow); backdrop-filter: blur(5px);}
+        /* --- 🚀 飞船主机 (左侧固定，炮口向右) --- */
+        #spaceship-container {
+            position: absolute; left: 0px; top: 50%; 
+            transform: translateY(-50%) rotate(90deg); /* 飞船顺时针旋转90度，头朝右 */
+            z-index: 10;
+        }
+        .spaceship { position: relative; width: 200px; height: 120px; display: flex; justify-content: center; align-items: center; }
+        .wing { position: absolute; width: 70px; height: 40px; background: rgba(30, 41, 59, 0.9); top: 40px; box-shadow: inset 0 0 10px #000; border-bottom: 3px solid var(--accent-glow); backdrop-filter: blur(5px);}
         .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); border-radius: 10px 0 0 10px; }
         .wing.right { right: 0; clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%); border-radius: 0 10px 10px 0; }
         .thruster { position: absolute; bottom: -15px; width: 20px; height: 15px; background: #fbbf24; border-radius: 0 0 10px 10px; box-shadow: 0 5px 20px #f59e0b; animation: thrust 0.1s infinite alternate; }
-        .wing.left .thruster { right: 20px; } .wing.right .thruster { left: 20px; }
+        .wing.left .thruster { right: 15px; } .wing.right .thruster { left: 15px; }
         @keyframes thrust { from { height: 15px; opacity: 0.7; } to { height: 28px; opacity: 1; } }
 
         .ship-core {
-            width: 120px; height: 120px; background: radial-gradient(circle, #0f172a 0%, #020617 100%);
+            width: 100px; height: 100px; background: radial-gradient(circle, #0f172a 0%, #020617 100%);
             border: 4px solid var(--accent-glow); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; position: relative; z-index: 12;
             box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), inset 0 0 20px rgba(0,0,0,0.8);
             cursor: pointer; transition: 0.2s;
         }
         .ship-core:active { transform: scale(0.9); box-shadow: 0 0 15px rgba(6, 182, 212, 0.9); border-color: #fff; }
-        .hud-text { font-size: 44px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); letter-spacing: 2px; transition: 0.2s;}
+        
+        /* 文字需要反向旋转90度，保证人眼看着是正的 */
+        .hud-text { 
+            display: inline-block; transform: rotate(-90deg);
+            font-size: 38px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); transition: 0.2s;
+        }
 
         /* ⚠️ 待脱帽的红色警告状态 */
         .ship-core.needs-fix { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(0,0,0,0.8); animation: pulseRed 1s infinite alternate; }
         .ship-core.needs-fix .hud-text { color: #fca5a5; text-shadow: 0 0 15px #ef4444; }
         @keyframes pulseRed { from { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), inset 0 0 20px rgba(0,0,0,0.8); } to { box-shadow: 0 0 40px rgba(239, 68, 68, 0.8), inset 0 0 20px rgba(0,0,0,0.8); } }
 
-        /* --- 🎛️ 底部浅色系纯物理雷达转盘 (全新段落感设计) --- */
+        /* --- 👾 移动怪物靶子 (右侧逼近) --- */
+        #target-mover {
+            position: absolute; top: 50%; right: -30vw; transform: translateY(-50%); z-index: 8;
+        }
+        .enemy-target {
+            width: 100px; height: 100px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
+            font-size: 50px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
+            transform: rotate(45deg); transition: all 0.2s; cursor: pointer;
+        }
+        .enemy-target:active { transform: rotate(45deg) scale(0.9); background: rgba(255, 255, 255, 0.15); border-color: #38bdf8; box-shadow: 0 0 30px rgba(56, 189, 248, 0.5); }
+        .enemy-text { transform: rotate(-45deg); position: relative;} 
+        .audio-icon { position: absolute; right: -15px; top: -10px; font-size: 16px; filter: drop-shadow(0 2px 2px #000); }
+
+        .hit-correct { transform: rotate(45deg) scale(1.2) !important; border-color: var(--correct-color) !important; background: rgba(34, 197, 94, 0.2) !important; box-shadow: 0 0 40px var(--correct-color) !important; color: var(--correct-color) !important; pointer-events: none;}
+        .hit-wrong { animation: shake 0.4s both; border-color: var(--wrong-color) !important; background: rgba(239, 68, 68, 0.2) !important; color: var(--wrong-color) !important;}
+
+
+        /* --- 🎛️ 底部浅色系物理仪表盘 (加 FIRE 键) --- */
         .dashboard {
-            height: 250px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
+            height: 20vh; min-height: 160px; max-height: 220px;
+            background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
             border-radius: 40px 40px 0 0; display: flex; justify-content: space-evenly; align-items: center;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5); position: relative; z-index: 10;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px); padding: 0 10px;
         }
 
-        .dial-container { position: relative; display: flex; align-items: center; justify-content: center; width: 200px; }
+        .dial-container { position: relative; display: flex; align-items: center; justify-content: center; flex: 1; max-width: 150px; }
 
         .dial-wrapper {
-            width: 170px; height: 170px; border-radius: 50%; border: 2px solid #e2e8f0;
+            width: 18vw; max-width: 130px; aspect-ratio: 1; border-radius: 50%; border: 2px solid #e2e8f0;
             background: var(--wheel-bg); position: relative; 
             box-shadow: inset 0 4px 15px rgba(0,0,0,0.05), 0 5px 20px rgba(0,0,0,0.15);
             display: flex; justify-content: center; align-items: center; cursor: grab; 
         }
         .dial-wrapper:active { cursor: grabbing; }
 
-        /* 中心旋钮设计 (金属防滑齿轮感) */
         .dial-knob {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85px; height: 85px; border-radius: 50%;
+            width: 45%; height: 45%; border-radius: 50%;
             background: repeating-conic-gradient(from 0deg, #e2e8f0 0deg 10deg, #f1f5f9 10deg 20deg);
             box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 2px 5px #fff;
             border: 1px solid #cbd5e1; z-index: 5; pointer-events: none; 
         }
-        /* 旋钮中心的内凹圆 */
         .dial-knob::after {
-            content: ''; position: absolute; top: 18px; left: 18px; right: 18px; bottom: 18px;
+            content: ''; position: absolute; top: 15%; left: 15%; right: 15%; bottom: 15%;
             background: #f8fafc; border-radius: 50%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* 纯物理轮盘 (保留了 transition 以实现机械弹簧般的段落感) */
         .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .dial-wheel.dragging { transition: none !important; }
 
         .dial-item {
             position: absolute; top: 50%; left: 50%; width: 50px; height: 40px; margin-top: -20px; margin-left: -25px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 26px; font-weight: bold; color: var(--text-muted-light); transition: color 0.15s, font-size 0.15s; pointer-events: none; 
+            font-size: clamp(14px, 3.5vw, 24px); font-weight: bold; color: var(--text-muted-light); transition: color 0.15s, font-size 0.15s; pointer-events: none; 
         }
 
-        .dial-item.active { font-size: 42px; font-weight: 900; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
-        .i-dial .dial-item.active { color: #334155; }
-        .f-dial .dial-item.active { color: #0284c7; } 
-        .t-dial .dial-item.active { color: #d97706; } 
+        .dial-item.active { font-size: clamp(24px, 6vw, 38px); font-weight: 900; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
+        .i-dial .dial-item.active { color: #334155; } .f-dial .dial-item.active { color: #0284c7; } .t-dial .dial-item.active { color: #d97706; } 
 
-        .text-qingsheng { font-size: 22px !important; letter-spacing: -1px; }
-        .dial-item.active .text-qingsheng { font-size: 28px !important; }
+        .text-qingsheng { font-size: clamp(12px, 2.5vw, 18px) !important; letter-spacing: -1px; }
+        .dial-item.active .text-qingsheng { font-size: clamp(18px, 4.5vw, 26px) !important; }
 
         .dial-arrow {
-            position: absolute; right: 0px; top: 50%; transform: translateY(-50%);
-            font-size: 30px; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
+            font-size: clamp(18px, 4vw, 28px); z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
         .i-dial-arrow { color: #475569; } .f-dial-arrow { color: #0284c7; } .t-dial-arrow { color: #d97706; }
 
-        /* --- 🎮 开始页面 (含 PSLE 专属标题) --- */
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px);}
-
-        .game-title {
-            font-size: 32px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px #06b6d4; 
-            text-align: center; white-space: nowrap; font-style: italic; letter-spacing: 2px;
-            display: flex; align-items: baseline; gap: 8px;
+        /* 🔥 新增：独立 FIRE 按键区 */
+        .action-container { flex: 0.8; max-width: 120px; display: flex; justify-content: center; align-items: center; }
+        #btn-fire-action {
+            width: 18vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: 4px solid #fca5a5; color: white; font-size: clamp(16px, 4vw, 26px); font-weight: 900;
+            box-shadow: 0 8px 0 #7f1d1d, 0 15px 20px rgba(0,0,0,0.4);
+            cursor: pointer; transition: 0.1s;
         }
-        .psle-cap { color: #fbbf24; font-size: 56px; text-shadow: 0 0 20px #f59e0b; font-style: normal; }
+        #btn-fire-action:active:not(:disabled) { transform: translateY(8px); box-shadow: 0 0 0 #7f1d1d; }
+        #btn-fire-action:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; box-shadow: 0 8px 0 #334155; }
 
+        /* --- 🎮 开始页面 --- */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px);}
+        .game-title { font-size: 32px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px #06b6d4; text-align: center; white-space: nowrap; font-style: italic; letter-spacing: 2px; display: flex; align-items: baseline; gap: 8px;}
+        .psle-cap { color: #fbbf24; font-size: 56px; text-shadow: 0 0 20px #f59e0b; font-style: normal; }
         .start-btn { background: linear-gradient(135deg, #06b6d4, #0369a1); color: white; border: none; padding: 15px 50px; border-radius: 30px; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #075985; transition: 0.1s;}
         .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #075985;}
 
         @media (max-width: 800px) {
-            .game-title { font-size: 4vw; gap: 4px;}
-            .psle-cap { font-size: 7vw; }
-        }
-
-        @media (max-height: 700px) {
-            .dashboard { height: 200px; }
-            .dial-wrapper { width: 140px; height: 140px; }
-            .dial-knob { width: 70px; height: 70px; }
-            .spaceship { transform: scale(0.8); }
-            .enemy-target { width: 100px; height: 100px; font-size: 50px; }
-            .dial-item { font-size: 22px; }
-            .dial-item.active { font-size: 34px; }
+            .game-title { font-size: 4vw; gap: 4px;} .psle-cap { font-size: 7vw; }
         }
     </style>
 </head>
@@ -187,59 +190,61 @@
         <div class="stat-box"><span class="stat-label">SCORE</span><span class="stat-value" id="ui-score">0</span></div>
     </header>
 
-    <div id="game-board">
+    <div id="combat-area">
         <canvas id="laser-canvas"></canvas>
-        <div id="rule-toast">⚠️ j q x y 遇到 ü 要脱帽！</div>
+        <div id="rule-toast">⚠️ j q x y 遇到 ü 要脱帽！点击屏幕上的拼音脱帽！</div>
 
-        <div class="target-zone">
-            <div class="enemy-target" id="target-container" onclick="playTargetAudio()">
-                <div class="enemy-text" id="target-char">🎯<span class="audio-icon">🔊</span></div>
-            </div>
-        </div>
-
-        <div class="ship-zone">
+        <div id="spaceship-container">
             <div class="spaceship">
                 <div class="wing left"><div class="thruster"></div></div>
-                <div class="ship-core" id="btn-fire" onclick="handleHudClick()">
+                <div class="ship-core" onclick="handleHudClick()">
                     <span class="hud-text" id="hud-display"></span>
                 </div>
                 <div class="wing right"><div class="thruster"></div></div>
             </div>
         </div>
 
-        <div class="dashboard">
-            <div class="dial-container">
-                <div class="dial-wrapper i-dial" id="wrap-i">
-                    <div class="dial-wheel" id="wheel-i"></div>
-                    <div class="dial-knob"></div>
-                </div>
-                <div class="dial-arrow i-dial-arrow">◀</div>
+        <div id="target-mover">
+            <div class="enemy-target" id="target-container" onclick="playTargetAudio()">
+                <div class="enemy-text" id="target-char">🎯<span class="audio-icon">🔊</span></div>
             </div>
+        </div>
+    </div>
 
-            <div class="dial-container">
-                <div class="dial-wrapper f-dial" id="wrap-f">
-                    <div class="dial-wheel" id="wheel-f"></div>
-                    <div class="dial-knob"></div>
-                </div>
-                <div class="dial-arrow f-dial-arrow">◀</div>
+    <div class="dashboard">
+        <div class="dial-container">
+            <div class="dial-wrapper i-dial" id="wrap-i">
+                <div class="dial-wheel" id="wheel-i"></div>
+                <div class="dial-knob"></div>
             </div>
+            <div class="dial-arrow i-dial-arrow">◀</div>
+        </div>
 
-            <div class="dial-container">
-                <div class="dial-wrapper t-dial" id="wrap-t">
-                    <div class="dial-wheel" id="wheel-t"></div>
-                    <div class="dial-knob"></div>
-                </div>
-                <div class="dial-arrow t-dial-arrow">◀</div>
+        <div class="dial-container">
+            <div class="dial-wrapper f-dial" id="wrap-f">
+                <div class="dial-wheel" id="wheel-f"></div>
+                <div class="dial-knob"></div>
             </div>
+            <div class="dial-arrow f-dial-arrow">◀</div>
+        </div>
+
+        <div class="dial-container">
+            <div class="dial-wrapper t-dial" id="wrap-t">
+                <div class="dial-wheel" id="wheel-t"></div>
+                <div class="dial-knob"></div>
+            </div>
+            <div class="dial-arrow t-dial-arrow">◀</div>
+        </div>
+
+        <div class="action-container">
+            <button id="btn-fire-action" onclick="handleFireClick()">FIRE</button>
         </div>
     </div>
 
     <div id="overlay">
         <h1 class="game-title">
             <span><span class="psle-cap">P</span>inyin</span>
-            <span><span class="psle-cap">S</span>hooting</span>
-            <span><span class="psle-cap">L</span>aser</span>
-            <span><span class="psle-cap">E</span>xplorer</span>
+            <span><span class="psle-cap">D</span>efender</span>
         </h1>
         <button class="start-btn" onclick="startGame()">MISSION START</button>
     </div>
@@ -258,9 +263,11 @@
 
     let state = {
         score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
-        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 }
+        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
+        targetX: -20, targetSpeed: 0.15, targetActive: false 
     };
 
+    let gameLoopRef;
     const canvas = document.getElementById('laser-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -295,7 +302,35 @@
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
         document.getElementById('ui-score').innerText = state.score; 
-        resizeCanvas(); nextTarget();
+        document.getElementById('btn-fire-action').disabled = false;
+        resizeCanvas(); 
+        nextTarget();
+        if(gameLoopRef) cancelAnimationFrame(gameLoopRef);
+        gameLoop();
+    }
+
+    // --- 👾 游戏主循环 (处理怪物移动) ---
+    function gameLoop() {
+        if (!state.isPlaying) return;
+
+        if (state.targetActive) {
+            state.targetX += state.targetSpeed; // 屏幕百分比，从右向左递增
+            const mover = document.getElementById('target-mover');
+            mover.style.right = state.targetX + 'vw';
+            
+            // 如果怪物飞到了左边屏幕边缘外 (Miss)
+            if (state.targetX > 100) {
+                state.targetActive = false;
+                const tc = document.getElementById('target-container');
+                tc.classList.remove('hit-correct', 'hit-wrong'); 
+                void tc.offsetWidth; 
+                tc.classList.add('hit-wrong');
+                playSound('wrong');
+                // 惩罚后重新生成下一个怪物
+                setTimeout(() => { if (state.isPlaying) nextTarget(); }, 1000);
+            }
+        }
+        gameLoopRef = requestAnimationFrame(gameLoop);
     }
 
     function getDistractors(correct, allArr, totalCount) {
@@ -315,6 +350,12 @@
         state.f.opts = getDistractors(next.f, ALL_FINALS, 7);
         state.t.opts = [...ALL_TONES];
 
+        // 重置怪物位置和速度
+        state.targetX = -20; 
+        state.targetSpeed = 0.08 + (Math.random() * 0.05); 
+        state.targetActive = true;
+        document.getElementById('target-mover').style.right = state.targetX + 'vw';
+
         buildDial('i', state.i.opts); buildDial('f', state.f.opts); buildDial('t', state.t.opts);
 
         const tc = document.getElementById('target-container');
@@ -322,18 +363,32 @@
         document.getElementById('target-char').innerHTML = `${next.char}<span class="audio-icon">🔊</span>`;
     }
 
-    const RADIUS = 62; // 将文字推向外圈，完美适配加大的轮盘
-
+    // 💡 自适应文字圆周半径，确保不管屏幕大小，文字都贴着滚轮边缘
     function buildDial(type, options) {
         const wheel = document.getElementById(`wheel-${type}`);
         let html = ''; state[type].step = 360 / options.length; 
+        const wrapper = document.getElementById(`wrap-${type}`);
+        const dynamicRadius = wrapper.offsetWidth * 0.38; // 动态计算半径
+
         options.forEach((opt, index) => {
             let rot = index * state[type].step;
             let displayClass = opt === '轻声' ? 'text-qingsheng' : '';
-            html += `<div class="dial-item ${displayClass}" id="item-${type}-${index}" style="transform: rotate(${rot}deg) translateX(${RADIUS}px);">${opt}</div>`;
+            html += `<div class="dial-item ${displayClass}" id="item-${type}-${index}" style="transform: rotate(${rot}deg) translateX(${dynamicRadius}px);">${opt}</div>`;
         });
         wheel.innerHTML = html; state[type].angle = 0; updateDialVisuals(type);
     }
+
+    // 处理屏幕旋转或拉伸时，重新计算半径
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if(state.i.opts.length > 0) {
+                buildDial('i', state.i.opts); buildDial('f', state.f.opts); buildDial('t', state.t.opts);
+            }
+        }, 100);
+    });
 
     function setupiPodWheel(type) {
         const wrapper = document.getElementById(`wrap-${type}`);
@@ -361,13 +416,9 @@
             
             if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
             
-            // 💡 阻尼感核心：只取手指滑动距离的 80%
             let targetAngle = initialRotation + delta * 0.8;
-            
-            // 💡 段落感核心：拖拽时直接计算出应吸附的卡扣位置
             let snappedAngle = Math.round(targetAngle / state[type].step) * state[type].step;
 
-            // 只有当跨越了一个段落时，才更新视图和播放音效
             if (state[type].angle !== snappedAngle) {
                 state[type].angle = snappedAngle;
                 state.hatRemoved = false; 
@@ -420,17 +471,22 @@
         let curI = getSelectedValue('i'); let curF = getSelectedValue('f'); let curT = getSelectedValue('t');
         let combined = ""; let tn = parseInt(curT);
         let displayF = curF;
+        
+        // 核心：判定当前组合是否属于 jqx 脱帽规则
         let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
 
         if (needsHatRemoval) {
             if (!state.hatRemoved) {
-                document.getElementById('btn-fire').classList.add('needs-fix');
+                // 如果还未脱帽，飞船亮红灯报警
+                document.querySelector('.ship-core').classList.add('needs-fix');
             } else {
+                // 已经手动脱帽，恢复正常
                 displayF = curF.replace(/ü/g, 'u');
-                document.getElementById('btn-fire').classList.remove('needs-fix');
+                document.querySelector('.ship-core').classList.remove('needs-fix');
             }
         } else {
-            document.getElementById('btn-fire').classList.remove('needs-fix');
+            // 普通组合，不需要报警
+            document.querySelector('.ship-core').classList.remove('needs-fix');
         }
 
         combined = curI + displayF;
@@ -444,25 +500,45 @@
         document.getElementById('hud-display').innerText = combined;
     }
 
-    function handleHudClick() {
-        if (!state.isPlaying) return;
+    // 💥 独立 FIRE 按钮触发逻辑 
+    function handleFireClick() {
+        if (!state.isPlaying || !state.targetActive) return;
 
         let curI = getSelectedValue('i'); let curF = getSelectedValue('f');
         let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
 
+        // 拦截机制：需要脱帽且学生还没脱，就拒绝对火并提示
         if (needsHatRemoval && !state.hatRemoved) {
-            state.hatRemoved = true; playSound('pop');
-
-            const ship = document.getElementById('btn-fire').getBoundingClientRect();
-            confetti({ particleCount: 20, spread: 50, origin: { x: (ship.left + ship.width/2)/window.innerWidth, y: (ship.top + ship.height/2)/window.innerHeight }, colors: ['#ef4444', '#fff'], startVelocity: 15, ticks: 50 });
-
-            updateHUD(); 
-
+            playSound('wrong');
             const toast = document.getElementById('rule-toast');
             toast.style.opacity = '1'; toast.style.transform = 'translateY(-20px)';
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(0)'; }, 2000);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(0)'; }, 2500);
+            
+            document.querySelector('.ship-core').classList.add('needs-fix');
         } else {
+            // 否则正常开火
             fireLaser();
+        }
+    }
+
+    // 🛡️ 手动脱帽逻辑 (点击飞船的拼音屏)
+    function handleHudClick() {
+        if (!state.isPlaying) return;
+        let curI = getSelectedValue('i'); let curF = getSelectedValue('f');
+        let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
+
+        if (needsHatRemoval && !state.hatRemoved) {
+            state.hatRemoved = true; 
+            playSound('pop');
+
+            const ship = document.querySelector('.ship-core').getBoundingClientRect();
+            confetti({ 
+                particleCount: 20, spread: 50, 
+                origin: { x: (ship.left + ship.width/2)/window.innerWidth, y: (ship.top + ship.height/2)/window.innerHeight }, 
+                colors: ['#ef4444', '#fff'], startVelocity: 15, ticks: 50 
+            });
+
+            updateHUD(); 
         }
     }
 
@@ -476,6 +552,7 @@
         const tc = document.getElementById('target-container');
 
         if (isI_Correct && isF_Correct && isT_Correct) {
+            state.targetActive = false; // 打中后怪物停止移动
             tc.classList.remove('hit-wrong'); void tc.offsetWidth; tc.classList.add('hit-correct');
             document.getElementById('target-char').innerHTML = `${state.currentTarget.py}<span class="audio-icon">🔊</span>`; 
 
@@ -497,9 +574,13 @@
 
     function drawLaser() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const tr = document.getElementById('target-char').getBoundingClientRect();
+        
+        // 目标位置
+        const tr = document.getElementById('target-container').getBoundingClientRect();
         const tX = tr.left + tr.width / 2; const tY = tr.top + tr.height / 2;
-        const ship = document.getElementById('btn-fire').getBoundingClientRect();
+        
+        // 发射点：飞船核心区
+        const ship = document.querySelector('.ship-core').getBoundingClientRect();
         const sX = ship.left + ship.width / 2; const sY = ship.top + ship.height / 2;
 
         ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
