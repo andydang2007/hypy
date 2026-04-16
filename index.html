@@ -20,19 +20,18 @@
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #050505;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.08) 0%, transparent 50%), 
-                radial-gradient(circle at 85% 30%, rgba(255, 0, 60, 0.05) 0%, transparent 50%),
-                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            /* 🔥 实景背景更新 */
+            background-image: url("Https://i.postimg.cc/k43Qq3MP/IMG-20260416-164456.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .sci-fi-text { font-family: 'Orbitron', sans-serif; }
 
         header {
             display: flex; justify-content: flex-end; align-items: center;
-            padding: 10px 20px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(5px);
+            padding: 10px 20px; background: rgba(5, 5, 5, 0.7); backdrop-filter: blur(5px);
             border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
@@ -51,7 +50,7 @@
             z-index: 10; display: flex; justify-content: center; align-items: center;
         }
         
-        /* JPG 飞船图片 (使用滤色混合模式消除黑底) */
+        /* JPG 飞船图片 (滤色消除黑底) */
         #player-ship-img {
             width: 100px; height: auto; 
             mix-blend-mode: screen; 
@@ -59,7 +58,7 @@
             filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.3));
         }
         
-        /* 精准炮口锚点 (位于图片的正上方，即旋转后的正右方) */
+        /* 精准炮口锚点 (正上方 = 旋转后的右方) */
         #laser-muzzle {
             position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
             width: 6px; height: 6px; background: #ffffff; border-radius: 50%;
@@ -67,9 +66,13 @@
             z-index: 20;
         }
 
-        /* 飞船中心的全息拼音显示环 */
+        /* 🔥 全息显示窗移到“尾部后方” (旋转后的视觉左侧) */
         .ship-core {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            position: absolute; 
+            top: 50%; 
+            left: -60px; /* 👈 关键点：设置负值，让它悬浮在飞船图片的尾焰排放口后面 */
+            transform: translateY(-50%); /* 垂直居中对齐飞船轴线 */
+            
             width: 48px; height: 48px; background: rgba(5,5,5,0.7); 
             border: 2px solid var(--accent-glow); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
@@ -79,7 +82,7 @@
         
         .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 20px; font-weight: 900; color: #fff; font-family: sans-serif;}
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
-        @keyframes pulseRed { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.1); } }
+        @keyframes pulseRed { from { transform: translateY(-50%) scale(1); } to { transform: translateY(-50%) scale(1.1); } }
 
         #finger-hint {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
@@ -171,15 +174,13 @@
         }
         #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
-        /* --- UI 界面 --- */
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
         .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 30px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
         .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
         #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
         @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
         
-        /* 选船区 */
         .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 15px; color: #94a3b8; display: none; }
         .ship-selector { display: none; gap: 15px; margin-bottom: 40px; }
         .ship-option {
@@ -358,10 +359,7 @@
     function startGame() {
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
         initAudio(); 
-        
-        // 渲染选中的飞机
         document.getElementById('player-ship-img').src = SHIPS[currentShipIdx];
-
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
         document.getElementById('ui-score').innerText = '0';
@@ -553,8 +551,8 @@
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             playSound('wrong');
-            document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1.5)';
-            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1)', 200);
+            document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
+            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1)', 200);
             return;
         }
 
