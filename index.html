@@ -24,6 +24,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            transition: box-shadow 0.1s; /* 配合红色警报闪烁 */
         }
 
         .sci-fi-text { font-family: 'Orbitron', sans-serif; }
@@ -39,15 +40,26 @@
         .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
 
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
-        #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        
+        /* 🔥 画布脱离文档流限制，覆盖全屏，彻底解决激光偏移 Bug */
+        #laser-canvas { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            pointer-events: none; z-index: 50; 
+        }
 
-        /* 战斗区域屏幕抖动 */
+        /* 🔥 错误视觉惩罚：红色警报闪烁与屏幕抖动 */
+        .flash-error { animation: errorFlash 0.3s ease-out; }
+        @keyframes errorFlash {
+            0% { box-shadow: inset 0 0 100px var(--wrong-color); }
+            100% { box-shadow: inset 0 0 0 transparent; }
+        }
+
         @keyframes shake-screen {
-            0% { transform: translate(1px, 1px); }
-            20% { transform: translate(-3px, 0px); }
-            40% { transform: translate(1px, -1px); }
-            60% { transform: translate(-3px, 1px); }
-            80% { transform: translate(-1px, -1px); }
+            0% { transform: translate(2px, 2px); }
+            20% { transform: translate(-4px, 0px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-4px, 2px); }
+            80% { transform: translate(-2px, -2px); }
             100% { transform: translate(0px, 0px); }
         }
         .shake-screen { animation: shake-screen 0.2s; animation-iteration-count: 1; }
@@ -66,9 +78,10 @@
             pointer-events: none; filter: contrast(1.8) brightness(0.8); 
         }
 
+        /* 隐形的几何炮口 */
         #laser-muzzle { position: absolute; top: 0; left: 50%; width: 1px; height: 1px; pointer-events: none; }
 
-        /* 矩形全息拼音框 */
+        /* 矩形全息拼音框：留在原本设定的“上方”以节约横向空间 */
         .ship-core {
             position: absolute; 
             top: 50%; left: -65px; 
@@ -91,20 +104,28 @@
         }
         @keyframes pointDown { from { top: -55px; } to { top: -40px; } }
 
-        /* 👾 怪物及其极速淡出类 */
+        /* 👾 怪物及其容器：使用你提供的 monster.jpg */
         #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; transition: opacity 0.1s ease-out, transform 0.1s ease-out;}
-        .enemy-target {
-            width: 50px; height: 50px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 2px solid #fff;
-            transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 15px rgba(255,255,255,0.2); backdrop-filter: blur(4px);
+        
+        .enemy-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .enemy-text { transform: rotate(-45deg); font-size: 28px; font-weight: 900; color: #fff; }
+        /* 🔥 汉字作为“帽子”顶在怪物头上 */
+        .enemy-text { 
+            font-size: 32px; font-weight: 900; color: #fff; 
+            text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow); 
+            margin-bottom: 2px; z-index: 2;
+        }
+        /* 怪物本体图片 */
+        .enemy-img {
+            width: 65px; height: 65px; object-fit: contain;
+            mix-blend-mode: screen; filter: contrast(1.2);
+        }
 
-        /* 🔥 目标极速消失 */
         .fade-out-fast { opacity: 0 !important; transform: translateY(-50%) scale(0.01) !important; }
 
         /* 💥 爆炸动画 */
-        .explosion-effect-container { position: absolute; width: 150px; height: 150px; pointer-events: none; z-index: 30; mix-blend-mode: screen; }
+        .explosion-effect-container { position: fixed; width: 150px; height: 150px; pointer-events: none; z-index: 60; mix-blend-mode: screen; }
         .explosion-layer {
             position: absolute; width: 100%; height: 100%;
             background-image: url("explosion.png"); background-size: contain; background-repeat: no-repeat; background-position: center;
@@ -159,18 +180,17 @@
         }
         #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
 
-        /* --- 🔥 启动页面 UI：大幅拉开上下间距 --- */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
         
-        .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 60px; /* 拉大距离 */ text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
+        .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 60px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
         .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
         
         #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
         @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
         
-        .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 25px; /* 拉大距离 */ color: #94a3b8; display: none; }
-        .ship-selector { display: none; gap: 25px; margin-bottom: 60px; /* 拉大距离 */ align-items: center; justify-content: center; }
+        .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 25px; color: #94a3b8; display: none; }
+        .ship-selector { display: none; gap: 25px; margin-bottom: 60px; align-items: center; justify-content: center; }
         
         .ship-option {
             width: 80px; height: 80px; padding: 5px; box-sizing: border-box;
@@ -217,8 +237,9 @@
         </div>
 
         <div id="target-mover">
-            <div class="enemy-target" id="target-container">
+            <div class="enemy-container" id="target-container">
                 <div class="enemy-text" id="target-char">🎯</div>
+                <img class="enemy-img" src="monster.jpg" alt="Monster">
             </div>
         </div>
     </div>
@@ -270,14 +291,14 @@
     let currentShipIdx = 0;
 
     function selectShip(idx) {
-        initAudio(); // 强制解锁浏览器音频限制
+        initAudio(); 
         currentShipIdx = idx;
         const options = document.querySelectorAll('.ship-option');
         options.forEach((opt, i) => {
             if(i === idx) opt.classList.add('selected');
             else opt.classList.remove('selected');
         });
-        playSound('select'); // 🔥 播放专属选船音效
+        playSound('select'); 
     }
 
     const TONE_MAP = {'a':['','ā','á','ǎ','à'], 'o':['','ō','ó','ǒ','ò'], 'e':['','ē','é','ě','è'], 'i':['','ī','í','ǐ','ì'], 'u':['','ū','ú','ǔ','ù'], 'ü':['','ǖ','ǘ','ǚ','ǜ']};
@@ -285,7 +306,6 @@
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
     let DB_WORDS = [];
-    // 🔥 新增 dialsTouched 状态，用于控制拼音框的首次显示
     let state = {
         score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, dialsTouched: false,
         i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
@@ -369,7 +389,6 @@
         state.targetActive = true;
         state.hatRemoved = false;
         
-        // 🔥 新题目：重置旋钮触摸状态，并将目标移除极速淡出类
         state.dialsTouched = false;
         document.getElementById('target-mover').classList.remove('fade-out-fast');
 
@@ -432,7 +451,6 @@
             startAngle = state[type].angle;
             document.getElementById(`ptr-${type}`).style.transition = 'none';
             
-            // 🔥 只要孩子一碰旋钮，解锁拼音显示
             if (!state.dialsTouched) {
                 state.dialsTouched = true;
                 updateHUD();
@@ -517,7 +535,6 @@
     }
 
     function updateHUD() {
-        // 🔥 如果孩子还没有摸过旋钮，面板默认全空
         if (!state.dialsTouched) {
             document.getElementById('hud-display').innerText = '';
             document.getElementById('ship-main').classList.remove('needs-fix');
@@ -553,10 +570,20 @@
         }
     }
 
+    // 🔥 新增错误视觉惩罚函数
+    function triggerWrongVisual() {
+        const combatArea = document.getElementById('combat-area');
+        combatArea.classList.add('shake-screen');
+        document.body.classList.add('flash-error');
+        setTimeout(() => {
+            combatArea.classList.remove('shake-screen');
+            document.body.classList.remove('flash-error');
+        }, 300);
+    }
+
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
         
-        // 如果孩子直接开火没摸旋钮，强行点亮面板并验证
         if (!state.dialsTouched) {
             state.dialsTouched = true;
             updateHUD();
@@ -564,6 +591,7 @@
         
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             playSound('wrong');
+            triggerWrongVisual(); // 视觉惩罚
             document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1.5)';
             setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateY(-50%) scale(1)', 200);
             return;
@@ -574,14 +602,13 @@
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
             
-            // 🔥 添加极速消失类
             document.getElementById('target-mover').classList.add('fade-out-fast');
             triggerExplosion();
             
-            // 🔥 等待时间缩短，游戏节奏更快
             setTimeout(nextTarget, 600);
         } else {
             playSound('wrong');
+            triggerWrongVisual(); // 视觉惩罚
         }
     }
 
@@ -596,6 +623,7 @@
 
         const container = document.createElement('div');
         container.className = 'explosion-effect-container';
+        // 绑定到 fixed 全局坐标
         container.style.left = cx + 'px';
         container.style.top = cy + 'px';
 
@@ -624,12 +652,18 @@
         if (state.targetActive) {
             state.targetX += state.targetSpeed;
             document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            if (state.targetX > 105) { state.targetActive = false; playSound('wrong'); setTimeout(nextTarget, 1000); }
+            if (state.targetX > 105) { 
+                state.targetActive = false; 
+                playSound('wrong'); 
+                triggerWrongVisual(); // 怪物逃跑的视觉惩罚
+                setTimeout(nextTarget, 1000); 
+            }
         }
         requestAnimationFrame(gameLoop);
     }
 
     function drawLaser() {
+        // 🔥 画布铺满全屏，与 getBoundingClientRect 坐标系 100% 对齐
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         
         const muzzle = document.getElementById('laser-muzzle').getBoundingClientRect();
@@ -652,7 +686,6 @@
         let osc = actx.createOscillator(); let g = actx.createGain();
         osc.connect(g); g.connect(actx.destination);
         
-        // 🔥 新增：专属的选船高频启动音效
         if(type === 'select'){ 
             osc.type = 'sine'; 
             osc.frequency.setValueAtTime(600, actx.currentTime); 
