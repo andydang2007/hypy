@@ -8,26 +8,21 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --accent-glow: #00f0ff; /* 赛博青色 */
+            --accent-glow: #00f0ff; 
             --correct-color: #39ff14; 
             --wrong-color: #ff003c;   
-            --panel-light-bg: rgba(241, 245, 249, 0.95);
-            --wheel-bg: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted-light: #94a3b8;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        /* 中文用雅黑，数字和英文全用科幻字体 */
         body { 
             margin: 0; padding: 0; color: #fff; 
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #050505;
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.1) 0%, transparent 50%), 
-                radial-gradient(circle at 85% 30%, rgba(255, 0, 60, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.08) 0%, transparent 50%), 
+                radial-gradient(circle at 85% 30%, rgba(255, 0, 60, 0.05) 0%, transparent 50%),
                 linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
             background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
@@ -37,8 +32,9 @@
 
         header {
             display: flex; justify-content: flex-end; align-items: center;
-            padding: 10px 20px; background: rgba(5, 5, 5, 0.6); backdrop-filter: blur(5px);
-            border-bottom: 1px solid rgba(0, 240, 255, 0.3); z-index: 10;
+            padding: 10px 20px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(5px);
+            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
@@ -48,105 +44,137 @@
         /* ⚔️ 战斗区域 */
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-        
-        #rule-toast {
-            position: absolute; top: 15%; left: 0; width: 100%; text-align: center;
-            color: #fbbf24; font-size: 18px; font-weight: 900; opacity: 0; pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50;
-        }
 
-        /* 🚀 飞船 (科幻化) */
-        #spaceship-container {
-            position: absolute; left: 30px; top: 50%; 
-            transform: translateY(-50%) rotate(90deg); z-index: 10;
-        }
+        /* 🚀 飞船 (左侧横向) */
+        #spaceship-container { position: absolute; left: 30px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
         .spaceship { position: relative; width: 80px; height: 50px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 30px; height: 15px; background: rgba(15, 23, 42, 0.9); top: 18px; border-bottom: 2px solid var(--accent-glow); }
         .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); }
         .wing.right { right: 0; clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%); }
         
         .ship-core {
-            width: 44px; height: 44px; background: #050505; border: 2px solid var(--accent-glow); border-radius: 50%;
+            width: 50px; height: 50px; background: #050505; border: 3px solid var(--accent-glow); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.4); position: relative;
         }
-        .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 18px; font-weight: 900; color: #fff; }
-        .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 20px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
-        @keyframes pulseRed { from { box-shadow: 0 0 10px var(--wrong-color); } to { box-shadow: 0 0 30px var(--wrong-color); } }
+        
+        .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 22px; font-weight: 900; color: #fff; font-family: sans-serif;}
+        
+        .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
+        @keyframes pulseRed { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+        /* 👇 脱帽手指提示 */
+        #finger-hint {
+            position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
+            font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
+            animation: pointDown 0.6s infinite alternate cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: none; z-index: 20; pointer-events: none;
+        }
+        @keyframes pointDown { from { top: -60px; } to { top: -40px; } }
 
         /* 👾 怪物 */
         #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; }
         .enemy-target {
-            width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.5);
+            width: 45px; height: 45px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.5);
             transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 15px rgba(255,255,255,0.1); backdrop-filter: blur(2px);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1); backdrop-filter: blur(4px);
         }
-        .enemy-text { transform: rotate(-45deg); font-size: 20px; font-weight: 900; color: #fff; }
+        .enemy-text { transform: rotate(-45deg); font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* 🎛️ 底部仪表盘 */
+        /* 🎛️ 拟物化重金属仪表盘 */
         .dashboard {
-            height: 22vh; min-height: 180px; background: var(--panel-light-bg); border-top: 3px solid #cbd5e1;
-            display: flex; justify-content: center; align-items: center; gap: 2vw; border-radius: 40px 40px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); padding: 0 15px;
+            height: 22vh; min-height: 180px; 
+            background: linear-gradient(to bottom, #d1d5db, #9ca3af); 
+            border-top: 6px solid #f3f4f6;
+            /* 🔥 拉宽间距：使用 space-between 配合 padding 把元件彻底散开 */
+            display: flex; justify-content: center; align-items: center; gap: 5vw; border-radius: 30px 30px 0 0;
+            box-shadow: inset 0 5px 15px rgba(255,255,255,0.7), 0 -15px 40px rgba(0,0,0,0.8);
+            padding: 0 5vw;
         }
 
-        .dial-container { position: relative; width: 18vw; max-width: 140px; aspect-ratio: 1; margin-right: 15px; }
-        .dial-wrapper { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #e2e8f0; background: #fff; position: relative; display: flex; justify-content: center; align-items: center; cursor: grab; box-shadow: inset 0 4px 10px rgba(0,0,0,0.05), 0 4px 10px rgba(0,0,0,0.1); }
-        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .dial-container { position: relative; width: 18vw; max-width: 140px; aspect-ratio: 1; }
+        
+        .dial-wrapper { 
+            width: 100%; height: 100%; border-radius: 50%; 
+            background: #cbd5e1;
+            border: 4px solid #64748b; position: relative; display: flex; justify-content: center; align-items: center; cursor: grab; 
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.4), 0 5px 15px rgba(0,0,0,0.5); 
+            overflow: hidden;
+        }
+
+        /* 梯形格子的内圈轨道线 */
+        .dial-track {
+            position: absolute; top: 22%; left: 22%; right: 22%; bottom: 22%;
+            border-radius: 50%; border: 2px solid rgba(100, 116, 139, 0.5);
+            pointer-events: none; z-index: 2;
+        }
+
+        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .dial-wheel.dragging { transition: none !important; }
-        .dial-item { position: absolute; top: 50%; left: 50%; width: 40px; height: 30px; margin-top: -15px; margin-left: -20px; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #94a3b8; }
-        .dial-item.active { font-size: 28px; font-weight: 900; color: #0f172a; }
         
-        .dial-knob { position: absolute; width: 40%; height: 40%; background: radial-gradient(circle, #f8fafc 0%, #e2e8f0 100%); border-radius: 50%; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); pointer-events: none; z-index: 5; }
-        
-        /* 修复箭头重叠：向外移动到 right: -22px */
-        .dial-arrow { position: absolute; right: -22px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #64748b; z-index: 10; pointer-events: none; }
+        /* 放射状分隔线 (通过 JS 动态生成) */
+        .dial-spoke {
+            position: absolute; top: 50%; left: 50%; width: 50%; height: 2px;
+            background: rgba(100, 116, 139, 0.6); transform-origin: 0% 50%; z-index: 1;
+        }
 
-        /* FIRE 按钮 (科幻棱角切边) */
-        .action-container { display: flex; justify-content: center; align-items: center; margin-left: 10px;}
+        .dial-item { 
+            position: absolute; top: 50%; left: 50%; width: 70px; height: 30px; 
+            margin-top: -15px; margin-left: -35px; display: flex; justify-content: center; align-items: center; 
+            font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.8); z-index: 3;
+            transition: 0.1s;
+        }
+        /* 选中态：字变大变深色 */
+        .dial-item.active { font-size: 26px; font-weight: 900; color: #0f172a; text-shadow: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));}
+        
+        .dial-knob { 
+            position: absolute; width: 44%; height: 44%; 
+            background: radial-gradient(circle at 30% 30%, #ffffff, #94a3b8);
+            border-radius: 50%; border: 2px solid #475569; 
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5), inset 0 -3px 5px rgba(0,0,0,0.2); 
+            pointer-events: none; z-index: 5; 
+        }
+        
+        /* 🔥 拉开指示箭头的距离，防止遮挡格子 */
+        .dial-arrow { position: absolute; right: -38px; top: 50%; transform: translateY(-50%); font-size: 26px; color: #334155; z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 2px #fff); }
+
+        /* 🔥 FIRE 按钮与旋钮大幅拉开距离 */
+        .action-container { display: flex; justify-content: center; align-items: center; margin-left: 3vw;}
         #btn-fire-action {
-            width: 20vw; max-width: 120px; aspect-ratio: 1; 
-            background: linear-gradient(135deg, #ff003c, #990024);
-            border: 2px solid #ff4d79; color: white; font-size: 20px; font-weight: 900; 
+            width: 22vw; max-width: 130px; aspect-ratio: 1; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
+            border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; 
             cursor: pointer; transition: 0.1s; letter-spacing: 2px;
-            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%);
-            box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
+            box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.6);
+            text-shadow: -1px -1px 0 rgba(0,0,0,0.4);
         }
-        #btn-fire-action:active { transform: scale(0.95); background: linear-gradient(135deg, #cc0030, #660018); }
+        #btn-fire-action:active { 
+            transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d);
+        }
 
-        /* --- 🎮 炫酷全息启动页 --- */
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
-        
-        .game-title { 
-            display: flex; flex-direction: column; align-items: center; gap: 15px;
-            font-size: 36px; color: #fff; margin-bottom: 60px; 
-            text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; 
-        }
+        /* --- 🎮 Loading 与 启动页面 --- */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
+        .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
         .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
 
-        /* 全息边框 Start 按钮 */
+        #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
+        @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
+
         .start-btn { 
-            padding: 18px 50px; 
-            border: 2px solid var(--accent-glow); 
-            background: rgba(0, 240, 255, 0.05); 
-            color: var(--accent-glow); 
-            font-size: 26px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2);
-            letter-spacing: 3px;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            transition: all 0.2s;
+            padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); 
+            font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2);
+            letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; display: none;
         }
-        .start-btn:hover { background: rgba(0, 240, 255, 0.2); box-shadow: 0 0 25px rgba(0, 240, 255, 0.6), inset 0 0 25px rgba(0, 240, 255, 0.6); }
         .start-btn:active { transform: scale(0.95); }
 
         @media (max-width: 800px) {
-            .game-title { font-size: 5vw; gap: 10px; } 
-            .psle-cap { font-size: 9vw; }
-            .dial-container { margin-right: 25px; } /* 小屏下留出更多箭头空间 */
-            #btn-fire-action { font-size: 16px; }
+            .game-title { font-size: 5vw; gap: 10px; } .psle-cap { font-size: 9vw; }
+            .dashboard { gap: 4vw; padding: 0 10px; }
+            .dial-arrow { right: -30px; font-size: 20px;}
+            #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
+            #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
         }
     </style>
 </head>
@@ -158,12 +186,14 @@
 
     <div id="combat-area">
         <canvas id="laser-canvas"></canvas>
-        <div id="rule-toast">⚠️ j q x y 遇到 ü 要脱帽！点击飞船拼音脱帽！</div>
 
         <div id="spaceship-container">
             <div class="spaceship">
                 <div class="wing left"></div>
-                <div class="ship-core" id="ship-main" onclick="handleHudClick()"><span class="hud-text" id="hud-display"></span></div>
+                <div class="ship-core" id="ship-main" onclick="handleHudClick()">
+                    <div id="finger-hint">👇</div>
+                    <span class="hud-text" id="hud-display"></span>
+                </div>
                 <div class="wing right"></div>
             </div>
         </div>
@@ -176,9 +206,9 @@
     </div>
 
     <div class="dashboard">
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div><div class="dial-track"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div><div class="dial-track"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div><div class="dial-track"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
         <div class="action-container"><button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button></div>
     </div>
 
@@ -187,22 +217,26 @@
             <div class="title-line"><span><span class="psle-cap">P</span>INYIN</span><span><span class="psle-cap">S</span>HOOTER</span></div>
             <div class="title-line"><span><span class="psle-cap">L</span>ASER</span><span><span class="psle-cap">E</span>XPEDITION</span></div>
         </h1>
-        <button class="start-btn sci-fi-text" onclick="startGame()">MISSION START</button>
+        <div id="loading-ui" class="sci-fi-text">ACCESSING DATABASE...</div>
+        <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">MISSION START</button>
     </div>
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
-    const TONE_DATA = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
+    
+    const TONE_MAP = {'a':['','ā','á','ǎ','à'], 'o':['','ō','ó','ǒ','ò'], 'e':['','ē','é','ě','è'], 'i':['','ī','í','ǐ','ì'], 'u':['','ū','ú','ǔ','ù'], 'ü':['','ǖ','ǘ','ǚ','ǜ']};
+    const TONE_DATA_REV = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
     let DB_WORDS = [];
     let state = {
         score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
         i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
-        targetX: -20, targetSpeed: 0.08, targetActive: false 
+        targetX: -20, targetSpeed: 0.05, targetActive: false 
     };
 
-    // 🔥 零声母改为空字符串
+    let actx = null;
+
     const ALL_INITIALS = ['','b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
     const ALL_FINALS = ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ün','ang','eng','ing','ong','iao','ia','ian','iang','ua','uo','uan','uang','uai'];
     const ALL_TONES = ['1', '2', '3', '4', ''];
@@ -210,14 +244,13 @@
     const canvas = document.getElementById('laser-canvas');
     const ctx = canvas.getContext('2d');
 
-    // 拼音解析引擎 (处理零声母和轻声为空)
     function parsePinyin(py) {
         if (py === 'de') return { i:'d', f:'e', t:'' };
         let clean = py, tone = ''; 
-        for (let char in TONE_DATA) { 
-            if (py.includes(char)) { tone = TONE_DATA[char].slice(-1); clean = py.replace(char, TONE_DATA[char][0]); break; } 
+        for (let char in TONE_DATA_REV) { 
+            if (py.includes(char)) { tone = TONE_DATA_REV[char].slice(-1); clean = py.replace(char, TONE_DATA_REV[char][0]); break; } 
         }
-        let initial = ''; // 默认为零声母空字符串
+        let initial = ''; 
         for (let i of INITIALS_LIST) {
             if (clean.startsWith(i)) {
                 if (i.length === 2) { initial = i; break; }
@@ -239,13 +272,22 @@
                 const py = cols[6].trim().split(' / ')[0];
                 return { char: cols[4].trim(), ...parsePinyin(py), py: py };
             }).filter(w => w);
-        } catch (e) { console.error("DB Load Fail"); }
+            
+            if(DB_WORDS.length > 0){
+                document.getElementById('loading-ui').style.display = 'none';
+                document.getElementById('btn-start').style.display = 'block';
+            }
+        } catch (e) { document.getElementById('loading-ui').innerText = "NETWORK ERROR"; }
+    }
+
+    function initAudio() {
+        if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+        if (actx.state === 'suspended') actx.resume();
     }
 
     function startGame() {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-        }
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+        initAudio(); 
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
         document.getElementById('ui-score').innerText = '0';
@@ -260,14 +302,12 @@
         state.targetActive = true;
         state.hatRemoved = false;
         
-        // 飞行速度 60%
-        state.targetSpeed = 0.07 + Math.random() * 0.05; 
-        
+        state.targetSpeed = 0.04 + Math.random() * 0.03; 
         document.getElementById('target-char').innerText = state.currentTarget.char;
         
         buildDial('i', getOpts(state.currentTarget.i, ALL_INITIALS));
         buildDial('f', getOpts(state.currentTarget.f, ALL_FINALS));
-        buildDial('t', ALL_TONES); // 声调直接显示所有选项
+        buildDial('t', ALL_TONES); 
     }
 
     function getOpts(correct, all) {
@@ -276,12 +316,24 @@
         return res.sort(() => 0.5-Math.random());
     }
 
+    // 🔥 绘制“扇形/梯形格子”的核心：通过生成 Spoke (辐条) 来分割背景
     function buildDial(type, opts) {
         state[type].opts = opts;
         state[type].step = 360 / opts.length;
         const wheel = document.getElementById(`wheel-${type}`);
         const radius = document.getElementById(`wrap-${type}`).offsetWidth * 0.38;
-        wheel.innerHTML = opts.map((o, idx) => `<div class="dial-item" style="transform: rotate(${idx*state[type].step}deg) translateX(${radius}px)">${o}</div>`).join('');
+        
+        let html = '';
+        opts.forEach((o, idx) => {
+            let rot = idx * state[type].step;
+            // 画分隔线 (Spoke)，放在每一格的中间边界
+            let spokeRot = rot - state[type].step / 2;
+            html += `<div class="dial-spoke" style="transform: rotate(${spokeRot}deg) translateY(-50%);"></div>`;
+            // 画文字
+            html += `<div class="dial-item" style="transform: rotate(${rot}deg) translateX(${radius}px)">${o}</div>`;
+        });
+        
+        wheel.innerHTML = html;
         state[type].angle = 0;
         updateDialVisuals(type);
     }
@@ -298,7 +350,10 @@
             return Math.atan2(y, x) * 180 / Math.PI;
         };
 
-        const onStart = (e) => { isDragging = true; prevA = getA(e); wheel.classList.add('dragging'); };
+        const onStart = (e) => { 
+            initAudio(); 
+            isDragging = true; prevA = getA(e); wheel.classList.add('dragging'); 
+        };
         
         const onMove = (e) => {
             if (!isDragging) return; e.preventDefault();
@@ -313,7 +368,7 @@
             let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
             
             if (activeIdx !== lastIdx) {
-                if (lastIdx !== -1) playSound('spin');
+                if (lastIdx !== -1) playSound('mech'); 
                 lastIdx = activeIdx;
                 updateDialSelectionClassOnly(type, activeIdx);
                 updateHUD();
@@ -340,7 +395,9 @@
 
     function updateDialSelectionClassOnly(type, activeIdx) {
         const wheel = document.getElementById(`wheel-${type}`);
-        Array.from(wheel.children).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+        // 因为包含了 spoke，过滤出 item
+        const items = Array.from(wheel.querySelectorAll('.dial-item'));
+        items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
     }
 
     function updateDialVisuals(type) {
@@ -358,35 +415,68 @@
         return state[type].opts[idx];
     }
 
+    function combineTruePinyin(i, f, tStr) {
+        let initial = i;
+        let toneNum = parseInt(tStr);
+        if (isNaN(toneNum)) return initial + f; 
+        
+        let v = '';
+        if (f.includes('a')) v = 'a'; else if (f.includes('e')) v = 'e'; else if (f.includes('o')) v = 'o';
+        else if (f.includes('ui')) v = 'i'; else if (f.includes('iu')) v = 'u'; else if (f.includes('i')) v = 'i';
+        else if (f.includes('u')) v = 'u'; else if (f.includes('ü')) v = 'ü';
+        
+        let final = f;
+        if (v) final = f.replace(v, TONE_MAP[v][toneNum]);
+        return initial + final;
+    }
+
     function updateHUD() {
         let i = getVal('i'), f = getVal('f'), t = getVal('t');
-        let needsFix = ['j','q','x','y'].includes(i) && f === 'ü';
-        let displayF = (needsFix && state.hatRemoved) ? 'u' : f;
+        let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
         
-        document.getElementById('ship-main').classList.toggle('needs-fix', needsFix && !state.hatRemoved);
-        document.getElementById('hud-display').innerText = i + displayF + t;
+        let displayF = f;
+        if (needsFix) {
+            if (!state.hatRemoved) {
+                document.getElementById('ship-main').classList.add('needs-fix');
+                document.getElementById('finger-hint').style.display = 'block';
+            } else {
+                displayF = f.replace(/ü/g, 'u');
+                document.getElementById('ship-main').classList.remove('needs-fix');
+                document.getElementById('finger-hint').style.display = 'none';
+            }
+        } else {
+            document.getElementById('ship-main').classList.remove('needs-fix');
+            document.getElementById('finger-hint').style.display = 'none';
+        }
+
+        document.getElementById('hud-display').innerText = combineTruePinyin(i, displayF, t);
     }
 
     function handleHudClick() {
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             state.hatRemoved = true; updateHUD();
-            confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 }, colors:['#fff','#00f0ff'] });
+            confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 }, colors:['#fff','#00f0ff'], startVelocity: 15, ticks: 50 });
         }
     }
 
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
+        
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            document.getElementById('rule-toast').style.opacity = 1;
-            setTimeout(() => document.getElementById('rule-toast').style.opacity = 0, 2000);
+            playSound('wrong');
+            document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1.5)';
+            setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1)', 200);
             return;
         }
+
         drawLaser();
         if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            confetti({ particleCount: 40, origin: { x: 0.8, y: 0.5 } });
+            confetti({ particleCount: 40, origin: { x: 0.8, y: 0.5 }, colors:['#39ff14','#00f0ff','#fff'] });
             setTimeout(nextTarget, 1000);
+        } else {
+            playSound('wrong');
         }
     }
 
@@ -395,7 +485,7 @@
         if (state.targetActive) {
             state.targetX += state.targetSpeed;
             document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            if (state.targetX > 105) { state.targetActive = false; setTimeout(nextTarget, 1000); }
+            if (state.targetX > 105) { state.targetActive = false; playSound('wrong'); setTimeout(nextTarget, 1000); }
         }
         requestAnimationFrame(gameLoop);
     }
@@ -408,17 +498,31 @@
         ctx.lineTo(enemy.left+enemy.width/2, enemy.top+enemy.height/2);
         ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
         ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
+        playSound('laser');
         setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
     }
 
     function playSound(type) {
-        let actx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!actx) return;
         let osc = actx.createOscillator(); let g = actx.createGain();
         osc.connect(g); g.connect(actx.destination);
-        if(type==='laser'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(800,0); osc.frequency.linearRampToValueAtTime(100,0.2); }
-        else if(type==='wrong'){ osc.type='square'; osc.frequency.setValueAtTime(100,0); }
-        else { osc.type='sine'; osc.frequency.setValueAtTime(400,0); }
-        osc.start(); osc.stop(0.2);
+        if(type === 'mech'){ 
+            osc.type = 'square'; osc.frequency.setValueAtTime(150, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(40, actx.currentTime + 0.03);
+            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.03);
+            osc.start(); osc.stop(actx.currentTime + 0.03);
+        }
+        else if(type === 'laser'){ 
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.2);
+            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
+            osc.start(); osc.stop(actx.currentTime + 0.2);
+        }
+        else if(type === 'wrong'){ 
+            osc.type = 'square'; osc.frequency.setValueAtTime(120, actx.currentTime); 
+            g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
+            osc.start(); osc.stop(actx.currentTime + 0.3);
+        }
     }
 
     setupiPod('i'); setupiPod('f'); setupiPod('t');
