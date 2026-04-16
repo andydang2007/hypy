@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinyin Shooting: Laser Defender</title>
+    <title>Pinyin Shooting: Database Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -22,171 +22,77 @@
             margin: 0; padding: 0; color: #fff; 
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #020617;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(29, 78, 216, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
-                radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.5), rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 250px 90px, rgba(255,255,255,0.8), rgba(0,0,0,0));
-            background-size: 100% 100%, 100% 100%, 150px 150px, 150px 150px, 150px 150px, 200px 200px, 200px 200px;
+            background-image: radial-gradient(circle at 15% 50%, rgba(29, 78, 216, 0.15) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(147, 51, 234, 0.15) 0%, transparent 50%);
         }
 
         header {
-            display: flex; justify-content: flex-end; align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 10px 20px; background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(5px);
             border-bottom: 1px solid rgba(6, 182, 212, 0.3); z-index: 10;
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
-        .stat-label { font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; }
-        .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
+        .stat-label { font-size: 10px; color: #94a3b8; font-weight: bold; }
+        .stat-value { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow); }
+        #db-status { font-size: 12px; color: #22c55e; }
 
-        /* ⚔️ 战斗区域 (横向布局) */
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-
-        /* 口诀提示飘字 */
         #rule-toast {
-            position: absolute; top: 20%; left: 0; width: 100%; text-align: center;
-            color: #fbbf24; font-size: clamp(16px, 4vw, 24px); font-weight: 900; opacity: 0; pointer-events: none;
+            position: absolute; top: 15%; left: 0; width: 100%; text-align: center;
+            color: #fbbf24; font-size: 18px; font-weight: 900; opacity: 0; pointer-events: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50;
         }
 
-        /* --- 🚀 飞船主机 (左侧固定，炮口向右) --- */
-        #spaceship-container {
-            position: absolute; left: 0px; top: 50%; 
-            transform: translateY(-50%) rotate(90deg); /* 飞船顺时针旋转90度，头朝右 */
-            z-index: 10;
-        }
-        .spaceship { position: relative; width: 200px; height: 120px; display: flex; justify-content: center; align-items: center; }
-        .wing { position: absolute; width: 70px; height: 40px; background: rgba(30, 41, 59, 0.9); top: 40px; box-shadow: inset 0 0 10px #000; border-bottom: 3px solid var(--accent-glow); backdrop-filter: blur(5px);}
-        .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); border-radius: 10px 0 0 10px; }
-        .wing.right { right: 0; clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%); border-radius: 0 10px 10px 0; }
-        .thruster { position: absolute; bottom: -15px; width: 20px; height: 15px; background: #fbbf24; border-radius: 0 0 10px 10px; box-shadow: 0 5px 20px #f59e0b; animation: thrust 0.1s infinite alternate; }
-        .wing.left .thruster { right: 15px; } .wing.right .thruster { left: 15px; }
-        @keyframes thrust { from { height: 15px; opacity: 0.7; } to { height: 28px; opacity: 1; } }
-
+        /* 飞船 */
+        #spaceship-container { position: absolute; left: 20px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
+        .spaceship { position: relative; width: 160px; height: 100px; display: flex; justify-content: center; align-items: center; }
+        .wing { position: absolute; width: 60px; height: 30px; background: rgba(30, 41, 59, 0.9); top: 35px; border-bottom: 3px solid var(--accent-glow); }
+        .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); }
+        .wing.right { right: 0; clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%); }
         .ship-core {
-            width: 100px; height: 100px; background: radial-gradient(circle, #0f172a 0%, #020617 100%);
-            border: 4px solid var(--accent-glow); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; position: relative; z-index: 12;
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), inset 0 0 20px rgba(0,0,0,0.8);
-            cursor: pointer; transition: 0.2s;
+            width: 90px; height: 90px; background: #0f172a; border: 4px solid var(--accent-glow); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
         }
-        .ship-core:active { transform: scale(0.9); box-shadow: 0 0 15px rgba(6, 182, 212, 0.9); border-color: #fff; }
-        
-        /* 文字需要反向旋转90度，保证人眼看着是正的 */
-        .hud-text { 
-            display: inline-block; transform: rotate(-90deg);
-            font-size: 38px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); transition: 0.2s;
-        }
+        .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 32px; font-weight: 900; }
+        .ship-core.needs-fix { border-color: #ef4444; animation: pulseRed 1s infinite alternate; }
 
-        /* ⚠️ 待脱帽的红色警告状态 */
-        .ship-core.needs-fix { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(0,0,0,0.8); animation: pulseRed 1s infinite alternate; }
-        .ship-core.needs-fix .hud-text { color: #fca5a5; text-shadow: 0 0 15px #ef4444; }
-        @keyframes pulseRed { from { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), inset 0 0 20px rgba(0,0,0,0.8); } to { box-shadow: 0 0 40px rgba(239, 68, 68, 0.8), inset 0 0 20px rgba(0,0,0,0.8); } }
+        @keyframes pulseRed { from { box-shadow: 0 0 10px #ef4444; } to { box-shadow: 0 0 30px #ef4444; } }
 
-        /* --- 👾 移动怪物靶子 (右侧逼近) --- */
-        #target-mover {
-            position: absolute; top: 50%; right: -30vw; transform: translateY(-50%); z-index: 8;
-        }
+        /* 怪物 */
+        #target-mover { position: absolute; top: 50%; right: -150px; transform: translateY(-50%); z-index: 8; }
         .enemy-target {
-            width: 100px; height: 100px; border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
-            font-size: 50px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.8);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
-            transform: rotate(45deg); transition: all 0.2s; cursor: pointer;
+            width: 100px; height: 100px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 2px solid #fff;
+            transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
         }
-        .enemy-target:active { transform: rotate(45deg) scale(0.9); background: rgba(255, 255, 255, 0.15); border-color: #38bdf8; box-shadow: 0 0 30px rgba(56, 189, 248, 0.5); }
-        .enemy-text { transform: rotate(-45deg); position: relative;} 
-        .audio-icon { position: absolute; right: -15px; top: -10px; font-size: 16px; filter: drop-shadow(0 2px 2px #000); }
+        .enemy-text { transform: rotate(-45deg); font-size: 44px; font-weight: 900; }
 
-        .hit-correct { transform: rotate(45deg) scale(1.2) !important; border-color: var(--correct-color) !important; background: rgba(34, 197, 94, 0.2) !important; box-shadow: 0 0 40px var(--correct-color) !important; color: var(--correct-color) !important; pointer-events: none;}
-        .hit-wrong { animation: shake 0.4s both; border-color: var(--wrong-color) !important; background: rgba(239, 68, 68, 0.2) !important; color: var(--wrong-color) !important;}
-
-
-        /* --- 🎛️ 底部浅色系物理仪表盘 (加 FIRE 键) --- */
+        /* 仪表盘 */
         .dashboard {
-            height: 20vh; min-height: 160px; max-height: 220px;
-            background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
-            border-radius: 40px 40px 0 0; display: flex; justify-content: space-evenly; align-items: center;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); position: relative; z-index: 10;
-            backdrop-filter: blur(10px); padding: 0 10px;
+            height: 200px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
+            display: flex; justify-content: space-evenly; align-items: center; border-radius: 30px 30px 0 0;
         }
-
-        .dial-container { position: relative; display: flex; align-items: center; justify-content: center; flex: 1; max-width: 150px; }
-
-        .dial-wrapper {
-            width: 18vw; max-width: 130px; aspect-ratio: 1; border-radius: 50%; border: 2px solid #e2e8f0;
-            background: var(--wheel-bg); position: relative; 
-            box-shadow: inset 0 4px 15px rgba(0,0,0,0.05), 0 5px 20px rgba(0,0,0,0.15);
-            display: flex; justify-content: center; align-items: center; cursor: grab; 
-        }
-        .dial-wrapper:active { cursor: grabbing; }
-
-        .dial-knob {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 45%; height: 45%; border-radius: 50%;
-            background: repeating-conic-gradient(from 0deg, #e2e8f0 0deg 10deg, #f1f5f9 10deg 20deg);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 2px 5px #fff;
-            border: 1px solid #cbd5e1; z-index: 5; pointer-events: none; 
-        }
-        .dial-knob::after {
-            content: ''; position: absolute; top: 15%; left: 15%; right: 15%; bottom: 15%;
-            background: #f8fafc; border-radius: 50%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
-        }
-
+        .dial-container { position: relative; width: 140px; height: 140px; }
+        .dial-wrapper { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #e2e8f0; background: #fff; position: relative; display: flex; justify-content: center; align-items: center; cursor: grab; }
         .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .dial-wheel.dragging { transition: none !important; }
+        .dial-item { position: absolute; top: 50%; left: 50%; width: 40px; height: 30px; margin-top: -15px; margin-left: -20px; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: #94a3b8; }
+        .dial-item.active { font-size: 32px; color: #0284c7; }
+        .dial-arrow { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); font-size: 24px; color: #0284c7; }
 
-        .dial-item {
-            position: absolute; top: 50%; left: 50%; width: 50px; height: 40px; margin-top: -20px; margin-left: -25px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: clamp(14px, 3.5vw, 24px); font-weight: bold; color: var(--text-muted-light); transition: color 0.15s, font-size 0.15s; pointer-events: none; 
-        }
-
-        .dial-item.active { font-size: clamp(24px, 6vw, 38px); font-weight: 900; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
-        .i-dial .dial-item.active { color: #334155; } .f-dial .dial-item.active { color: #0284c7; } .t-dial .dial-item.active { color: #d97706; } 
-
-        .text-qingsheng { font-size: clamp(12px, 2.5vw, 18px) !important; letter-spacing: -1px; }
-        .dial-item.active .text-qingsheng { font-size: clamp(18px, 4.5vw, 26px) !important; }
-
-        .dial-arrow {
-            position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
-            font-size: clamp(18px, 4vw, 28px); z-index: 10; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-        .i-dial-arrow { color: #475569; } .f-dial-arrow { color: #0284c7; } .t-dial-arrow { color: #d97706; }
-
-        /* 🔥 新增：独立 FIRE 按键区 */
-        .action-container { flex: 0.8; max-width: 120px; display: flex; justify-content: center; align-items: center; }
         #btn-fire-action {
-            width: 18vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
-            background: linear-gradient(135deg, #ef4444, #b91c1c);
-            border: 4px solid #fca5a5; color: white; font-size: clamp(16px, 4vw, 26px); font-weight: 900;
-            box-shadow: 0 8px 0 #7f1d1d, 0 15px 20px rgba(0,0,0,0.4);
-            cursor: pointer; transition: 0.1s;
+            width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(#ef4444, #b91c1c);
+            border: 4px solid #fff; color: white; font-size: 24px; font-weight: 900; box-shadow: 0 8px 0 #7f1d1d; cursor: pointer;
         }
-        #btn-fire-action:active:not(:disabled) { transform: translateY(8px); box-shadow: 0 0 0 #7f1d1d; }
-        #btn-fire-action:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; box-shadow: 0 8px 0 #334155; }
+        #btn-fire-action:active { transform: translateY(5px); box-shadow: 0 3px 0 #7f1d1d; }
 
-        /* --- 🎮 开始页面 --- */
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px);}
-        .game-title { font-size: 32px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px #06b6d4; text-align: center; white-space: nowrap; font-style: italic; letter-spacing: 2px; display: flex; align-items: baseline; gap: 8px;}
-        .psle-cap { color: #fbbf24; font-size: 56px; text-shadow: 0 0 20px #f59e0b; font-style: normal; }
-        .start-btn { background: linear-gradient(135deg, #06b6d4, #0369a1); color: white; border: none; padding: 15px 50px; border-radius: 30px; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #075985; transition: 0.1s;}
-        .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #075985;}
-
-        @media (max-width: 800px) {
-            .game-title { font-size: 4vw; gap: 4px;} .psle-cap { font-size: 7vw; }
-        }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        .start-btn { padding: 15px 40px; border-radius: 30px; border: none; background: #06b6d4; color: #fff; font-size: 24px; font-weight: 900; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <header>
+        <div id="db-status">正在连接数据库...</div>
         <div class="stat-box"><span class="stat-label">SCORE</span><span class="stat-value" id="ui-score">0</span></div>
     </header>
 
@@ -196,401 +102,246 @@
 
         <div id="spaceship-container">
             <div class="spaceship">
-                <div class="wing left"><div class="thruster"></div></div>
-                <div class="ship-core" onclick="handleHudClick()">
-                    <span class="hud-text" id="hud-display"></span>
-                </div>
-                <div class="wing right"><div class="thruster"></div></div>
+                <div class="wing left"></div>
+                <div class="ship-core" onclick="handleHudClick()"><span class="hud-text" id="hud-display"></span></div>
+                <div class="wing right"></div>
             </div>
         </div>
 
         <div id="target-mover">
             <div class="enemy-target" id="target-container" onclick="playTargetAudio()">
-                <div class="enemy-text" id="target-char">🎯<span class="audio-icon">🔊</span></div>
+                <div class="enemy-text" id="target-char">🎯</div>
             </div>
         </div>
     </div>
 
     <div class="dashboard">
-        <div class="dial-container">
-            <div class="dial-wrapper i-dial" id="wrap-i">
-                <div class="dial-wheel" id="wheel-i"></div>
-                <div class="dial-knob"></div>
-            </div>
-            <div class="dial-arrow i-dial-arrow">◀</div>
-        </div>
-
-        <div class="dial-container">
-            <div class="dial-wrapper f-dial" id="wrap-f">
-                <div class="dial-wheel" id="wheel-f"></div>
-                <div class="dial-knob"></div>
-            </div>
-            <div class="dial-arrow f-dial-arrow">◀</div>
-        </div>
-
-        <div class="dial-container">
-            <div class="dial-wrapper t-dial" id="wrap-t">
-                <div class="dial-wheel" id="wheel-t"></div>
-                <div class="dial-knob"></div>
-            </div>
-            <div class="dial-arrow t-dial-arrow">◀</div>
-        </div>
-
-        <div class="action-container">
-            <button id="btn-fire-action" onclick="handleFireClick()">FIRE</button>
-        </div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div></div><div class="dial-arrow">◀</div></div>
+        <button id="btn-fire-action" onclick="handleFireClick()">FIRE</button>
     </div>
 
     <div id="overlay">
-        <h1 class="game-title">
-            <span><span class="psle-cap">P</span>inyin</span>
-            <span><span class="psle-cap">D</span>efender</span>
-        </h1>
-        <button class="start-btn" onclick="startGame()">MISSION START</button>
+        <h1 id="loading-msg">PINYIN DEFENDER</h1>
+        <button class="start-btn" id="btn-start" onclick="startGame()" style="display:none">MISSION START</button>
     </div>
 
 <script>
-    const P1_WORDS = [
-        { char: '去', i: 'q', f: 'ü', t: '4', py: 'qù' }, { char: '女', i: 'n', f: 'ü', t: '3', py: 'nǚ' },
-        { char: '爸', i: 'b', f: 'a', t: '4', py: 'bà' }, { char: '小', i: 'x', f: 'iao', t: '3', py: 'xiǎo' },
-        { char: '泥', i: 'n', f: 'i', t: '2', py: 'ní' }, { char: '木', i: 'm', f: 'u', t: '4', py: 'mù' },
-        { char: '的', i: 'd', f: 'e', t: '轻声', py: 'de' }
-    ];
-
-    const ALL_INITIALS = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
-    const ALL_FINALS = ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ün','ang','eng','ing','ong','iao'];
-    const ALL_TONES = ['1', '2', '3', '4', '轻声'];
-
-    let state = {
-        score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
-        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
-        targetX: -20, targetSpeed: 0.15, targetActive: false 
+    // --- 拼音解析引擎 (将 "bà" 解析为 {i:"b", f:"a", t:"4"}) ---
+    const TONE_DATA = {
+        'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4',
+        'ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'
     };
+    const INITIALS = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
-    let gameLoopRef;
-    const canvas = document.getElementById('laser-canvas');
-    const ctx = canvas.getContext('2d');
-
-    function playTargetAudio() {
-        if (!state.currentTarget) return;
-        let msg = new SpeechSynthesisUtterance(state.currentTarget.char);
-        msg.lang = 'zh-CN'; msg.rate = 0.8; window.speechSynthesis.speak(msg);
+    function parsePinyin(py) {
+        if (py === 'de') return { i:'d', f:'e', t:'轻声' };
+        let clean = py;
+        let tone = '轻声';
+        for (let char in TONE_DATA) {
+            if (py.includes(char)) {
+                tone = TONE_DATA[char].slice(-1);
+                clean = py.replace(char, TONE_DATA[char][0]);
+                break;
+            }
+        }
+        let initial = '空';
+        for (let i of INITIALS) {
+            if (clean.startsWith(i)) {
+                if (i.length === 2 && clean.startsWith(i)) { initial = i; break; }
+                if (i.length === 1 && !['z','c','s'].includes(clean[0])) { initial = i; break; }
+                initial = i;
+            }
+        }
+        let final = initial === '空' ? clean : clean.slice(initial.length);
+        // 特殊处理：如果是 j q x y 后面跟 u，实际上是 ü
+        if (['j','q','x','y'].includes(initial) && final === 'u') final = 'ü';
+        return { i: initial, f: final, t: tone };
     }
 
-    function playSound(type) {
-        let actx = new (window.AudioContext || window.webkitAudioContext)();
-        let osc = actx.createOscillator(); let gain = actx.createGain();
-        if (type === 'spin') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.02, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.05);
-            osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.05);
-        } else if (type === 'laser') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, actx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.1, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.15);
-            osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.15);
-        } else if (type === 'wrong') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(150, actx.currentTime); gain.gain.setValueAtTime(0.1, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
-            osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.2);
-        } else if (type === 'pop') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, actx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.3, actx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(actx.destination); osc.start(); osc.stop(actx.currentTime + 0.1);
+    // --- 数据库调取 ---
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
+    let DB_WORDS = [];
+
+    async function loadDatabase() {
+        try {
+            const resp = await fetch(CSV_URL);
+            const text = await resp.text();
+            const rows = text.split('\n').slice(1); // 跳过表头
+            DB_WORDS = rows.map(row => {
+                const cols = row.split(',');
+                if (cols.length < 7) return null;
+                const pyRaw = cols[6].trim().split(' / ')[0]; // 取第一个拼音答案
+                const parsed = parsePinyin(pyRaw);
+                return { char: cols[4].trim(), i: parsed.i, f: parsed.f, t: parsed.t, py: pyRaw };
+            }).filter(w => w !== null);
+            
+            document.getElementById('db-status').innerText = `已加载 ${DB_WORDS.length} 个生字`;
+            document.getElementById('btn-start').style.display = 'block';
+            document.getElementById('loading-msg').innerText = "数据库就绪";
+        } catch (e) {
+            document.getElementById('db-status').innerText = "数据库加载失败，请检查网络";
+            console.error(e);
         }
     }
+
+    // --- 游戏核心逻辑 ---
+    let state = {
+        score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
+        i: { angle: 0, opts: [] }, f: { angle: 0, opts: [] }, t: { angle: 0, opts: [] },
+        targetX: -20, targetSpeed: 0.12, targetActive: false 
+    };
+
+    const ALL_INITIALS = ['空','b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
+    const ALL_FINALS = ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ün','ang','eng','ing','ong','iao','ia','ian','iang','ua','uo','uan','uang','uai'];
+    const ALL_TONES = ['1', '2', '3', '4', '轻声'];
+
+    const canvas = document.getElementById('laser-canvas');
+    const ctx = canvas.getContext('2d');
 
     function startGame() {
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
-        document.getElementById('ui-score').innerText = state.score; 
-        document.getElementById('btn-fire-action').disabled = false;
-        resizeCanvas(); 
         nextTarget();
-        if(gameLoopRef) cancelAnimationFrame(gameLoopRef);
         gameLoop();
     }
 
-    // --- 👾 游戏主循环 (处理怪物移动) ---
     function gameLoop() {
         if (!state.isPlaying) return;
-
         if (state.targetActive) {
-            state.targetX += state.targetSpeed; // 屏幕百分比，从右向左递增
-            const mover = document.getElementById('target-mover');
-            mover.style.right = state.targetX + 'vw';
-            
-            // 如果怪物飞到了左边屏幕边缘外 (Miss)
-            if (state.targetX > 100) {
+            state.targetX += state.targetSpeed;
+            document.getElementById('target-mover').style.right = state.targetX + 'vw';
+            if (state.targetX > 105) {
                 state.targetActive = false;
-                const tc = document.getElementById('target-container');
-                tc.classList.remove('hit-correct', 'hit-wrong'); 
-                void tc.offsetWidth; 
-                tc.classList.add('hit-wrong');
                 playSound('wrong');
-                // 惩罚后重新生成下一个怪物
-                setTimeout(() => { if (state.isPlaying) nextTarget(); }, 1000);
+                setTimeout(nextTarget, 1000);
             }
         }
-        gameLoopRef = requestAnimationFrame(gameLoop);
-    }
-
-    function getDistractors(correct, allArr, totalCount) {
-        let filtered = allArr.filter(x => x !== correct);
-        filtered.sort(() => 0.5 - Math.random());
-        let res = filtered.slice(0, totalCount - 1); res.push(correct);
-        return res.sort(() => 0.5 - Math.random());
+        requestAnimationFrame(gameLoop);
     }
 
     function nextTarget() {
-        let next;
-        do { next = P1_WORDS[Math.floor(Math.random() * P1_WORDS.length)]; } 
-        while (state.currentTarget && next.char === state.currentTarget.char);
+        if (!DB_WORDS.length) return;
+        let next = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
         state.currentTarget = next;
-
-        state.i.opts = getDistractors(next.i, ALL_INITIALS, 7);
-        state.f.opts = getDistractors(next.f, ALL_FINALS, 7);
-        state.t.opts = [...ALL_TONES];
-
-        // 重置怪物位置和速度
-        state.targetX = -20; 
-        state.targetSpeed = 0.08 + (Math.random() * 0.05); 
+        state.targetX = -20;
         state.targetActive = true;
-        document.getElementById('target-mover').style.right = state.targetX + 'vw';
-
-        buildDial('i', state.i.opts); buildDial('f', state.f.opts); buildDial('t', state.t.opts);
-
-        const tc = document.getElementById('target-container');
-        tc.className = 'enemy-target'; 
-        document.getElementById('target-char').innerHTML = `${next.char}<span class="audio-icon">🔊</span>`;
+        state.hatRemoved = false;
+        
+        document.getElementById('target-char').innerText = next.char;
+        buildDial('i', getDistractors(next.i, ALL_INITIALS));
+        buildDial('f', getDistractors(next.f, ALL_FINALS));
+        buildDial('t', ALL_TONES);
+        updateHUD();
     }
 
-    // 💡 自适应文字圆周半径，确保不管屏幕大小，文字都贴着滚轮边缘
-    function buildDial(type, options) {
+    function getDistractors(correct, all) {
+        let res = all.filter(x => x !== correct).sort(() => 0.5-Math.random()).slice(0, 6);
+        res.push(correct);
+        return res.sort(() => 0.5-Math.random());
+    }
+
+    function buildDial(type, opts) {
+        state[type].opts = opts;
+        state[type].step = 360 / opts.length;
         const wheel = document.getElementById(`wheel-${type}`);
-        let html = ''; state[type].step = 360 / options.length; 
-        const wrapper = document.getElementById(`wrap-${type}`);
-        const dynamicRadius = wrapper.offsetWidth * 0.38; // 动态计算半径
-
-        options.forEach((opt, index) => {
-            let rot = index * state[type].step;
-            let displayClass = opt === '轻声' ? 'text-qingsheng' : '';
-            html += `<div class="dial-item ${displayClass}" id="item-${type}-${index}" style="transform: rotate(${rot}deg) translateX(${dynamicRadius}px);">${opt}</div>`;
-        });
-        wheel.innerHTML = html; state[type].angle = 0; updateDialVisuals(type);
+        wheel.innerHTML = opts.map((o, idx) => `<div class="dial-item" id="item-${type}-${idx}" style="transform: rotate(${idx*state[type].step}deg) translateX(55px)">${o}</div>`).join('');
+        state[type].angle = 0;
+        setupiPod(type);
+        updateVisuals(type);
     }
 
-    // 处理屏幕旋转或拉伸时，重新计算半径
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        resizeCanvas();
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            if(state.i.opts.length > 0) {
-                buildDial('i', state.i.opts); buildDial('f', state.f.opts); buildDial('t', state.t.opts);
-            }
-        }, 100);
-    });
-
-    function setupiPodWheel(type) {
-        const wrapper = document.getElementById(`wrap-${type}`);
-        const wheel = document.getElementById(`wheel-${type}`);
-        let isDragging = false, startAngle = 0, initialRotation = 0, center = { x: 0, y: 0 }, lastPlayedIdx = -1; 
-
-        function getAngle(e) {
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return Math.atan2(clientY - center.y, clientX - center.x) * (180 / Math.PI);
-        }
-
-        function startDrag(e) {
-            isDragging = true;
-            const rect = wrapper.getBoundingClientRect();
-            center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            startAngle = getAngle(e); initialRotation = state[type].angle;
-            wheel.classList.add('dragging'); wheel.style.transition = 'none';
-        }
-
-        function onDrag(e) {
-            if (!isDragging) return; e.preventDefault(); 
-            let currentRawAngle = getAngle(e);
-            let delta = currentRawAngle - startAngle;
-            
-            if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
-            
-            let targetAngle = initialRotation + delta * 0.8;
-            let snappedAngle = Math.round(targetAngle / state[type].step) * state[type].step;
-
-            if (state[type].angle !== snappedAngle) {
-                state[type].angle = snappedAngle;
-                state.hatRemoved = false; 
-                updateDialVisuals(type);
-                
-                let currentIdx = Math.round(-state[type].angle / state[type].step);
-                if (currentIdx !== lastPlayedIdx) { playSound('spin'); lastPlayedIdx = currentIdx; }
-            }
-        }
-
-        function endDrag() {
-            if (!isDragging) return; isDragging = false;
-            wheel.classList.remove('dragging'); wheel.style.transition = 'transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            state[type].angle = Math.round(state[type].angle / state[type].step) * state[type].step;
-            updateDialVisuals(type); 
-        }
-
-        wrapper.addEventListener('mousedown', startDrag); window.addEventListener('mousemove', onDrag, { passive: false });
-        window.addEventListener('mouseup', endDrag); window.addEventListener('mouseleave', endDrag); 
-        wrapper.addEventListener('touchstart', startDrag, { passive: true }); window.addEventListener('touchmove', onDrag, { passive: false }); window.addEventListener('touchend', endDrag);
+    function setupiPod(type) {
+        const wrap = document.getElementById(`wrap-${type}`);
+        let isDragging = false, startA = 0, initR = 0;
+        const getA = (e) => {
+            const r = wrap.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - (r.left + r.width/2);
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - (r.top + r.height/2);
+            return Math.atan2(y, x) * 180 / Math.PI;
+        };
+        wrap.onmousedown = wrap.ontouchstart = (e) => { isDragging = true; startA = getA(e); initR = state[type].angle; };
+        window.onmousemove = window.ontouchmove = (e) => {
+            if (!isDragging) return;
+            let delta = getA(e) - startA;
+            state[type].angle = Math.round((initR + delta) / state[type].step) * state[type].step;
+            updateVisuals(type);
+        };
+        window.onmouseup = window.ontouchend = () => { isDragging = false; playSound('spin'); };
     }
 
-    setupiPodWheel('i'); setupiPodWheel('f'); setupiPodWheel('t');
-
-    function updateDialVisuals(type) {
+    function updateVisuals(type) {
         const wheel = document.getElementById(`wheel-${type}`);
         wheel.style.transform = `rotate(${state[type].angle}deg)`;
-        let steps = Math.round(-state[type].angle / state[type].step);
-        let activeIdx = steps % state[type].opts.length; if (activeIdx < 0) activeIdx += state[type].opts.length;
-
-        for (let i = 0; i < state[type].opts.length; i++) {
-            let item = document.getElementById(`item-${type}-${i}`);
-            if (i === activeIdx) item.classList.add('active'); else item.classList.remove('active');
-        }
-        updateHUD(); 
+        let idx = (Math.round(-state[type].angle / state[type].step) % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+        Array.from(wheel.children).forEach((el, i) => el.classList.toggle('active', i === idx));
+        updateHUD();
     }
 
-    function getSelectedValue(type) {
-        let steps = Math.round(-state[type].angle / state[type].step);
-        let activeIdx = steps % state[type].opts.length; if (activeIdx < 0) activeIdx += state[type].opts.length;
-        return state[type].opts[activeIdx];
+    function getVal(type) {
+        let idx = (Math.round(-state[type].angle / state[type].step) % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+        return state[type].opts[idx];
     }
-
-    const TONE_MAP = {
-        'a': ['a','ā','á','ǎ','à'], 'o': ['o','ō','ó','ǒ','ò'], 'e': ['e','ē','é','ě','è'],
-        'i': ['i','ī','í','ǐ','ì'], 'u': ['u','ū','ú','ǔ','ù'], 'ü': ['ü','ǖ','ǘ','ǚ','ǜ']
-    };
 
     function updateHUD() {
-        let curI = getSelectedValue('i'); let curF = getSelectedValue('f'); let curT = getSelectedValue('t');
-        let combined = ""; let tn = parseInt(curT);
-        let displayF = curF;
-        
-        // 核心：判定当前组合是否属于 jqx 脱帽规则
-        let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
-
-        if (needsHatRemoval) {
-            if (!state.hatRemoved) {
-                // 如果还未脱帽，飞船亮红灯报警
-                document.querySelector('.ship-core').classList.add('needs-fix');
-            } else {
-                // 已经手动脱帽，恢复正常
-                displayF = curF.replace(/ü/g, 'u');
-                document.querySelector('.ship-core').classList.remove('needs-fix');
-            }
-        } else {
-            // 普通组合，不需要报警
-            document.querySelector('.ship-core').classList.remove('needs-fix');
-        }
-
-        combined = curI + displayF;
-        if (!isNaN(tn) && tn >= 1 && tn <= 4 && displayF) {
-            let v = '';
-            if (displayF.includes('a')) v = 'a'; else if (displayF.includes('o')) v = 'o'; else if (displayF.includes('e')) v = 'e';
-            else if (displayF.includes('ui')) v = 'i'; else if (displayF.includes('iu')) v = 'u'; else if (displayF.includes('i')) v = 'i';
-            else if (displayF.includes('u')) v = 'u'; else if (displayF.includes('ü')) v = 'ü';
-            if (v) combined = curI + displayF.replace(v, TONE_MAP[v][tn]);
-        }
-        document.getElementById('hud-display').innerText = combined;
+        let i = getVal('i'), f = getVal('f'), t = getVal('t');
+        let needsFix = ['j','q','x','y'].includes(i) && f === 'ü';
+        let displayF = (needsFix && state.hatRemoved) ? 'u' : f;
+        document.querySelector('.ship-core').classList.toggle('needs-fix', needsFix && !state.hatRemoved);
+        document.getElementById('hud-display').innerText = (i==='空'?'':i) + displayF + (t==='轻声'?'':t);
     }
 
-    // 💥 独立 FIRE 按钮触发逻辑 
-    function handleFireClick() {
-        if (!state.isPlaying || !state.targetActive) return;
-
-        let curI = getSelectedValue('i'); let curF = getSelectedValue('f');
-        let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
-
-        // 拦截机制：需要脱帽且学生还没脱，就拒绝对火并提示
-        if (needsHatRemoval && !state.hatRemoved) {
-            playSound('wrong');
-            const toast = document.getElementById('rule-toast');
-            toast.style.opacity = '1'; toast.style.transform = 'translateY(-20px)';
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(0)'; }, 2500);
-            
-            document.querySelector('.ship-core').classList.add('needs-fix');
-        } else {
-            // 否则正常开火
-            fireLaser();
-        }
-    }
-
-    // 🛡️ 手动脱帽逻辑 (点击飞船的拼音屏)
     function handleHudClick() {
         if (!state.isPlaying) return;
-        let curI = getSelectedValue('i'); let curF = getSelectedValue('f');
-        let needsHatRemoval = ['j', 'q', 'x', 'y'].includes(curI) && curF.includes('ü');
-
-        if (needsHatRemoval && !state.hatRemoved) {
-            state.hatRemoved = true; 
-            playSound('pop');
-
-            const ship = document.querySelector('.ship-core').getBoundingClientRect();
-            confetti({ 
-                particleCount: 20, spread: 50, 
-                origin: { x: (ship.left + ship.width/2)/window.innerWidth, y: (ship.top + ship.height/2)/window.innerHeight }, 
-                colors: ['#ef4444', '#fff'], startVelocity: 15, ticks: 50 
-            });
-
-            updateHUD(); 
+        if (document.querySelector('.ship-core').classList.contains('needs-fix')) {
+            state.hatRemoved = true; playSound('pop'); updateHUD();
+            confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 } });
         }
     }
 
-    function fireLaser() {
-        playSound('laser'); drawLaser();
-
-        let isI_Correct = getSelectedValue('i') === state.currentTarget.i;
-        let isF_Correct = getSelectedValue('f') === state.currentTarget.f;
-        let isT_Correct = getSelectedValue('t') === state.currentTarget.t;
-
-        const tc = document.getElementById('target-container');
-
-        if (isI_Correct && isF_Correct && isT_Correct) {
-            state.targetActive = false; // 打中后怪物停止移动
-            tc.classList.remove('hit-wrong'); void tc.offsetWidth; tc.classList.add('hit-correct');
-            document.getElementById('target-char').innerHTML = `${state.currentTarget.py}<span class="audio-icon">🔊</span>`; 
-
+    function handleFireClick() {
+        if (!state.isPlaying || !state.targetActive) return;
+        if (document.querySelector('.ship-core').classList.contains('needs-fix')) {
+            playSound('wrong');
+            document.getElementById('rule-toast').style.opacity = 1;
+            setTimeout(() => document.getElementById('rule-toast').style.opacity = 0, 2000);
+            return;
+        }
+        drawLaser();
+        if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
+            state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg").play().catch(()=>{});
-
-            let rect = tc.getBoundingClientRect();
-            confetti({ particleCount: 60, spread: 80, origin: { x: (rect.left+rect.width/2)/window.innerWidth, y: (rect.top+rect.height/2)/window.innerHeight }, colors: ['#22c55e', '#06b6d4', '#fff'] });
-
-            setTimeout(() => { if (state.isPlaying) nextTarget(); }, 1500);
+            playSound('laser');
+            confetti({ particleCount: 50, origin: { x: 0.8, y: 0.5 } });
+            setTimeout(nextTarget, 1000);
         } else {
-            tc.classList.remove('hit-correct'); tc.classList.remove('hit-wrong'); void tc.offsetWidth; tc.classList.add('hit-wrong');
             playSound('wrong');
         }
     }
 
-    function resizeCanvas() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
-    window.addEventListener('resize', resizeCanvas);
-
     function drawLaser() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 目标位置
-        const tr = document.getElementById('target-container').getBoundingClientRect();
-        const tX = tr.left + tr.width / 2; const tY = tr.top + tr.height / 2;
-        
-        // 发射点：飞船核心区
+        resizeCanvas();
         const ship = document.querySelector('.ship-core').getBoundingClientRect();
-        const sX = ship.left + ship.width / 2; const sY = ship.top + ship.height / 2;
-
-        ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
-        ctx.lineWidth = 15; ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)'; ctx.lineCap = 'round';
-        ctx.shadowBlur = 30; ctx.shadowColor = '#06b6d4'; ctx.stroke();
-
-        ctx.beginPath(); ctx.moveTo(sX, sY); ctx.lineTo(tX, tY);
-        ctx.lineWidth = 6; ctx.strokeStyle = '#fff'; ctx.shadowBlur = 10; ctx.stroke();
-        setTimeout(() => ctx.clearRect(0, 0, canvas.width, canvas.height), 150);
+        const enemy = document.getElementById('target-container').getBoundingClientRect();
+        ctx.beginPath(); ctx.moveTo(ship.left+ship.width, ship.top+ship.height/2);
+        ctx.lineTo(enemy.left+enemy.width/2, enemy.top+enemy.height/2);
+        ctx.lineWidth = 10; ctx.strokeStyle = "#06b6d4"; ctx.stroke();
+        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
     }
+
+    function playSound(type) {
+        let actx = new (window.AudioContext || window.webkitAudioContext)();
+        let osc = actx.createOscillator(); let g = actx.createGain();
+        osc.connect(g); g.connect(actx.destination);
+        if(type==='laser'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(800,0); osc.frequency.linearRampToValueAtTime(100,0.2); }
+        else if(type==='wrong'){ osc.type='square'; osc.frequency.setValueAtTime(100,0); }
+        else { osc.type='sine'; osc.frequency.setValueAtTime(400,0); }
+        osc.start(); osc.stop(0.2);
+    }
+
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    loadDatabase();
 </script>
 </body>
 </html>
