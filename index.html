@@ -33,7 +33,8 @@
         header {
             display: flex; justify-content: flex-end; align-items: center;
             padding: 10px 20px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(5px);
-            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(0, 240, 255, 0.2); z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
@@ -44,7 +45,7 @@
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-        /* 🚀 飞船 */
+        /* 🚀 飞船 (左侧横向) */
         #spaceship-container { position: absolute; left: 30px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
         .spaceship { position: relative; width: 80px; height: 50px; display: flex; justify-content: center; align-items: center; }
         .wing { position: absolute; width: 30px; height: 15px; background: rgba(15, 23, 42, 0.9); top: 18px; border-bottom: 2px solid var(--accent-glow); }
@@ -56,13 +57,10 @@
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.4); position: relative;
         }
-        
         .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 22px; font-weight: 900; color: #fff; font-family: sans-serif;}
-        
         .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 30px var(--wrong-color), inset 0 0 15px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
         @keyframes pulseRed { from { transform: scale(1); } to { transform: scale(1.05); } }
 
-        /* 👇 脱帽手指提示 */
         #finger-hint {
             position: absolute; top: -60px; left: 50%; transform: translateX(-50%) rotate(-90deg);
             font-size: 40px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
@@ -76,108 +74,119 @@
         .enemy-target {
             width: 45px; height: 45px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.5);
             transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: transform 0.3s;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1); backdrop-filter: blur(4px);
         }
         .enemy-text { transform: rotate(-45deg); font-size: 24px; font-weight: 900; color: #fff; }
 
-        /* 💥 爆炸动画 (正确) */
-        .enemy-target.explode { transform: rotate(45deg) scale(0) !important; opacity: 0; transition: all 0.3s ease-in; }
-        
-        /* 🛡️ 护盾闪光动画 (错误) */
-        .enemy-target.shield { animation: shieldFlash 0.5s ease-out; }
-        @keyframes shieldFlash {
-            0% { box-shadow: 0 0 0px #00f0ff, inset 0 0 0px #00f0ff; filter: brightness(1); }
-            50% { box-shadow: 0 0 40px #00f0ff, inset 0 0 30px #00f0ff; filter: brightness(2); border-color: #00f0ff; transform: rotate(45deg) scale(1.1);}
-            100% { box-shadow: 0 0 20px rgba(255,255,255,0.1); filter: brightness(1); border-color: rgba(255,255,255,0.5); transform: rotate(45deg) scale(1);}
-        }
-
-        #rule-toast {
-            position: absolute; top: 20%; left: 0; width: 100%; text-align: center;
-            color: #ff003c; font-size: 20px; font-weight: 900; opacity: 0; pointer-events: none;
-            transition: all 0.3s; text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50; letter-spacing: 2px;
-        }
-
-        /* 🎛️ 底部仪表盘区 */
+        /* 🎛️ 全新：“雷达扫射仪表盘”区 */
         .dashboard {
-            height: 26vh; min-height: 220px; background: linear-gradient(to bottom, #d1d5db, #9ca3af); 
-            border-top: 6px solid #f3f4f6; display: flex; justify-content: center; align-items: flex-end; gap: 4vw; border-radius: 30px 30px 0 0;
-            box-shadow: inset 0 5px 15px rgba(255,255,255,0.7), 0 -15px 40px rgba(0,0,0,0.8); padding: 20px 4vw 30px 4vw;
+            height: 25vh; min-height: 200px; 
+            background: linear-gradient(to bottom, #1e293b, #0f172a); 
+            border-top: 4px solid #334155;
+            display: flex; justify-content: center; align-items: flex-end; gap: 4vw; border-radius: 30px 30px 0 0;
+            box-shadow: inset 0 5px 15px rgba(255,255,255,0.1), 0 -15px 40px rgba(0,0,0,0.8);
+            padding: 0 2vw 20px 2vw;
         }
 
-        .control-unit { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        /* 每一个独立的仪表模块 */
+        .gauge-unit {
+            position: relative;
+            flex: 1; max-width: 170px; height: 160px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #334155;
+            border-radius: 15px 15px 40px 40px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 5px 10px rgba(0,0,0,0.5);
+            overflow: hidden;
+            cursor: grab;
+        }
+        .gauge-unit:active { cursor: grabbing; }
 
-        .dial-readout {
-            width: 90%; height: 35px; background: #0f172a; border: 2px solid var(--accent-glow); border-radius: 6px;
-            display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: 900; color: #fff; font-family: sans-serif;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3), inset 0 0 8px rgba(0, 0, 0, 0.8); text-shadow: 0 0 5px var(--accent-glow);
+        /* 弧形透明玻璃窗 (装饰) */
+        .gauge-glass {
+            position: absolute; top: 10px; left: 10px; right: 10px; height: 100px;
+            background: radial-gradient(circle at bottom center, rgba(0, 240, 255, 0.1) 0%, transparent 80%);
+            border-top: 2px solid rgba(0, 240, 255, 0.3);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            pointer-events: none; z-index: 1;
         }
 
-        /* 💣 核心重写：宽屏可视拨轮 */
-        .thumbwheel-container { 
-            position: relative; width: 24vw; max-width: 170px; height: 50px; 
-            background: #0b0f19; border-radius: 8px; border: 3px solid #64748b; 
-            box-shadow: inset 0 15px 25px rgba(0,0,0,0.9), 0 2px 5px rgba(255,255,255,0.6); 
-            /* 🔥 加大视角深度，让圆柱看起来更平坦 */
-            perspective: 1200px; cursor: grab; overflow: hidden;
+        /* 刻度盘原点 (位于底部旋钮中心) */
+        .gauge-origin {
+            position: absolute; bottom: 30px; left: 50%;
+            width: 0; height: 0; z-index: 2;
         }
-        .thumbwheel-container:active { cursor: grabbing; }
 
-        .thumbwheel-cylinder { 
-            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
-            transform-style: preserve-3d; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-        .thumbwheel-cylinder.dragging { transition: none !important; }
-
-        .thumbwheel-item { 
-            /* 🔥 加宽每个字母的占地面积 */
-            position: absolute; top: 0; left: 50%; width: 60px; height: 100%; margin-left: -30px; 
+        /* 固定的刻度文字 */
+        .gauge-item {
+            position: absolute; 
             display: flex; justify-content: center; align-items: center; 
-            font-size: 18px; font-weight: bold; color: #64748b; backface-visibility: hidden; white-space: nowrap;
-            transition: font-size 0.2s, color 0.2s, text-shadow 0.2s; /* 字母大小平滑过渡 */
+            font-size: 16px; font-weight: bold; color: #64748b; white-space: nowrap;
+            text-shadow: 1px 1px 2px #000; transition: 0.2s;
         }
-        .thumbwheel-item.active { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow); filter: drop-shadow(0 2px 2px #000); }
-        
-        /* 🔥 光标准星框 (标明当前选中的是哪一个) */
-        .thumbwheel-selection {
-            position: absolute; top: 0; left: 50%; width: 60px; height: 100%; margin-left: -30px;
-            border-left: 2px solid rgba(0, 240, 255, 0.5); border-right: 2px solid rgba(0, 240, 255, 0.5);
-            background: rgba(0, 240, 255, 0.15); pointer-events: none; z-index: 11;
-            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2);
+        /* 选中高亮 */
+        .gauge-item.active {
+            font-size: 26px; font-weight: 900; color: #00f0ff; 
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+            filter: drop-shadow(0 2px 2px #000);
         }
 
-        /* 🔥 两侧轻微渐变遮罩 (让前后项可见) */
-        .thumbwheel-overlay {
-            position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 4px;
-            background: linear-gradient(to right,
-                rgba(11, 15, 25, 1) 0%,
-                rgba(11, 15, 25, 0.6) 12%,
-                rgba(11, 15, 25, 0) 30%,
-                rgba(11, 15, 25, 0) 70%,
-                rgba(11, 15, 25, 0.6) 88%,
-                rgba(11, 15, 25, 1) 100%
-            );
+        /* 刻度小点 (保证抽到空声母时也有明确的刻度位置) */
+        .gauge-tick {
+            position: absolute; width: 4px; height: 8px; background: #475569;
+            transform-origin: bottom center; border-radius: 2px;
+        }
+        .gauge-tick.active { background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
+
+        /* 扫射的红色实体指针 */
+        .gauge-pointer {
+            position: absolute; bottom: 30px; left: 50%;
+            width: 4px; height: 95px;
+            background: linear-gradient(to top, transparent 10%, #ff003c 60%, #ff003c 100%);
+            transform-origin: bottom center; transform: translateX(-50%) rotate(0deg);
+            z-index: 10; filter: drop-shadow(0 0 6px #ff003c);
+            pointer-events: none;
+        }
+        /* 指针尖端的小圆点 */
+        .gauge-pointer::after {
+            content: ''; position: absolute; top: -2px; left: -3px; width: 10px; height: 10px;
+            background: #ff003c; border-radius: 50%; box-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
         }
 
-        .action-container { display: flex; justify-content: center; align-items: center; margin-left: 2vw; margin-bottom: 25px;}
+        /* 底部物理控制旋钮 */
+        .gauge-knob {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 40px; border-radius: 50%;
+            background: radial-gradient(circle, #f8fafc, #94a3b8);
+            border: 2px solid #1e293b;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.8), inset 0 -3px 5px rgba(0,0,0,0.3);
+            z-index: 15; pointer-events: none;
+        }
+        .gauge-knob::after {
+            content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 🔥 FIRE 大按钮 */
+        .action-container { display: flex; justify-content: center; align-items: center; margin-bottom: 20px;}
         #btn-fire-action {
-            width: 20vw; max-width: 110px; aspect-ratio: 1; border-radius: 50%;
+            width: 20vw; max-width: 120px; aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c);
-            border: 6px solid #450a0a; color: white; font-size: 20px; font-weight: 900; 
+            border: 6px solid #450a0a; color: white; font-size: 22px; font-weight: 900; 
             cursor: pointer; transition: 0.1s; letter-spacing: 2px;
-            box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.6);
+            box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 10px 0 #7f1d1d, 0 15px 25px rgba(0,0,0,0.8);
             text-shadow: -1px -1px 0 rgba(0,0,0,0.4);
         }
-        #btn-fire-action:active { transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d); }
+        #btn-fire-action:active { 
+            transform: translateY(8px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 2px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.8); background: radial-gradient(circle at 30% 30%, #cc0000, #7f1d1d);
+        }
 
         /* Loading */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
         .game-title { display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 36px; color: #fff; margin-bottom: 50px; text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; }
         .title-line { display: flex; gap: 20px; }
         .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
-
         #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
         @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
-
         .start-btn { 
             padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); 
             font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2);
@@ -187,11 +196,9 @@
 
         @media (max-width: 800px) {
             .game-title { font-size: 5vw; gap: 10px; } .psle-cap { font-size: 9vw; }
-            .dashboard { gap: 3vw; padding: 15px 10px 20px 10px; }
-            .dial-readout { height: 28px; font-size: 16px; }
-            .thumbwheel-container { height: 45px; border-width: 2px;}
-            .thumbwheel-selection { width: 50px; margin-left: -25px;}
-            .thumbwheel-item.active { font-size: 22px; }
+            .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 22vh;}
+            .gauge-unit { height: 130px; }
+            .gauge-pointer { height: 75px; }
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
             #btn-fire-action:active { transform: translateY(5px); box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 1px 0 #7f1d1d, 0 5px 10px rgba(0,0,0,0.6);}
         }
@@ -205,7 +212,6 @@
 
     <div id="combat-area">
         <canvas id="laser-canvas"></canvas>
-        <div id="rule-toast">警告信息</div>
 
         <div id="spaceship-container">
             <div class="spaceship">
@@ -226,30 +232,27 @@
     </div>
 
     <div class="dashboard">
-        <div class="control-unit">
-            <div class="dial-readout" id="readout-i">-</div>
-            <div class="thumbwheel-container" id="wrap-i">
-                <div class="thumbwheel-overlay"></div>
-                <div class="thumbwheel-selection"></div>
-                <div class="thumbwheel-cylinder" id="wheel-i"></div>
-            </div>
+        <div class="gauge-unit" id="box-i">
+            <div class="gauge-glass"></div>
+            <div class="gauge-origin" id="origin-i"></div>
+            <div class="gauge-pointer" id="ptr-i"></div>
+            <div class="gauge-knob"></div>
         </div>
-        <div class="control-unit">
-            <div class="dial-readout" id="readout-f">-</div>
-            <div class="thumbwheel-container" id="wrap-f">
-                <div class="thumbwheel-overlay"></div>
-                <div class="thumbwheel-selection"></div>
-                <div class="thumbwheel-cylinder" id="wheel-f"></div>
-            </div>
+        
+        <div class="gauge-unit" id="box-f">
+            <div class="gauge-glass"></div>
+            <div class="gauge-origin" id="origin-f"></div>
+            <div class="gauge-pointer" id="ptr-f"></div>
+            <div class="gauge-knob"></div>
         </div>
-        <div class="control-unit">
-            <div class="dial-readout" id="readout-t">-</div>
-            <div class="thumbwheel-container" id="wrap-t">
-                <div class="thumbwheel-overlay"></div>
-                <div class="thumbwheel-selection"></div>
-                <div class="thumbwheel-cylinder" id="wheel-t"></div>
-            </div>
+
+        <div class="gauge-unit" id="box-t">
+            <div class="gauge-glass"></div>
+            <div class="gauge-origin" id="origin-t"></div>
+            <div class="gauge-pointer" id="ptr-t"></div>
+            <div class="gauge-knob"></div>
         </div>
+
         <div class="action-container"><button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button></div>
     </div>
 
@@ -264,41 +267,15 @@
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
+    
     const TONE_MAP = {'a':['','ā','á','ǎ','à'], 'o':['','ō','ó','ǒ','ò'], 'e':['','ē','é','ě','è'], 'i':['','ī','í','ǐ','ì'], 'u':['','ū','ú','ǔ','ù'], 'ü':['','ǖ','ǘ','ǚ','ǜ']};
     const TONE_DATA_REV = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
-    const VALID_MAP = {
-        '': 'a,o,e,ai,ei,ao,ou,an,en,ang,eng,er',
-        'b': 'a,o,i,u,ai,ei,ao,an,en,ang,eng,ian,iao,ie,in,ing',
-        'p': 'a,o,i,u,ai,ei,ao,ou,an,en,ang,eng,ian,iao,ie,in,ing',
-        'm': 'a,o,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ian,iao,ie,in,ing,iu',
-        'f': 'a,o,u,ei,ou,an,en,ang,eng',
-        'd': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,ia,ian,iao,ie,iu,ing,uo,ui,uan,un',
-        't': 'a,e,i,u,ai,ao,ou,an,ang,eng,ong,ian,iao,ie,ing,uo,ui,uan,un',
-        'n': 'a,e,i,u,ü,ai,ei,ao,ou,an,en,ang,eng,ong,ian,iang,iao,ie,in,ing,iu,uo,uan,un,üe',
-        'l': 'a,e,i,u,ü,ai,ei,ao,ou,an,ang,eng,ong,ia,ian,iang,iao,ie,in,ing,iu,uo,uan,un,üe',
-        'g': 'a,e,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
-        'k': 'a,e,u,ai,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
-        'h': 'a,e,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
-        'j': 'i,ia,ian,iang,iao,ie,in,ing,iong,iu,ü,üan,üe,ün',
-        'q': 'i,ia,ian,iang,iao,ie,in,ing,iong,iu,ü,üan,üe,ün',
-        'x': 'i,ia,ian,iang,iao,ie,in,ing,iong,iu,ü,üan,üe,ün',
-        'zh': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
-        'ch': 'a,e,i,u,ai,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
-        'sh': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,ua,uai,uan,uang,ui,un,uo',
-        'r': 'e,i,u,ao,ou,an,en,ang,eng,ong,ua,uan,ui,un,uo',
-        'z': 'a,e,i,u,ai,ei,ao,ou,an,en,ang,eng,ong,uan,ui,un,uo',
-        'c': 'a,e,i,u,ai,ao,ou,an,en,ang,eng,ong,uan,ui,un,uo',
-        's': 'a,e,i,u,ai,ao,ou,an,en,ang,eng,ong,uan,ui,un,uo',
-        'y': 'a,e,i,o,ao,ou,an,en,ang,eng,ong,ü,üan,üe,ün',
-        'w': 'a,o,u,ai,ei,an,en,ang,eng'
-    };
-
     let DB_WORDS = [];
     let state = {
         score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
-        i: { angle: 0, opts: [], step: 0, radius: 0 }, f: { angle: 0, opts: [], step: 0, radius: 0 }, t: { angle: 0, opts: [], step: 0, radius: 0 },
+        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
         targetX: -20, targetSpeed: 0.05, targetActive: false 
     };
 
@@ -319,7 +296,10 @@
         }
         let initial = ''; 
         for (let i of INITIALS_LIST) {
-            if (clean.startsWith(i)) { if (i.length === 2) { initial = i; break; } if (i.length === 1) { initial = i; } }
+            if (clean.startsWith(i)) {
+                if (i.length === 2) { initial = i; break; }
+                if (i.length === 1) { initial = i; }
+            }
         }
         let final = initial === '' ? clean : clean.slice(initial.length);
         if (['j','q','x','y'].includes(initial) && final === 'u') final = 'ü';
@@ -362,16 +342,16 @@
     function nextTarget() {
         if (!DB_WORDS.length) return;
         state.currentTarget = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
-        state.targetX = -10; state.targetActive = true; state.hatRemoved = false;
-        document.getElementById('ship-main').classList.remove('needs-fix');
-        document.getElementById('finger-hint').style.display = 'none';
+        state.targetX = -10;
+        state.targetActive = true;
+        state.hatRemoved = false;
         
         state.targetSpeed = 0.04 + Math.random() * 0.03; 
         document.getElementById('target-char').innerText = state.currentTarget.char;
         
-        buildThumbwheel('i', getOpts(state.currentTarget.i, ALL_INITIALS));
-        buildThumbwheel('f', getOpts(state.currentTarget.f, ALL_FINALS));
-        buildThumbwheel('t', ALL_TONES); 
+        buildGauge('i', getOpts(state.currentTarget.i, ALL_INITIALS));
+        buildGauge('f', getOpts(state.currentTarget.f, ALL_FINALS));
+        buildGauge('t', ALL_TONES); 
     }
 
     function getOpts(correct, all) {
@@ -380,146 +360,169 @@
         return res.sort(() => 0.5-Math.random());
     }
 
-    // 💣 构建宽视野 3D 横向拨轮
-    function buildThumbwheel(type, opts) {
+    // 🔥 全新的弧形仪表盘绘制逻辑 (字不动，针动)
+    function buildGauge(type, opts) {
         state[type].opts = opts;
-        state[type].step = 360 / opts.length;
-        const wheel = document.getElementById(`wheel-${type}`);
+        const N = opts.length;
         
-        // 🔥 拉大半径，让拨轮表面变得平缓，实现“宽履带”视觉
-        let radius = Math.max((opts.length * 60) / (2 * Math.PI), 75);
-        state[type].radius = radius;
-
+        // 我们把所有选项均匀散布在 -60度 到 60度 之间 (总弧度120度)
+        const minAngle = -60;
+        const maxAngle = 60;
+        state[type].step = N > 1 ? (maxAngle - minAngle) / (N - 1) : 0;
+        
+        const origin = document.getElementById(`origin-${type}`);
+        // 动态计算文字离圆心的半径 (自适应屏幕大小)
+        const R = document.getElementById(`box-${type}`).offsetHeight * 0.55; 
+        
         let html = '';
         opts.forEach((o, idx) => {
-            let rot = idx * state[type].step;
-            html += `<div class="thumbwheel-item" style="transform: rotateY(${-rot}deg) translateZ(${radius}px)">${o}</div>`;
+            let A = minAngle + idx * state[type].step;
+            
+            // 绘制底层的发光刻度小点 (应对空字符)
+            html += `<div class="gauge-tick" id="tick-${type}-${idx}" style="transform: rotate(${A}deg) translateY(${-R - 15}px)"></div>`;
+            
+            // 绘制永远正立的文字 (巧妙利用反向 rotate 抵消)
+            html += `<div class="gauge-item" id="item-${type}-${idx}" style="transform: translate(-50%, -50%) rotate(${A}deg) translateY(${-R}px) rotate(${-A}deg)">${o}</div>`;
         });
         
-        wheel.innerHTML = html;
-        state[type].angle = 0;
-        updateThumbwheelVisuals(type);
+        origin.innerHTML = html;
+        
+        // 指针默认指向正上方 (0度)，也就是最中间的选项
+        let defaultIdx = Math.round((0 - minAngle) / state[type].step);
+        if (defaultIdx < 0) defaultIdx = 0;
+        if (defaultIdx >= N) defaultIdx = N - 1;
+        
+        state[type].angle = minAngle + defaultIdx * state[type].step;
+        
+        // 初始化指针位置
+        const ptr = document.getElementById(`ptr-${type}`);
+        ptr.style.transition = 'none';
+        ptr.style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
+        
+        updateGaugeVisuals(type);
+        setupGaugeInteraction(type);
     }
 
-    function setupThumbwheel(type) {
-        const wrap = document.getElementById(`wrap-${type}`);
-        const wheel = document.getElementById(`wheel-${type}`);
-        let isDragging = false, prevX = 0, lastIdx = -1;
-
-        const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
+    // 🔥 全新滑动手感逻辑 (左右横滑控制指针)
+    function setupGaugeInteraction(type) {
+        const box = document.getElementById(`box-${type}`);
+        let isDragging = false, startX = 0, startAngle = 0, lastIdx = -1;
 
         const onStart = (e) => { 
             initAudio(); 
-            isDragging = true; prevX = getX(e); wheel.classList.add('dragging'); 
-            state.hatRemoved = false;
-            document.getElementById('ship-main').classList.remove('needs-fix');
-            document.getElementById('finger-hint').style.display = 'none';
+            isDragging = true; 
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startAngle = state[type].angle;
+            document.getElementById(`ptr-${type}`).style.transition = 'none';
         };
         
         const onMove = (e) => {
             if (!isDragging) return; e.preventDefault();
-            let currX = getX(e); 
-            let deltaX = currX - prevX; 
-            prevX = currX;
-
-            // 依据变宽的 item 调整阻尼计算
-            let deltaAngle = (deltaX / 60) * state[type].step * 0.8;
-            state[type].angle += deltaAngle;
+            let currX = e.touches ? e.touches[0].clientX : e.clientX;
+            let deltaX = currX - startX;
             
-            wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
+            // 线性映射：手指横向移动 1px，指针转动 1.2度 (超级跟手)
+            let targetAngle = startAngle + deltaX * 1.2; 
             
-            let steps = Math.round(state[type].angle / state[type].step);
-            let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+            // 限制指针摆动范围在 -60 到 60 之间
+            if (targetAngle < -60) targetAngle = -60;
+            if (targetAngle > 60) targetAngle = 60;
             
+            state[type].angle = targetAngle;
+            document.getElementById(`ptr-${type}`).style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
+            
+            let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
             if (activeIdx !== lastIdx) {
                 if (lastIdx !== -1) playSound('mech'); 
                 lastIdx = activeIdx;
-                updateSelection(type, activeIdx);
+                updateGaugeClassesOnly(type, activeIdx);
                 updateHUD();
             }
         };
         
         const onEnd = () => { 
-            if(!isDragging) return; isDragging = false; wheel.classList.remove('dragging'); 
+            if(!isDragging) return; isDragging = false; 
             
-            let steps = Math.round(state[type].angle / state[type].step);
-            state[type].angle = steps * state[type].step;
-            wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
+            // 松手瞬间：弹簧吸附到最近的刻度槽 (段落感)
+            let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
+            state[type].angle = -60 + activeIdx * state[type].step;
             
-            let finalIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
-            updateSelection(type, finalIdx);
+            const ptr = document.getElementById(`ptr-${type}`);
+            ptr.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            ptr.style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
+            
+            updateGaugeClassesOnly(type, activeIdx);
             updateHUD();
         };
 
-        wrap.onmousedown = wrap.ontouchstart = onStart;
+        box.onmousedown = box.ontouchstart = onStart;
         window.addEventListener('mousemove', onMove, {passive:false});
         window.addEventListener('touchmove', onMove, {passive:false});
         window.addEventListener('mouseup', onEnd);
         window.addEventListener('touchend', onEnd);
     }
 
-    function updateSelection(type, activeIdx) {
-        const wheel = document.getElementById(`wheel-${type}`);
-        const items = Array.from(wheel.querySelectorAll('.thumbwheel-item'));
-        items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+    function updateGaugeClassesOnly(type, activeIdx) {
+        const origin = document.getElementById(`origin-${type}`);
+        Array.from(origin.querySelectorAll('.gauge-item')).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+        Array.from(origin.querySelectorAll('.gauge-tick')).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
     }
 
-    function updateThumbwheelVisuals(type) {
-        const wheel = document.getElementById(`wheel-${type}`);
-        wheel.style.transform = `translateZ(${-state[type].radius}px) rotateY(${state[type].angle}deg)`;
-        let steps = Math.round(state[type].angle / state[type].step);
-        let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
-        updateSelection(type, activeIdx);
+    function updateGaugeVisuals(type) {
+        const ptr = document.getElementById(`ptr-${type}`);
+        ptr.style.transform = `translateX(-50%) rotate(${state[type].angle}deg)`;
+        let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
+        updateGaugeClassesOnly(type, activeIdx);
         updateHUD();
     }
 
     function getVal(type) {
-        let steps = Math.round(state[type].angle / state[type].step);
-        let idx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
-        return state[type].opts[idx];
+        let activeIdx = Math.round((state[type].angle - (-60)) / state[type].step);
+        if (activeIdx < 0) activeIdx = 0;
+        if (activeIdx >= state[type].opts.length) activeIdx = state[type].opts.length - 1;
+        return state[type].opts[activeIdx];
     }
 
     function combineTruePinyin(i, f, tStr) {
-        let initial = i; let toneNum = parseInt(tStr);
+        let initial = i;
+        let toneNum = parseInt(tStr);
         if (isNaN(toneNum)) return initial + f; 
+        
         let v = '';
         if (f.includes('a')) v = 'a'; else if (f.includes('e')) v = 'e'; else if (f.includes('o')) v = 'o';
         else if (f.includes('ui')) v = 'i'; else if (f.includes('iu')) v = 'u'; else if (f.includes('i')) v = 'i';
         else if (f.includes('u')) v = 'u'; else if (f.includes('ü')) v = 'ü';
+        
         let final = f;
         if (v) final = f.replace(v, TONE_MAP[v][toneNum]);
         return initial + final;
     }
 
-    function showToast(msg) {
-        const toast = document.getElementById('rule-toast');
-        toast.innerText = msg;
-        toast.style.opacity = 1;
-        toast.style.transform = 'translateY(-20px)';
-        setTimeout(() => { toast.style.opacity = 0; toast.style.transform = 'translateY(0)'; }, 2000);
-    }
-
     function updateHUD() {
         let i = getVal('i'), f = getVal('f'), t = getVal('t');
+        let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
         
-        document.getElementById('readout-i').innerText = i === '' ? '-' : i;
-        document.getElementById('readout-f').innerText = f;
-        document.getElementById('readout-t').innerText = t === '' ? '-' : t;
-
         let displayF = f;
-        if (['j','q','x','y'].includes(i) && f.includes('ü') && state.hatRemoved) {
-            displayF = f.replace(/ü/g, 'u');
+        if (needsFix) {
+            if (!state.hatRemoved) {
+                document.getElementById('ship-main').classList.add('needs-fix');
+                document.getElementById('finger-hint').style.display = 'block';
+            } else {
+                displayF = f.replace(/ü/g, 'u');
+                document.getElementById('ship-main').classList.remove('needs-fix');
+                document.getElementById('finger-hint').style.display = 'none';
+            }
+        } else {
+            document.getElementById('ship-main').classList.remove('needs-fix');
+            document.getElementById('finger-hint').style.display = 'none';
         }
+
         document.getElementById('hud-display').innerText = combineTruePinyin(i, displayF, t);
     }
 
     function handleHudClick() {
         if (document.getElementById('ship-main').classList.contains('needs-fix')) {
-            state.hatRemoved = true; 
-            document.getElementById('ship-main').classList.remove('needs-fix');
-            document.getElementById('finger-hint').style.display = 'none';
-            updateHUD();
-            playSound('pop');
+            state.hatRemoved = true; updateHUD();
             confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 }, colors:['#fff','#00f0ff'], startVelocity: 15, ticks: 50 });
         }
     }
@@ -527,46 +530,21 @@
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
         
-        let i = getVal('i'), f = getVal('f'), t = getVal('t');
-
-        let isValid = VALID_MAP[i] && VALID_MAP[i].split(',').includes(f);
-        if (!isValid) {
-            playSound('error');
-            showToast("⚠️ 错误：不存在这个拼音组合！");
-            return; 
-        }
-
-        let needsFix = ['j','q','x','y'].includes(i) && f.includes('ü');
-        if (needsFix && !state.hatRemoved) {
-            playSound('error');
-            showToast("⚠️ j q x y 遇到 ü 要脱帽！");
-            document.getElementById('ship-main').classList.add('needs-fix');
-            document.getElementById('finger-hint').style.display = 'block';
-            
+        if (document.getElementById('ship-main').classList.contains('needs-fix')) {
+            playSound('wrong');
             document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1.5)';
             setTimeout(() => document.getElementById('finger-hint').style.transform = 'translateX(-50%) rotate(-90deg) scale(1)', 200);
-            return; 
+            return;
         }
 
         drawLaser();
-        
-        let isCorrect = (i === state.currentTarget.i && f === state.currentTarget.f && t === state.currentTarget.t);
-        let tc = document.getElementById('target-container');
-
-        if (isCorrect) {
+        if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            
-            tc.classList.add('explode');
-            playSound('explode');
-            confetti({ particleCount: 60, spread: 80, origin: { x: 0.8, y: 0.5 }, colors:['#39ff14','#00f0ff','#fff'] });
-            
-            setTimeout(() => { tc.classList.remove('explode'); nextTarget(); }, 1200);
+            confetti({ particleCount: 40, origin: { x: 0.8, y: 0.5 }, colors:['#39ff14','#00f0ff','#fff'] });
+            setTimeout(nextTarget, 1000);
         } else {
-            tc.classList.remove('shield'); void tc.offsetWidth; 
-            tc.classList.add('shield');
-            playSound('shield');
-            showToast("❌ 拼音正确，但不是这个字！");
+            playSound('wrong');
         }
     }
 
@@ -575,9 +553,7 @@
         if (state.targetActive) {
             state.targetX += state.targetSpeed;
             document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            if (state.targetX > 105) { 
-                state.targetActive = false; playSound('error'); setTimeout(nextTarget, 1000); 
-            }
+            if (state.targetX > 105) { state.targetActive = false; playSound('wrong'); setTimeout(nextTarget, 1000); }
         }
         requestAnimationFrame(gameLoop);
     }
@@ -588,22 +564,21 @@
         const enemy = document.getElementById('target-container').getBoundingClientRect();
         ctx.beginPath(); ctx.moveTo(ship.left+ship.width, ship.top+ship.height/2);
         ctx.lineTo(enemy.left+enemy.width/2, enemy.top+enemy.height/2);
-        ctx.lineWidth = 8; ctx.strokeStyle = "#00f0ff"; 
+        ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
         ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
         playSound('laser');
-        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 120);
+        setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
     }
 
     function playSound(type) {
         if (!actx) return;
         let osc = actx.createOscillator(); let g = actx.createGain();
         osc.connect(g); g.connect(actx.destination);
-
         if(type === 'mech'){ 
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(200, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(50, actx.currentTime + 0.04);
-            g.gain.setValueAtTime(0.4, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.04);
-            osc.start(); osc.stop(actx.currentTime + 0.04);
+            osc.type = 'square'; osc.frequency.setValueAtTime(150, actx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(40, actx.currentTime + 0.03);
+            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.03);
+            osc.start(); osc.stop(actx.currentTime + 0.03);
         }
         else if(type === 'laser'){ 
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, actx.currentTime); 
@@ -611,38 +586,13 @@
             g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
             osc.start(); osc.stop(actx.currentTime + 0.2);
         }
-        else if(type === 'pop'){ 
-            osc.type = 'sine'; osc.frequency.setValueAtTime(800, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(1200, actx.currentTime + 0.05);
-            g.gain.setValueAtTime(0.3, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
-            osc.start(); osc.stop(actx.currentTime + 0.1);
-        }
-        else if(type === 'error'){ 
-            osc.type = 'square'; osc.frequency.setValueAtTime(100, actx.currentTime); 
-            g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
-            osc.start(); osc.stop(actx.currentTime + 0.1);
-            
-            let osc2 = actx.createOscillator(); let g2 = actx.createGain();
-            osc2.type = 'square'; osc2.frequency.setValueAtTime(100, actx.currentTime + 0.15); 
-            g2.gain.setValueAtTime(0.2, actx.currentTime + 0.15); g2.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.25);
-            osc2.connect(g2); g2.connect(actx.destination);
-            osc2.start(actx.currentTime + 0.15); osc2.stop(actx.currentTime + 0.25);
-        }
-        else if (type === 'shield') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(1200, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.3);
-            g.gain.setValueAtTime(0.4, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
+        else if(type === 'wrong'){ 
+            osc.type = 'square'; osc.frequency.setValueAtTime(120, actx.currentTime); 
+            g.gain.setValueAtTime(0.2, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
             osc.start(); osc.stop(actx.currentTime + 0.3);
-        }
-        else if (type === 'explode') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, actx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(10, actx.currentTime + 0.5);
-            g.gain.setValueAtTime(0.6, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.5);
-            osc.start(); osc.stop(actx.currentTime + 0.5);
         }
     }
 
-    setupThumbwheel('i'); setupThumbwheel('f'); setupThumbwheel('t');
     loadDB();
 </script>
 </body>
