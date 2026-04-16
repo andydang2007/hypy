@@ -3,240 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pinyin Shooting: Database Edition</title>
+    <title>Pinyin Shooter: Laser Expedition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --accent-glow: #06b6d4;   
-            --correct-color: #22c55e; 
-            --wrong-color: #ef4444;   
-            --panel-light-bg: rgba(248, 250, 252, 0.95);
+            --accent-glow: #00f0ff; /* 赛博青色 */
+            --correct-color: #39ff14; 
+            --wrong-color: #ff003c;   
+            --panel-light-bg: rgba(241, 245, 249, 0.95);
             --wheel-bg: #ffffff;
             --text-dark: #0f172a;
             --text-muted-light: #94a3b8;
         }
 
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-family: 'Nunito', 'Microsoft YaHei', sans-serif; }
-
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        /* 中文用雅黑，数字和英文全用科幻字体 */
         body { 
             margin: 0; padding: 0; color: #fff; 
+            font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-            background-color: #020617;
-            background-image: radial-gradient(circle at 15% 50%, rgba(29, 78, 216, 0.15) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(147, 51, 234, 0.15) 0%, transparent 50%);
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.1) 0%, transparent 50%), 
+                radial-gradient(circle at 85% 30%, rgba(255, 0, 60, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
         }
 
+        .sci-fi-text { font-family: 'Orbitron', sans-serif; }
+
         header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 20px; background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(5px);
-            border-bottom: 1px solid rgba(6, 182, 212, 0.3); z-index: 10;
+            display: flex; justify-content: flex-end; align-items: center;
+            padding: 10px 20px; background: rgba(5, 5, 5, 0.6); backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.3); z-index: 10;
         }
 
         .stat-box { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
-        .stat-label { font-size: 10px; color: #94a3b8; font-weight: bold; }
-        .stat-value { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 10px var(--accent-glow); }
-        #db-status { font-size: 12px; color: #22c55e; }
+        .stat-label { font-size: 12px; color: var(--accent-glow); font-weight: bold; letter-spacing: 2px; }
+        .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent-glow); }
 
+        /* ⚔️ 战斗区域 */
         #combat-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; }
         #laser-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        
         #rule-toast {
             position: absolute; top: 15%; left: 0; width: 100%; text-align: center;
             color: #fbbf24; font-size: 18px; font-weight: 900; opacity: 0; pointer-events: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 4px 15px rgba(0,0,0,0.8); z-index: 50;
         }
 
-        /* 飞船 */
-        #spaceship-container { position: absolute; left: 20px; top: 50%; transform: translateY(-50%) rotate(90deg); z-index: 10; }
-        .spaceship { position: relative; width: 160px; height: 100px; display: flex; justify-content: center; align-items: center; }
-        .wing { position: absolute; width: 60px; height: 30px; background: rgba(30, 41, 59, 0.9); top: 35px; border-bottom: 3px solid var(--accent-glow); }
+        /* 🚀 飞船 (科幻化) */
+        #spaceship-container {
+            position: absolute; left: 30px; top: 50%; 
+            transform: translateY(-50%) rotate(90deg); z-index: 10;
+        }
+        .spaceship { position: relative; width: 80px; height: 50px; display: flex; justify-content: center; align-items: center; }
+        .wing { position: absolute; width: 30px; height: 15px; background: rgba(15, 23, 42, 0.9); top: 18px; border-bottom: 2px solid var(--accent-glow); }
         .wing.left { left: 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); }
         .wing.right { right: 0; clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%); }
+        
         .ship-core {
-            width: 90px; height: 90px; background: #0f172a; border: 4px solid var(--accent-glow); border-radius: 50%;
+            width: 44px; height: 44px; background: #050505; border: 2px solid var(--accent-glow); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; z-index: 12; cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.3);
         }
-        .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 32px; font-weight: 900; }
-        .ship-core.needs-fix { border-color: #ef4444; animation: pulseRed 1s infinite alternate; }
+        .hud-text { display: inline-block; transform: rotate(-90deg); font-size: 18px; font-weight: 900; color: #fff; }
+        .ship-core.needs-fix { border-color: var(--wrong-color); box-shadow: 0 0 20px var(--wrong-color); animation: pulseRed 0.8s infinite alternate; }
+        @keyframes pulseRed { from { box-shadow: 0 0 10px var(--wrong-color); } to { box-shadow: 0 0 30px var(--wrong-color); } }
 
-        @keyframes pulseRed { from { box-shadow: 0 0 10px #ef4444; } to { box-shadow: 0 0 30px #ef4444; } }
-
-        /* 怪物 */
-        #target-mover { position: absolute; top: 50%; right: -150px; transform: translateY(-50%); z-index: 8; }
+        /* 👾 怪物 */
+        #target-mover { position: absolute; top: 50%; right: -100px; transform: translateY(-50%); z-index: 8; }
         .enemy-target {
-            width: 100px; height: 100px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 2px solid #fff;
+            width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.5);
             transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 15px rgba(255,255,255,0.1); backdrop-filter: blur(2px);
         }
-        .enemy-text { transform: rotate(-45deg); font-size: 44px; font-weight: 900; }
+        .enemy-text { transform: rotate(-45deg); font-size: 20px; font-weight: 900; color: #fff; }
 
-        /* 仪表盘 */
+        /* 🎛️ 底部仪表盘 */
         .dashboard {
-            height: 200px; background: var(--panel-light-bg); border-top: 4px solid #cbd5e1;
-            display: flex; justify-content: space-evenly; align-items: center; border-radius: 30px 30px 0 0;
+            height: 22vh; min-height: 180px; background: var(--panel-light-bg); border-top: 3px solid #cbd5e1;
+            display: flex; justify-content: center; align-items: center; gap: 2vw; border-radius: 40px 40px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); padding: 0 15px;
         }
-        .dial-container { position: relative; width: 140px; height: 140px; }
-        .dial-wrapper { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #e2e8f0; background: #fff; position: relative; display: flex; justify-content: center; align-items: center; cursor: grab; }
-        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .dial-item { position: absolute; top: 50%; left: 50%; width: 40px; height: 30px; margin-top: -15px; margin-left: -20px; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: #94a3b8; }
-        .dial-item.active { font-size: 32px; color: #0284c7; }
-        .dial-arrow { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); font-size: 24px; color: #0284c7; }
 
+        .dial-container { position: relative; width: 18vw; max-width: 140px; aspect-ratio: 1; margin-right: 15px; }
+        .dial-wrapper { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #e2e8f0; background: #fff; position: relative; display: flex; justify-content: center; align-items: center; cursor: grab; box-shadow: inset 0 4px 10px rgba(0,0,0,0.05), 0 4px 10px rgba(0,0,0,0.1); }
+        .dial-wheel { width: 100%; height: 100%; border-radius: 50%; position: absolute; transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .dial-wheel.dragging { transition: none !important; }
+        .dial-item { position: absolute; top: 50%; left: 50%; width: 40px; height: 30px; margin-top: -15px; margin-left: -20px; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #94a3b8; }
+        .dial-item.active { font-size: 28px; font-weight: 900; color: #0f172a; }
+        
+        .dial-knob { position: absolute; width: 40%; height: 40%; background: radial-gradient(circle, #f8fafc 0%, #e2e8f0 100%); border-radius: 50%; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); pointer-events: none; z-index: 5; }
+        
+        /* 修复箭头重叠：向外移动到 right: -22px */
+        .dial-arrow { position: absolute; right: -22px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #64748b; z-index: 10; pointer-events: none; }
+
+        /* FIRE 按钮 (科幻棱角切边) */
+        .action-container { display: flex; justify-content: center; align-items: center; margin-left: 10px;}
         #btn-fire-action {
-            width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(#ef4444, #b91c1c);
-            border: 4px solid #fff; color: white; font-size: 24px; font-weight: 900; box-shadow: 0 8px 0 #7f1d1d; cursor: pointer;
+            width: 20vw; max-width: 120px; aspect-ratio: 1; 
+            background: linear-gradient(135deg, #ff003c, #990024);
+            border: 2px solid #ff4d79; color: white; font-size: 20px; font-weight: 900; 
+            cursor: pointer; transition: 0.1s; letter-spacing: 2px;
+            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%);
+            box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
         }
-        #btn-fire-action:active { transform: translateY(5px); box-shadow: 0 3px 0 #7f1d1d; }
+        #btn-fire-action:active { transform: scale(0.95); background: linear-gradient(135deg, #cc0030, #660018); }
 
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .start-btn { padding: 15px 40px; border-radius: 30px; border: none; background: #06b6d4; color: #fff; font-size: 24px; font-weight: 900; cursor: pointer; }
+        /* --- 🎮 炫酷全息启动页 --- */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
+        
+        .game-title { 
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            font-size: 36px; color: #fff; margin-bottom: 60px; 
+            text-shadow: 0 0 20px var(--accent-glow); text-align: center; letter-spacing: 4px; 
+        }
+        .title-line { display: flex; gap: 20px; }
+        .psle-cap { color: #fbbf24; font-size: 64px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
+
+        /* 全息边框 Start 按钮 */
+        .start-btn { 
+            padding: 18px 50px; 
+            border: 2px solid var(--accent-glow); 
+            background: rgba(0, 240, 255, 0.05); 
+            color: var(--accent-glow); 
+            font-size: 26px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2);
+            letter-spacing: 3px;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            transition: all 0.2s;
+        }
+        .start-btn:hover { background: rgba(0, 240, 255, 0.2); box-shadow: 0 0 25px rgba(0, 240, 255, 0.6), inset 0 0 25px rgba(0, 240, 255, 0.6); }
+        .start-btn:active { transform: scale(0.95); }
+
+        @media (max-width: 800px) {
+            .game-title { font-size: 5vw; gap: 10px; } 
+            .psle-cap { font-size: 9vw; }
+            .dial-container { margin-right: 25px; } /* 小屏下留出更多箭头空间 */
+            #btn-fire-action { font-size: 16px; }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div id="db-status">正在连接数据库...</div>
-        <div class="stat-box"><span class="stat-label">SCORE</span><span class="stat-value" id="ui-score">0</span></div>
+        <div class="stat-box"><span class="stat-label sci-fi-text">SCORE</span><span class="stat-value sci-fi-text" id="ui-score">0</span></div>
     </header>
 
     <div id="combat-area">
         <canvas id="laser-canvas"></canvas>
-        <div id="rule-toast">⚠️ j q x y 遇到 ü 要脱帽！点击屏幕上的拼音脱帽！</div>
+        <div id="rule-toast">⚠️ j q x y 遇到 ü 要脱帽！点击飞船拼音脱帽！</div>
 
         <div id="spaceship-container">
             <div class="spaceship">
                 <div class="wing left"></div>
-                <div class="ship-core" onclick="handleHudClick()"><span class="hud-text" id="hud-display"></span></div>
+                <div class="ship-core" id="ship-main" onclick="handleHudClick()"><span class="hud-text" id="hud-display"></span></div>
                 <div class="wing right"></div>
             </div>
         </div>
 
         <div id="target-mover">
-            <div class="enemy-target" id="target-container" onclick="playTargetAudio()">
+            <div class="enemy-target" id="target-container">
                 <div class="enemy-text" id="target-char">🎯</div>
             </div>
         </div>
     </div>
 
     <div class="dashboard">
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div></div><div class="dial-arrow">◀</div></div>
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div></div><div class="dial-arrow">◀</div></div>
-        <div class="dial-container"><div class="dial-wrapper" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div></div><div class="dial-arrow">◀</div></div>
-        <button id="btn-fire-action" onclick="handleFireClick()">FIRE</button>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-i"><div class="dial-wheel" id="wheel-i"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-f"><div class="dial-wheel" id="wheel-f"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="dial-container"><div class="dial-wrapper" id="wrap-t"><div class="dial-wheel" id="wheel-t"></div><div class="dial-knob"></div></div><div class="dial-arrow">◀</div></div>
+        <div class="action-container"><button id="btn-fire-action" class="sci-fi-text" onclick="handleFireClick()">FIRE</button></div>
     </div>
 
     <div id="overlay">
-        <h1 id="loading-msg">PINYIN DEFENDER</h1>
-        <button class="start-btn" id="btn-start" onclick="startGame()" style="display:none">MISSION START</button>
+        <h1 class="game-title sci-fi-text">
+            <div class="title-line"><span><span class="psle-cap">P</span>INYIN</span><span><span class="psle-cap">S</span>HOOTER</span></div>
+            <div class="title-line"><span><span class="psle-cap">L</span>ASER</span><span><span class="psle-cap">E</span>XPEDITION</span></div>
+        </h1>
+        <button class="start-btn sci-fi-text" onclick="startGame()">MISSION START</button>
     </div>
 
 <script>
-    // --- 拼音解析引擎 (将 "bà" 解析为 {i:"b", f:"a", t:"4"}) ---
-    const TONE_DATA = {
-        'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4',
-        'ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'
-    };
-    const INITIALS = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
-
-    function parsePinyin(py) {
-        if (py === 'de') return { i:'d', f:'e', t:'轻声' };
-        let clean = py;
-        let tone = '轻声';
-        for (let char in TONE_DATA) {
-            if (py.includes(char)) {
-                tone = TONE_DATA[char].slice(-1);
-                clean = py.replace(char, TONE_DATA[char][0]);
-                break;
-            }
-        }
-        let initial = '空';
-        for (let i of INITIALS) {
-            if (clean.startsWith(i)) {
-                if (i.length === 2 && clean.startsWith(i)) { initial = i; break; }
-                if (i.length === 1 && !['z','c','s'].includes(clean[0])) { initial = i; break; }
-                initial = i;
-            }
-        }
-        let final = initial === '空' ? clean : clean.slice(initial.length);
-        // 特殊处理：如果是 j q x y 后面跟 u，实际上是 ü
-        if (['j','q','x','y'].includes(initial) && final === 'u') final = 'ü';
-        return { i: initial, f: final, t: tone };
-    }
-
-    // --- 数据库调取 ---
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
+    const TONE_DATA = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
+    const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
+
     let DB_WORDS = [];
-
-    async function loadDatabase() {
-        try {
-            const resp = await fetch(CSV_URL);
-            const text = await resp.text();
-            const rows = text.split('\n').slice(1); // 跳过表头
-            DB_WORDS = rows.map(row => {
-                const cols = row.split(',');
-                if (cols.length < 7) return null;
-                const pyRaw = cols[6].trim().split(' / ')[0]; // 取第一个拼音答案
-                const parsed = parsePinyin(pyRaw);
-                return { char: cols[4].trim(), i: parsed.i, f: parsed.f, t: parsed.t, py: pyRaw };
-            }).filter(w => w !== null);
-            
-            document.getElementById('db-status').innerText = `已加载 ${DB_WORDS.length} 个生字`;
-            document.getElementById('btn-start').style.display = 'block';
-            document.getElementById('loading-msg').innerText = "数据库就绪";
-        } catch (e) {
-            document.getElementById('db-status').innerText = "数据库加载失败，请检查网络";
-            console.error(e);
-        }
-    }
-
-    // --- 游戏核心逻辑 ---
     let state = {
         score: 0, isPlaying: false, currentTarget: null, hatRemoved: false, 
-        i: { angle: 0, opts: [] }, f: { angle: 0, opts: [] }, t: { angle: 0, opts: [] },
-        targetX: -20, targetSpeed: 0.12, targetActive: false 
+        i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
+        targetX: -20, targetSpeed: 0.08, targetActive: false 
     };
 
-    const ALL_INITIALS = ['空','b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
+    // 🔥 零声母改为空字符串
+    const ALL_INITIALS = ['','b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
     const ALL_FINALS = ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ün','ang','eng','ing','ong','iao','ia','ian','iang','ua','uo','uan','uang','uai'];
-    const ALL_TONES = ['1', '2', '3', '4', '轻声'];
+    const ALL_TONES = ['1', '2', '3', '4', ''];
 
     const canvas = document.getElementById('laser-canvas');
     const ctx = canvas.getContext('2d');
 
+    // 拼音解析引擎 (处理零声母和轻声为空)
+    function parsePinyin(py) {
+        if (py === 'de') return { i:'d', f:'e', t:'' };
+        let clean = py, tone = ''; 
+        for (let char in TONE_DATA) { 
+            if (py.includes(char)) { tone = TONE_DATA[char].slice(-1); clean = py.replace(char, TONE_DATA[char][0]); break; } 
+        }
+        let initial = ''; // 默认为零声母空字符串
+        for (let i of INITIALS_LIST) {
+            if (clean.startsWith(i)) {
+                if (i.length === 2) { initial = i; break; }
+                if (i.length === 1) { initial = i; }
+            }
+        }
+        let final = initial === '' ? clean : clean.slice(initial.length);
+        if (['j','q','x','y'].includes(initial) && final === 'u') final = 'ü';
+        return { i: initial, f: final, t: tone };
+    }
+
+    async function loadDB() {
+        try {
+            const resp = await fetch(CSV_URL);
+            const text = await resp.text();
+            DB_WORDS = text.split('\n').slice(1).map(row => {
+                const cols = row.split(',');
+                if (cols.length < 7) return null;
+                const py = cols[6].trim().split(' / ')[0];
+                return { char: cols[4].trim(), ...parsePinyin(py), py: py };
+            }).filter(w => w);
+        } catch (e) { console.error("DB Load Fail"); }
+    }
+
     function startGame() {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
         document.getElementById('overlay').style.display = 'none';
         state.score = 0; state.isPlaying = true;
+        document.getElementById('ui-score').innerText = '0';
         nextTarget();
         gameLoop();
     }
 
-    function gameLoop() {
-        if (!state.isPlaying) return;
-        if (state.targetActive) {
-            state.targetX += state.targetSpeed;
-            document.getElementById('target-mover').style.right = state.targetX + 'vw';
-            if (state.targetX > 105) {
-                state.targetActive = false;
-                playSound('wrong');
-                setTimeout(nextTarget, 1000);
-            }
-        }
-        requestAnimationFrame(gameLoop);
-    }
-
     function nextTarget() {
         if (!DB_WORDS.length) return;
-        let next = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
-        state.currentTarget = next;
-        state.targetX = -20;
+        state.currentTarget = DB_WORDS[Math.floor(Math.random() * DB_WORDS.length)];
+        state.targetX = -10;
         state.targetActive = true;
         state.hatRemoved = false;
         
-        document.getElementById('target-char').innerText = next.char;
-        buildDial('i', getDistractors(next.i, ALL_INITIALS));
-        buildDial('f', getDistractors(next.f, ALL_FINALS));
-        buildDial('t', ALL_TONES);
-        updateHUD();
+        // 飞行速度 60%
+        state.targetSpeed = 0.07 + Math.random() * 0.05; 
+        
+        document.getElementById('target-char').innerText = state.currentTarget.char;
+        
+        buildDial('i', getOpts(state.currentTarget.i, ALL_INITIALS));
+        buildDial('f', getOpts(state.currentTarget.f, ALL_FINALS));
+        buildDial('t', ALL_TONES); // 声调直接显示所有选项
     }
 
-    function getDistractors(correct, all) {
+    function getOpts(correct, all) {
         let res = all.filter(x => x !== correct).sort(() => 0.5-Math.random()).slice(0, 6);
         res.push(correct);
         return res.sort(() => 0.5-Math.random());
@@ -246,41 +280,81 @@
         state[type].opts = opts;
         state[type].step = 360 / opts.length;
         const wheel = document.getElementById(`wheel-${type}`);
-        wheel.innerHTML = opts.map((o, idx) => `<div class="dial-item" id="item-${type}-${idx}" style="transform: rotate(${idx*state[type].step}deg) translateX(55px)">${o}</div>`).join('');
+        const radius = document.getElementById(`wrap-${type}`).offsetWidth * 0.38;
+        wheel.innerHTML = opts.map((o, idx) => `<div class="dial-item" style="transform: rotate(${idx*state[type].step}deg) translateX(${radius}px)">${o}</div>`).join('');
         state[type].angle = 0;
-        setupiPod(type);
-        updateVisuals(type);
+        updateDialVisuals(type);
     }
 
     function setupiPod(type) {
         const wrap = document.getElementById(`wrap-${type}`);
-        let isDragging = false, startA = 0, initR = 0;
+        const wheel = document.getElementById(`wheel-${type}`);
+        let isDragging = false, prevA = 0, lastIdx = -1;
+
         const getA = (e) => {
             const r = wrap.getBoundingClientRect();
             const x = (e.touches ? e.touches[0].clientX : e.clientX) - (r.left + r.width/2);
             const y = (e.touches ? e.touches[0].clientY : e.clientY) - (r.top + r.height/2);
             return Math.atan2(y, x) * 180 / Math.PI;
         };
-        wrap.onmousedown = wrap.ontouchstart = (e) => { isDragging = true; startA = getA(e); initR = state[type].angle; };
-        window.onmousemove = window.ontouchmove = (e) => {
-            if (!isDragging) return;
-            let delta = getA(e) - startA;
-            state[type].angle = Math.round((initR + delta) / state[type].step) * state[type].step;
-            updateVisuals(type);
+
+        const onStart = (e) => { isDragging = true; prevA = getA(e); wheel.classList.add('dragging'); };
+        
+        const onMove = (e) => {
+            if (!isDragging) return; e.preventDefault();
+            let currA = getA(e); let delta = currA - prevA;
+            if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
+            
+            state[type].angle += delta * 0.8; 
+            prevA = currA;
+            wheel.style.transform = `rotate(${state[type].angle}deg)`;
+            
+            let steps = Math.round(-state[type].angle / state[type].step);
+            let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+            
+            if (activeIdx !== lastIdx) {
+                if (lastIdx !== -1) playSound('spin');
+                lastIdx = activeIdx;
+                updateDialSelectionClassOnly(type, activeIdx);
+                updateHUD();
+            }
         };
-        window.onmouseup = window.ontouchend = () => { isDragging = false; playSound('spin'); };
+        
+        const onEnd = () => { 
+            if(!isDragging) return; isDragging = false; wheel.classList.remove('dragging'); 
+            let steps = Math.round(state[type].angle / state[type].step);
+            state[type].angle = steps * state[type].step;
+            wheel.style.transform = `rotate(${state[type].angle}deg)`;
+            
+            let finalIdx = (Math.round(-state[type].angle / state[type].step) % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+            updateDialSelectionClassOnly(type, finalIdx);
+            updateHUD();
+        };
+
+        wrap.onmousedown = wrap.ontouchstart = onStart;
+        window.addEventListener('mousemove', onMove, {passive:false});
+        window.addEventListener('touchmove', onMove, {passive:false});
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
     }
 
-    function updateVisuals(type) {
+    function updateDialSelectionClassOnly(type, activeIdx) {
+        const wheel = document.getElementById(`wheel-${type}`);
+        Array.from(wheel.children).forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+    }
+
+    function updateDialVisuals(type) {
         const wheel = document.getElementById(`wheel-${type}`);
         wheel.style.transform = `rotate(${state[type].angle}deg)`;
-        let idx = (Math.round(-state[type].angle / state[type].step) % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
-        Array.from(wheel.children).forEach((el, i) => el.classList.toggle('active', i === idx));
+        let steps = Math.round(-state[type].angle / state[type].step);
+        let activeIdx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+        updateDialSelectionClassOnly(type, activeIdx);
         updateHUD();
     }
 
     function getVal(type) {
-        let idx = (Math.round(-state[type].angle / state[type].step) % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
+        let steps = Math.round(-state[type].angle / state[type].step);
+        let idx = (steps % state[type].opts.length + state[type].opts.length) % state[type].opts.length;
         return state[type].opts[idx];
     }
 
@@ -288,22 +362,21 @@
         let i = getVal('i'), f = getVal('f'), t = getVal('t');
         let needsFix = ['j','q','x','y'].includes(i) && f === 'ü';
         let displayF = (needsFix && state.hatRemoved) ? 'u' : f;
-        document.querySelector('.ship-core').classList.toggle('needs-fix', needsFix && !state.hatRemoved);
-        document.getElementById('hud-display').innerText = (i==='空'?'':i) + displayF + (t==='轻声'?'':t);
+        
+        document.getElementById('ship-main').classList.toggle('needs-fix', needsFix && !state.hatRemoved);
+        document.getElementById('hud-display').innerText = i + displayF + t;
     }
 
     function handleHudClick() {
-        if (!state.isPlaying) return;
-        if (document.querySelector('.ship-core').classList.contains('needs-fix')) {
-            state.hatRemoved = true; playSound('pop'); updateHUD();
-            confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 } });
+        if (document.getElementById('ship-main').classList.contains('needs-fix')) {
+            state.hatRemoved = true; updateHUD();
+            confetti({ particleCount: 20, origin: { x: 0.1, y: 0.5 }, colors:['#fff','#00f0ff'] });
         }
     }
 
     function handleFireClick() {
         if (!state.isPlaying || !state.targetActive) return;
-        if (document.querySelector('.ship-core').classList.contains('needs-fix')) {
-            playSound('wrong');
+        if (document.getElementById('ship-main').classList.contains('needs-fix')) {
             document.getElementById('rule-toast').style.opacity = 1;
             setTimeout(() => document.getElementById('rule-toast').style.opacity = 0, 2000);
             return;
@@ -312,21 +385,29 @@
         if (getVal('i') === state.currentTarget.i && getVal('f') === state.currentTarget.f && getVal('t') === state.currentTarget.t) {
             state.targetActive = false;
             state.score += 10; document.getElementById('ui-score').innerText = state.score;
-            playSound('laser');
-            confetti({ particleCount: 50, origin: { x: 0.8, y: 0.5 } });
+            confetti({ particleCount: 40, origin: { x: 0.8, y: 0.5 } });
             setTimeout(nextTarget, 1000);
-        } else {
-            playSound('wrong');
         }
     }
 
+    function gameLoop() {
+        if (!state.isPlaying) return;
+        if (state.targetActive) {
+            state.targetX += state.targetSpeed;
+            document.getElementById('target-mover').style.right = state.targetX + 'vw';
+            if (state.targetX > 105) { state.targetActive = false; setTimeout(nextTarget, 1000); }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
     function drawLaser() {
-        resizeCanvas();
-        const ship = document.querySelector('.ship-core').getBoundingClientRect();
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const ship = document.getElementById('ship-main').getBoundingClientRect();
         const enemy = document.getElementById('target-container').getBoundingClientRect();
         ctx.beginPath(); ctx.moveTo(ship.left+ship.width, ship.top+ship.height/2);
         ctx.lineTo(enemy.left+enemy.width/2, enemy.top+enemy.height/2);
-        ctx.lineWidth = 10; ctx.strokeStyle = "#06b6d4"; ctx.stroke();
+        ctx.lineWidth = 6; ctx.strokeStyle = "#00f0ff"; ctx.stroke();
+        ctx.shadowBlur = 20; ctx.shadowColor = "#00f0ff"; ctx.stroke();
         setTimeout(() => ctx.clearRect(0,0,canvas.width,canvas.height), 100);
     }
 
@@ -340,8 +421,8 @@
         osc.start(); osc.stop(0.2);
     }
 
-    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    loadDatabase();
+    setupiPod('i'); setupiPod('f'); setupiPod('t');
+    loadDB();
 </script>
 </body>
 </html>
