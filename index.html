@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pinyin Shooter: Laser Expedition</title>
     
-    <link rel="apple-touch-icon" href="spaceship2.jpg">
+    <link rel="apple-touch-icon" href="spaceship1.jpg">
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -157,16 +157,27 @@
         #loading-ui { color: var(--accent-glow); font-size: 20px; letter-spacing: 3px; animation: blink 1s infinite alternate; }
         @keyframes blink { from { opacity: 0.4; } to { opacity: 1; } }
         
-        .ship-selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 25px; color: #94a3b8; display: none; }
-        .ship-selector { display: none; gap: 25px; margin-bottom: 60px; align-items: center; justify-content: center; }
+        /* 🔥 年级与飞船选择区 */
+        .selector-title { font-size: 16px; letter-spacing: 2px; margin-bottom: 25px; color: #94a3b8; display: block; text-align: center; }
+        
+        .grade-selector { display: flex; gap: 30px; margin-bottom: 40px; justify-content: center; }
+        .grade-btn {
+            padding: 20px 40px; background: rgba(0,0,0,0.8); border: 2px solid #334155; border-radius: 12px;
+            font-size: 24px; font-weight: 900; color: #94a3b8; cursor: pointer; transition: 0.3s;
+        }
+        .grade-btn:hover, .grade-btn.selected { border-color: var(--accent-glow); color: var(--accent-glow); box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.1); }
+
+        .ship-selector { display: flex; gap: 25px; margin-bottom: 60px; align-items: center; justify-content: center; }
         .ship-option { width: 80px; height: 80px; padding: 5px; box-sizing: border-box; border-radius: 10px; border: 2px solid #334155; object-fit: contain; cursor: pointer; transition: 0.2s; mix-blend-mode: screen; background: #000; }
         .ship-option.selected { border-color: var(--accent-glow); box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.15); }
-        .start-btn { padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2); letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; display: none; }
+
+        .start-btn { padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2); letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; }
         .start-btn:active { transform: scale(0.95); }
 
         @media (max-width: 800px) {
             .game-title { font-size: 5vw; margin-bottom: 40px; gap: 10px; } .psle-cap { font-size: 9vw; }
             .ship-selector { margin-bottom: 40px;}
+            .grade-btn { padding: 15px 25px; font-size: 20px; }
             .dashboard { gap: 2vw; padding: 0 10px 10px 10px; height: 22vh; min-height: 140px;}
             .gauge-unit { height: 110px; } .gauge-pointer { height: 55px; } 
             #btn-fire-action { font-size: 16px; border-width: 4px; box-shadow: inset 0 5px 10px rgba(255,255,255,0.4), 0 6px 0 #7f1d1d, 0 10px 15px rgba(0,0,0,0.6);}
@@ -193,7 +204,6 @@
         <div id="spaceship-container">
             <img id="player-ship-img" src="" alt="Fighter">
             <div id="laser-muzzle"></div>
-            
             <div class="ship-core" id="ship-main" onclick="handleHudClick()">
                 <div id="finger-hint">👇</div>
                 <span class="hud-text" id="hud-display"></span>
@@ -214,16 +224,26 @@
             <div class="title-line"><span><span class="psle-cap">L</span>ASER</span><span><span class="psle-cap">E</span>XPEDITION</span></div>
         </h1>
         
-        <div id="loading-ui" class="sci-fi-text">CONNECTING TO HANGAR...</div>
+        <div id="loading-ui" class="sci-fi-text">CONNECTING TO DATABASE...</div>
         
-        <div class="ship-selector-title sci-fi-text" id="selector-title">SELECT YOUR FIGHTER</div>
-        <div class="ship-selector" id="ship-selector">
-            <img class="ship-option selected" src="spaceship1.jpg" onclick="selectShip(0)">
-            <img class="ship-option" src="spaceship2.jpg" onclick="selectShip(1)">
-            <img class="ship-option" src="spaceship3.jpg" onclick="selectShip(2)">
+        <div id="grade-selection-area" style="display: none; flex-direction: column; align-items: center;">
+            <span class="selector-title sci-fi-text">SELECT YOUR GRADE LEVEL</span>
+            <div class="grade-selector">
+                <div class="grade-btn sci-fi-text" onclick="selectGrade(1)">GRADE 1</div>
+                <div class="grade-btn sci-fi-text" onclick="selectGrade(3)">GRADE 3</div>
+            </div>
         </div>
 
-        <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">MISSION START</button>
+        <div id="ship-selection-area" style="display: none; flex-direction: column; align-items: center;">
+            <span class="selector-title sci-fi-text">SELECT YOUR FIGHTER</span>
+            <div class="ship-selector" id="ship-selector">
+                <img class="ship-option selected" src="spaceship1.jpg" onclick="selectShip(0)">
+                <img class="ship-option" src="spaceship2.jpg" onclick="selectShip(1)">
+                <img class="ship-option" src="spaceship3.jpg" onclick="selectShip(2)">
+            </div>
+            <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">MISSION START</button>
+        </div>
+
     </div>
 
 <script>
@@ -232,6 +252,40 @@
     const SHIPS = ['spaceship1.jpg', 'spaceship2.jpg', 'spaceship3.jpg'];
     const MONSTERS = ['monster1.jpg', 'monster2.jpg', 'monster3.jpg', 'monster4.jpg', 'monster5.jpg'];
     let currentShipIdx = 0;
+    
+    let ALL_WORDS = []; // 存储解析后的全部词库
+    let DB_WORDS = [];  // 存储根据年级筛选后的实际词库
+
+    // 汉字转数字映射表
+    const lessonMap = {
+        '第一课': 1, '第二课': 2, '第三课': 3, '第四课': 4, '第五课': 5,
+        '第六课': 6, '第七课': 7, '第八课': 8, '第九课': 9, '第十课': 10,
+        '第十一课': 11, '第十二课': 12, '第十三课': 13, '第十四课': 14, '第十五课': 15,
+        '第十六课': 16, '第十七课': 17, '第十八课': 18, '第十九课': 19
+    };
+
+    // 🔥 选择年级，进入下一步
+    function selectGrade(level) {
+        initAudio(); 
+        playSound('select');
+        
+        // 动态数据筛选过滤
+        if (level === 1) {
+            DB_WORDS = ALL_WORDS.filter(w => w.grade === 'P1' && w.lesson <= 8);
+        } else if (level === 3) {
+            DB_WORDS = ALL_WORDS.filter(w => 
+                w.grade === 'P1' || 
+                w.grade === 'P2' || 
+                (w.grade === 'P3' && w.lesson <= 7)
+            );
+        }
+        
+        // 切换 UI 界面
+        document.getElementById('grade-selection-area').style.display = 'none';
+        document.getElementById('ship-selection-area').style.display = 'flex';
+        // 默认选中第一艘
+        selectShip(0);
+    }
 
     function selectShip(idx) {
         initAudio(); 
@@ -242,14 +296,13 @@
             else opt.classList.remove('selected');
         });
         playSound('select'); 
+        document.getElementById('btn-start').style.display = 'block';
     }
 
     const TONE_MAP = {'a':['','ā','á','ǎ','à'], 'o':['','ō','ó','ǒ','ò'], 'e':['','ē','é','ě','è'], 'i':['','ī','í','ǐ','ì'], 'u':['','ū','ú','ǔ','ù'], 'ü':['','ǖ','ǘ','ǚ','ǜ']};
     const TONE_DATA_REV = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'ü1','ǘ':'ü2','ǚ':'ü3','ǜ':'ü4'};
     const INITIALS_LIST = ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'];
 
-    let DB_WORDS = [];
-    
     let state = {
         score: 0, combo: 0, timeLeft: 300, isPlaying: false, hatRemoved: false, dialsTouched: false,
         i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
@@ -288,18 +341,29 @@
         try {
             const resp = await fetch(CSV_URL);
             const text = await resp.text();
-            DB_WORDS = text.split('\n').slice(1).map(row => {
+            
+            // 🔥 解析最新版 CSV 表格
+            ALL_WORDS = text.split('\n').slice(1).map(row => {
                 const cols = row.split(',');
                 if (cols.length < 7) return null;
-                const py = cols[6].trim().split(' / ')[0];
-                return { char: cols[4].trim(), ...parsePinyin(py), py: py };
+                
+                const grade = cols[0].trim();
+                const topic = cols[2].trim();
+                const char = cols[4].trim();
+                const pyStr = cols[6].trim();
+                
+                if (!char || !pyStr) return null;
+                
+                // 提取多音字的第一个读音进行游戏
+                let py = pyStr.split('/')[0].trim(); 
+                let lesson = lessonMap[topic] || 99; // 自动转换为数字课次
+                
+                return { grade: grade, lesson: lesson, char: char, ...parsePinyin(py), py: py };
             }).filter(w => w);
             
-            if(DB_WORDS.length > 0){
+            if(ALL_WORDS.length > 0){
                 document.getElementById('loading-ui').style.display = 'none';
-                document.getElementById('selector-title').style.display = 'block';
-                document.getElementById('ship-selector').style.display = 'flex';
-                document.getElementById('btn-start').style.display = 'block';
+                document.getElementById('grade-selection-area').style.display = 'flex';
             }
         } catch (e) { document.getElementById('loading-ui').innerText = "DB CONNECTION FAILED"; }
     }
@@ -347,10 +411,11 @@
             <div style="font-size: 48px; color: #fbbf24; text-shadow: 0 0 20px #fbbf24;">TIME'S UP</div>
             <div style="font-size: 24px; color: #fff; margin-top: 10px;">FINAL SCORE: ${state.score}</div>
         `;
-        document.getElementById('selector-title').style.display = 'none';
-        document.getElementById('ship-selector').style.display = 'none';
+        document.getElementById('grade-selection-area').style.display = 'none';
+        document.getElementById('ship-selection-area').style.display = 'none';
         
         let startBtn = document.getElementById('btn-start');
+        startBtn.style.display = 'block';
         startBtn.innerText = "PLAY AGAIN";
         startBtn.onclick = () => location.reload(); 
     }
