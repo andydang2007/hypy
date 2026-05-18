@@ -6,9 +6,9 @@
     <title>Pinyin Shooter: Laser Expedition</title>
     
     <link rel="apple-touch-icon" href="hypyfiles/spaceship1.jpg">
-    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
         :root {
             --accent-glow: #00f0ff; 
@@ -184,6 +184,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -246,7 +247,7 @@
     </div>
 
 <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSpb9z6dJb-trOkha7LITpacXyCk8YczYWn7VnGUFEW2vO-aO3Da_yUm29hrjyJMvqVTgr4oaPrqg2p/pub?output=csv";
     
     const SHIPS = ['hypyfiles/spaceship1.jpg', 'hypyfiles/spaceship2.jpg', 'hypyfiles/spaceship3.jpg'];
     const MONSTERS = ['hypyfiles/monster1.jpg', 'hypyfiles/monster2.jpg', 'hypyfiles/monster3.jpg', 'hypyfiles/monster4.jpg', 'hypyfiles/monster5.jpg'];
@@ -262,6 +263,59 @@
         '第十六课': 16, '第十七课': 17, '第十八课': 18, '第十九课': 19
     };
 
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let insideQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+
+            if (char === '"' && insideQuotes && nextChar === '"') {
+                current += '"';
+                i++;
+            } else if (char === '"') {
+                insideQuotes = !insideQuotes;
+            } else if (char === ',' && !insideQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+
+        result.push(current.trim());
+        return result;
+    }
+
+    function getCell(rowObj, keys, fallback = '') {
+        for (const key of keys) {
+            if (rowObj[key] !== undefined && String(rowObj[key]).trim() !== '') {
+                return String(rowObj[key]).trim();
+            }
+        }
+        return fallback;
+    }
+
+    function normalizeGradeValue(v) {
+        v = String(v || '').trim().toUpperCase();
+        if (!v) return '';
+        if (v.includes('P1') || v.includes('一年级') || v.includes('1年级') || v === '1') return 'P1';
+        if (v.includes('P2') || v.includes('二年级') || v.includes('2年级') || v === '2') return 'P2';
+        if (v.includes('P3') || v.includes('三年级') || v.includes('3年级') || v === '3') return 'P3';
+        let m = v.match(/[123]/);
+        return m ? 'P' + m[0] : v;
+    }
+
+    function parseLessonValue(v) {
+        v = String(v || '').trim();
+        if (!v) return 99;
+        if (lessonMap[v]) return lessonMap[v];
+        let m = v.match(/\d+/);
+        return m ? parseInt(m[0], 10) : 99;
+    }
+
     function selectGrade(level) {
         initAudio(); 
         playSound('select');
@@ -274,6 +328,10 @@
                 w.grade === 'P2' || 
                 (w.grade === 'P3' && w.lesson <= 7)
             );
+        }
+
+        if (!DB_WORDS.length) {
+            DB_WORDS = ALL_WORDS.slice();
         }
         
         document.getElementById('grade-selection-area').style.display = 'none';
@@ -314,6 +372,7 @@
     const ctx = canvas.getContext('2d');
 
     function parsePinyin(py) {
+        py = String(py || '').trim().toLowerCase();
         if (py === 'de') return { i:'d', f:'e', t:'' };
         let clean = py, tone = ''; 
         for (let char in TONE_DATA_REV) { 
@@ -333,31 +392,50 @@
 
     async function loadDB() {
         try {
-            const resp = await fetch(CSV_URL);
+            const resp = await fetch(CSV_URL + "&t=" + Date.now());
             const text = await resp.text();
             
-            ALL_WORDS = text.split('\n').slice(1).map(row => {
-                const cols = row.split(',');
-                if (cols.length < 7) return null;
-                
-                const grade = cols[0].trim();
-                const topic = cols[2].trim();
-                const char = cols[4].trim();
-                const pyStr = cols[6].trim();
-                
+            const lines = text
+                .replace(/^\uFEFF/, '')
+                .split(/\r?\n/)
+                .filter(line => line.trim());
+
+            if (lines.length < 2) {
+                document.getElementById('loading-ui').innerText = "DB EMPTY";
+                return;
+            }
+
+            const headers = parseCSVLine(lines[0]).map(h => String(h || '').replace(/^\uFEFF/, '').trim());
+
+            ALL_WORDS = lines.slice(1).map(line => {
+                const cols = parseCSVLine(line);
+                const row = {};
+                headers.forEach((h, i) => row[h] = cols[i] || '');
+
+                const gradeRaw = getCell(row, ['年级', 'GRADE', 'Grade', 'grade', 'LEVEL', 'Level'], cols[0] || '');
+                const topicRaw = getCell(row, ['课次', '课程', '课文', 'TOPIC', 'Topic', 'topic', 'LESSON', 'Lesson', 'lesson'], cols[2] || '');
+                const char = getCell(row, ['汉字', '字', '生字', 'CHAR', 'Char', 'char', 'WORD', 'Word', 'word'], cols[4] || '');
+                const pyStr = getCell(row, ['拼音', 'PINYIN', 'Pinyin', 'pinyin', 'PY', 'py'], cols[6] || '');
+
                 if (!char || !pyStr) return null;
-                
+
                 let py = pyStr.split('/')[0].trim(); 
-                let lesson = lessonMap[topic] || 99;
+                let grade = normalizeGradeValue(gradeRaw);
+                let lesson = parseLessonValue(topicRaw);
                 
-                return { grade: grade, lesson: lesson, char: char, ...parsePinyin(py), py: py };
-            }).filter(w => w);
+                return { grade, lesson, char, ...parsePinyin(py), py };
+            }).filter(w => w && w.char && w.py);
             
             if(ALL_WORDS.length > 0){
                 document.getElementById('loading-ui').style.display = 'none';
                 document.getElementById('grade-selection-area').style.display = 'flex';
+            } else {
+                document.getElementById('loading-ui').innerText = "NO VALID WORDS FOUND";
             }
-        } catch (e) { document.getElementById('loading-ui').innerText = "DB CONNECTION FAILED"; }
+        } catch (e) { 
+            console.error(e);
+            document.getElementById('loading-ui').innerText = "DB CONNECTION FAILED"; 
+        }
     }
 
     function initAudio() {
@@ -379,7 +457,7 @@
         document.getElementById('overlay').style.display = 'none';
         
         state.score = 0; state.combo = 0; state.timeLeft = 300; 
-        state.isPlaying = true; state.dialsTouched = false;
+        state.isPlaying = true; state.dialsTouched = false; state.hatRemoved = false;
         state.targets = []; state.targetIdCounter = 0; state.lasers = [];
         state.lastSpawnTime = 0; state.lastTimerTick = Date.now();
         
@@ -423,7 +501,8 @@
         if (currentOpts.length !== 5) {
             let arr = Array.from(neededSet);
             let available = allArr.filter(x => !arr.includes(x)).sort(() => 0.5 - Math.random());
-            while(arr.length < 5) arr.push(available.pop());
+            while(arr.length < 5 && available.length) arr.push(available.pop());
+            while(arr.length < 5) arr.push(allArr[Math.floor(Math.random() * allArr.length)]);
             return arr.sort(() => 0.5 - Math.random());
         }
 
