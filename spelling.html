@@ -1,13 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset=".com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spelling Hub</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M04YCD1PQK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M04YCD1PQK');
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         :root { --text-main: #1e293b; --text-muted: #64748b; }
-        * { box-sizing: border-box; font-family: 'Comic Sans MS', "Chalkboard SE", "Nunito", -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', "Chalkboard SE", "Nunito", -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
         
         body {
             background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
@@ -30,7 +47,7 @@
             border: none;
             border-radius: 999px;
             padding: 10px 18px;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.92);
             color: #2563eb;
             font-size: 16px;
             font-weight: 900;
@@ -67,8 +84,13 @@
             animation: bounceIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        #setup-screen, #finish-screen { justify-content: center; }
-        #finish-screen { overflow-y: auto; }
+        #setup-screen, #finish-screen {
+            justify-content: center;
+        }
+
+        #finish-screen {
+            overflow-y: auto;
+        }
         
         h1 {
             color: #3b82f6;
@@ -165,7 +187,9 @@
             height: fit-content;
         }
 
-        .checkbox-label input { display: none; }
+        .checkbox-label input {
+            display: none;
+        }
 
         .checkbox-label.selected {
             border-color: #a855f7;
@@ -556,13 +580,10 @@
 </div>
 
 <script>
-    const SHEET_URLS = [
-        "https://docs.google.com/spreadsheets/d/1lNN2UKvxwlvYB0E0MiLlgcXJuargF2L1en6W14_57WQ/export?format=csv&gid=499897388",
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSpb9z6dJb-trOkha7LITpacXyCk8YczYWn7VnGUFEW2vO-aO3Da_yUm29hrjyJMvqVTgr4oaPrqg2p/pub?gid=499897388&single=true&output=csv"
-    ];
-    
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1lNN2UKvxwlvYB0E0MiLlgcXJuargF2L1en6W14_57WQ/export?format=csv&gid=499897388";
+
     const LIMIT = 5;
-    const DISABLED_MAX_LESSON = 8;
+    const DISABLED_MAX_LESSON = 0;
 
     let db = {}, curUser = '', curSub = '', practiceList = [], curIdx = 0;
     let hzWriter = null, practiceChars = [];
@@ -625,25 +646,13 @@
         return true;
     }
 
-    function parseWithPapa(url) {
-        return new Promise((resolve, reject) => {
-            Papa.parse(url + (url.includes('?') ? '&' : '?') + "t=" + Date.now(), {
-                download: true,
-                header: true,
-                skipEmptyLines: 'greedy',
-                transformHeader: normalizeHeader,
-                complete: results => resolve(results),
-                error: err => reject(err)
-            });
-        });
-    }
-
-    async function init() {
-        let lastError = null;
-
-        for (const url of SHEET_URLS) {
-            try {
-                const results = await parseWithPapa(url);
+    function init() {
+        Papa.parse(SHEET_URL + "&t=" + Date.now(), {
+            download: true,
+            header: true,
+            skipEmptyLines: 'greedy',
+            transformHeader: normalizeHeader,
+            complete: function(results) {
                 db = {};
 
                 results.data.forEach((row, index) => {
@@ -669,19 +678,21 @@
                     });
                 });
 
+                document.getElementById('loading').style.display = 'none';
+
                 if (Object.keys(db).length > 0) {
-                    document.getElementById('loading').style.display = 'none';
                     renderGrades();
                     showScreen('setup-screen');
-                    return;
+                } else {
+                    document.getElementById('loading').style.display = 'flex';
+                    document.getElementById('loading').innerHTML = '❌ 没有读取到听写数据';
                 }
-            } catch (e) {
-                lastError = e;
+            },
+            error: function(e) {
+                console.error(e);
+                document.getElementById('loading').innerHTML = '❌ 题库加载失败';
             }
-        }
-
-        console.error(lastError);
-        document.getElementById('loading').innerHTML = '❌ 题库加载失败';
+        });
     }
 
     function renderGrades() {
@@ -717,6 +728,7 @@
     function loadTopics() {
         let pool = db[curUser][curSub];
         let topics = [...new Set(pool.map(q => q.Topic))].sort((a,b) => getWeight(a) - getWeight(b));
+
         const gradeMap = {'P1': '一', 'P2': '二', 'P3': '三', 'P4': '四', 'P5': '五', 'P6': '六'};
         let gradeStr = gradeMap[curUser] || curUser;
 
@@ -1146,14 +1158,3 @@
 
 </body>
 </html>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spelling Hub</title>
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M04YCD1PQK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-M04YCD1PQK');
-    </script>
-
