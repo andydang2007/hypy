@@ -405,7 +405,7 @@ function generatePassword(){
     // 星期二从第2位开始
     // 星期三从第3位开始
 
-    return dateStr.substr(day,4);
+    return dateStr.substr(day-1,4);
 }
 
 document.getElementById("passwordText").innerText =
