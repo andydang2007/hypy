@@ -69,6 +69,10 @@
 <script>
     // 🌟 动态 GPS 寻路逻辑：不写死跳回的页面
     const urlParams = new URLSearchParams(window.location.search);
+    const ticket = urlParams.get('ticket');
+    if (!ticket) {
+        window.location.replace('../index.html');
+    }
     const returnUrlParam = urlParams.get('returnUrl');
     let returnURL = "../index.html"; // 终极防走丢地址 (回到主页)
 
