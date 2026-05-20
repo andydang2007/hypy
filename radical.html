@@ -61,61 +61,23 @@
 </div>
 
 <script>
-const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbzbNOgg7deW9uVVyfYGTfKGOtVgNs_9ZfUQ9J_9cYpG2Ufow9KLDICHgsinBXrPJlmz/exec";
-const SHEET_URL="https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
+// 使用全新的公开题库
+const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSy_N0p0bq48zhdqMk2hhgbcBE0AimY8C6xgyXWBm3QLC8VUhOnJ-38bA7hwLUWbjbOT8D7mSc_idxK/pub?gid=573238154&single=true&output=csv";
 
-const HUB_URL = "https://andydang2007.github.io/valerie-venessa-learn/";
-const UNAUTHORIZED_URL = "https://www.google.com/";
+// 返回本地大厅
+function goHome(){ location.href = "index.html"; }
 
 const KEY_COUNT=12,GAME_TIME=120,MAX_GAP_MS=900,MAX_REPLAY_PLAYS=2;
 const MIN_REPLAY_SCORE = 3000; 
-const MIN_BADGE_SCORE = 5000;  
 
-// 🛑 拦截机制：如果是外人（没缓存身份），直接踢到 Google！
-let currentUser = localStorage.getItem('currentPlayer');
-if (!currentUser) {
-    window.location.replace(UNAUTHORIZED_URL); 
-}
-
-function goHome(){ location.href = HUB_URL; }
+// 自动读取本地存储里的当前年级进行筛选，作为纯教学工具使用
+let currentGrade = localStorage.getItem('currentGrade') || 'P1';
 
 const PENTA=[{label:"低5",freq:196},{label:"低6",freq:220},{label:"1",freq:261.63},{label:"2",freq:293.66},{label:"3",freq:329.63},{label:"5",freq:392},{label:"6",freq:440},{label:"高1",freq:523.25},{label:"高2",freq:587.33},{label:"高3",freq:659.25},{label:"高5",freq:783.99},{label:"高6",freq:880}],distractors=["扌","亻","心","忄","月","虫","门","广","走","雨","艹","口","氵","日","木","女","讠","辶","土","火","宀","贝","王","纟","石","禾","目","竹","页","刂"],ORB_COLORS=[{c:"#00f3ff",s:"#a7f3d0"},{c:"#ff00ff",s:"#f0abfc"},{c:"#facc15",s:"#fef08a"},{c:"#22c55e",s:"#86efac"},{c:"#fb7185",s:"#fecdd3"},{c:"#60a5fa",s:"#bfdbfe"},{c:"#f97316",s:"#fed7aa"},{c:"#a78bfa",s:"#ddd6fe"}];
-let dictionary=[],allDictionary=[],activeChars=[],slots=Array(KEY_COUNT).fill(null),score=0,timeLeft=GAME_TIME,isPlaying=false,anim=null,clock=null,idCounter=1,geom=[],audioCtx=null,activeNotes=new Map(),rawNotes=[],processed=[],orbs=[],orbAnim=null,remixSpeed="normal",replayInstrument="piano",replayState=null,autoReplayTimer=null,combo=0,lastStar=0,replayPlays=0;
+let dictionary=[],allDictionary=[],activeChars=[],slots=Array(KEY_COUNT).fill(null),score=0,timeLeft=GAME_TIME,isPlaying=false,anim=null,clock=null,idCounter=1,geom=[],audioCtx=null,activeNotes=new Map(),rawNotes=[],processed=[],orbs=[],orbAnim=null,remixSpeed="normal",replayInstrument="piano",replayState=null,combo=0,lastStar=0,replayPlays=0;
 const game=document.getElementById("game"),arena=document.getElementById("arena"),svg=document.getElementById("track"),piano=document.getElementById("piano"),player=document.getElementById("player"),teaser=document.getElementById("teaser"),sphere=document.getElementById("sphere"),againBtn=document.getElementById("replay-again"),startBtn=document.getElementById("startBtn");
 
-async function syncToCloud(payload) {
-    try {
-        await fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        await new Promise(r => setTimeout(r, 400));
-    } catch (e) {}
-}
-
-async function syncUserDataFromCloud() {
-    try {
-        const statsResp = await fetch(`${SYNC_API_URL}?type=fetch_user_data&user=${currentUser}`);
-        const cloudStats = await statsResp.json();
-        if (cloudStats && Object.keys(cloudStats).length > 0) {
-            localStorage.setItem(`total_days_${currentUser}`, cloudStats.userTotalDays);
-            localStorage.setItem(`current_streak_${currentUser}`, cloudStats.userStreak);
-            localStorage.setItem(`crystals_${currentUser}`, cloudStats.userCrystals);
-            localStorage.setItem(`gold_coins_vault`, cloudStats.vaultCoins);
-            if (cloudStats.lastCheckinDate) {
-                let d = new Date(cloudStats.lastCheckinDate);
-                let sgtStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-                localStorage.setItem(`last_date_${currentUser}`, sgtStr);
-            }
-        }
-    } catch (e) {}
-}
-
-function getSGTDateString() {
-    const d = new Date();
-    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-    const sgt = new Date(utc + (3600000 * 8));
-    return sgt.getFullYear() + '-' + String(sgt.getMonth() + 1).padStart(2, '0') + '-' + String(sgt.getDate()).padStart(2, '0');
-}
-
-window.addEventListener("load",()=>{setVH();initKeys();initControls();loadDict();syncUserDataFromCloud();});
+window.addEventListener("load",()=>{setVH();initKeys();initControls();loadDict();});
 window.addEventListener("resize",()=>{setVH();calcTrack();activeChars.forEach(renderChar);positionSphere()});
 window.addEventListener("orientationchange",()=>setTimeout(()=>{setVH();calcTrack();activeChars.forEach(renderChar);positionSphere()},300));
 document.addEventListener("pointerup",()=>{stopAllNotes();releaseKeys()});
@@ -123,14 +85,56 @@ document.addEventListener("pointercancel",()=>{stopAllNotes();releaseKeys()});
 
 function setVH(){document.documentElement.style.setProperty("--vh",`${window.innerHeight*.01}px`)}
 function enterFullscreen(){let el=document.documentElement;if(el.requestFullscreen&&!document.fullscreenElement)el.requestFullscreen().catch(()=>{});else if(el.webkitRequestFullscreen&&!document.webkitFullscreenElement)el.webkitRequestFullscreen()}
-function currentHubUser(){return currentUser.trim()}
-function userAllowedGrades(){let u=currentHubUser().toLowerCase();if(u==="venessa")return["P1"];if(u==="valerie"||u==="velarie")return["P1","P2","P3"];return null}
-function normalizeGrade(v){v=String(v||"").toUpperCase().replace(/PRIMARY|GRADE|年级|小/g,"").replace(/\s+/g,"");let m=v.match(/[123]/);return m?"P"+m[0]:""}
-function getRowGrade(r){for(let k of["GRADE","LEVEL","PRIMARY","年级","LEVELS","GRADES"]){if(r[k])return normalizeGrade(r[k])}return""}
-function applyUserGradeFilter(){let allowed=userAllowedGrades();if(!allowed){dictionary=allDictionary.slice();return}let hasGrade=allDictionary.some(item=>item.grade);if(!hasGrade){dictionary=allDictionary.slice();return}let filtered=allDictionary.filter(item=>allowed.includes(item.grade));dictionary=filtered.length?filtered:allDictionary.slice()}
+function normalizeGrade(v){v=String(v||"").toUpperCase().replace(/PRIMARY|GRADE|年级|小/g,"").replace(/\s+/g,"");let m=v.match(/[123456]/);return m?"P"+m[0]:""}
+
+function applyUserGradeFilter(){
+    let filtered = allDictionary.filter(item => item.grade === currentGrade || currentGrade === 'ALL');
+    dictionary = filtered.length ? filtered : allDictionary.slice();
+}
+
 function syncIcons(){const speed={slow:"🐢",normal:"🚶",fast:"⚡"},inst={piano:"🎹",bell:"🔔",pluck:"🪕",organ:"🎛️"};let a=document.getElementById("live-speed"),b=document.getElementById("live-inst");if(a)a.textContent=speed[remixSpeed];if(b)b.textContent=inst[replayInstrument]}
 function initControls(){function bind(id,fn){let e=document.getElementById(id);if(e)e.addEventListener("click",fn)}bind("live-speed",()=>{const o=["slow","normal","fast"];remixSpeed=o[(o.indexOf(remixSpeed)+1)%o.length];syncIcons()});bind("live-inst",()=>{const o=["piano","bell","pluck","organ"];replayInstrument=o[(o.indexOf(replayInstrument)+1)%o.length];syncIcons()});bind("live-exit",returnToStart);bind("replay-again",()=>{if(!replayState||replayState.active)return;startReplayPlay()});syncIcons()}
-function loadDict(){if(typeof Papa==="undefined")return;Papa.parse(SHEET_URL+"&t="+Date.now(),{download:true,header:true,skipEmptyLines:"greedy",transformHeader:h=>String(h||"").replace(/^\uFEFF/,"").trim().toUpperCase(),complete:r=>{allDictionary=r.data.filter(x=>x["QUESTION"]||x["ANSWER"]||x["CORRECT ANSWER"]).map(x=>{let word=String(x["QUESTION"]||x["ANSWER"]||x["CORRECT ANSWER"]||"").trim(),parts=String(x["PARTS"]||x["部件"]||"").split(/[,，、|/]/).map(p=>p.trim()).filter(Boolean),grade=getRowGrade(x);return word&&parts.length?{word,parts,grade}:null}).filter(Boolean);applyUserGradeFilter();if(dictionary.length){startBtn.disabled=false;startBtn.onclick=startGame;startBtn.style.opacity=1}else startBtn.textContent="⚠️"},error:e=>{console.error(e);startBtn.textContent="⚠️"}})}
+
+function loadDict(){
+    if(typeof Papa==="undefined")return;
+    Papa.parse(SHEET_URL+"&t="+Date.now(),{
+        download:true,
+        header:true,
+        skipEmptyLines:"greedy",
+        complete: r => {
+            allDictionary = r.data.map(x => {
+                let keys = Object.keys(x);
+                let kGrade = keys.find(k => /grade|年级/i.test(k)) || keys[0];
+                let kChar = keys.find(k => /chinese|char|word|question|汉字|词|题目/i.test(k)) || keys[4];
+                let kParts = keys.find(k => /parts|部件/i.test(k)) || keys[7];
+
+                let wordRaw = (x[kChar] || "").trim();
+                let word = wordRaw.replace(/[^\u4e00-\u9fa5]/g, '') || wordRaw[0];
+                let partsStr = (x[kParts] || "").trim();
+                if(!word || !partsStr) return null;
+
+                let parts = partsStr.split(/[,，、|\/]/).map(p=>p.trim()).filter(Boolean);
+                let grade = normalizeGrade(x[kGrade]);
+                return parts.length ? {word, parts, grade} : null;
+            }).filter(Boolean);
+            
+            applyUserGradeFilter();
+            
+            if(dictionary.length){
+                startBtn.disabled=false;
+                startBtn.onclick=startGame;
+                startBtn.style.opacity=1;
+            } else {
+                startBtn.textContent="⚠️ 题库为空";
+            }
+        },
+        error: e => {
+            console.error(e);
+            startBtn.textContent="⚠️ 网络错误";
+        }
+    });
+}
+
 function initKeys(){piano.innerHTML="";for(let i=0;i<KEY_COUNT;i++){let k=document.createElement("div");k.className="key";k.innerHTML=`<div class="rad"></div><div class="note-label">${PENTA[i].label}</div>`;k.addEventListener("pointerdown",e=>{e.preventDefault();pressKey(i,k)});["pointerup","pointercancel","pointerleave"].forEach(ev=>k.addEventListener(ev,e=>{e.preventDefault();k.classList.remove("pressed");stopSustainNote(`key-${i}`)}));piano.appendChild(k)}}
 
 function startGame(){
@@ -150,7 +154,7 @@ function startGame(){
     spawnChar();anim=requestAnimationFrame(loop);
 }
 
-async function endGame(){
+function endGame(){
     isPlaying = false;
     clearInterval(clock);
     cancelAnimationFrame(anim);
@@ -163,59 +167,7 @@ async function endGame(){
 
     startBtn.disabled = true; 
     
-    const today = getSGTDateString();
-    const badgeDateKey = `hanzi_badge_date_${currentUser}`;
-    const badgeCountKey = `hanzi_badge_count_${currentUser}`;
-    const lastBadgeDate = localStorage.getItem(badgeDateKey);
-
-    let crystalEarned = false;
-    let gotBadge = false;
-
-    let lastDate = localStorage.getItem(`last_date_${currentUser}`);
-    let currentStreak = parseInt(localStorage.getItem(`current_streak_${currentUser}`) || "0");
-    let totalDays = parseInt(localStorage.getItem(`total_days_${currentUser}`) || "0");
-
-    if (lastDate) {
-        let diff = Math.floor((new Date(today) - new Date(lastDate)) / 864e5);
-        if (diff === 1) currentStreak++; else if (diff > 1) currentStreak = 1;
-    } else {
-        currentStreak = 1;
-    }
-
-    if (lastDate !== today) {
-        totalDays++;
-        localStorage.setItem(`last_date_${currentUser}`, today);
-        localStorage.setItem(`current_streak_${currentUser}`, currentStreak);
-        localStorage.setItem(`total_days_${currentUser}`, totalDays);
-
-        let crys = parseInt(localStorage.getItem(`crystals_${currentUser}`) || "0");
-        if (currentStreak >= 3) {
-            crys += 1;
-            localStorage.setItem(`crystals_${currentUser}`, crys);
-            crystalEarned = true;
-        }
-        await syncToCloud({ type: 'crystal_update', user: currentUser, crystalsTotal: crys, totalDays: totalDays, streak: currentStreak, checkinDate: today });
-    }
-    localStorage.setItem(`last_checkin_date_${currentUser}`, today);
-
-    if (score >= MIN_BADGE_SCORE) {
-        if (lastBadgeDate !== today) {
-            localStorage.setItem(badgeDateKey, today);
-            let currentCount = parseInt(localStorage.getItem(badgeCountKey) || "0");
-            localStorage.setItem(badgeCountKey, currentCount + 1);
-
-            gotBadge = true;
-            await syncToCloud({ type: 'badge', user: currentUser, subject: '汉字', icon: '🧚', title: '汉字精灵', desc: `汉字节奏大师达到 ${score} 分！` });
-
-            let coinGain = 1;
-            let vaultCoins = parseInt(localStorage.getItem('gold_coins_vault') || "0");
-            localStorage.setItem('gold_coins_vault', vaultCoins + coinGain);
-            await syncToCloud({ type: 'coin_update', user: currentUser, earned: coinGain });
-        }
-    }
-
-    window.latestResultHTML = buildResultHTML(score, MIN_BADGE_SCORE, gotBadge, crystalEarned, currentStreak);
-    window.gotConfetti = gotBadge;
+    window.latestResultHTML = buildResultHTML(score, MIN_REPLAY_SCORE);
 
     if (score >= MIN_REPLAY_SCORE) {
         showTeaserThenReplay(); 
@@ -224,9 +176,9 @@ async function endGame(){
     }
 }
 
-function buildResultHTML(s, threshold, gotBadge, crystalEarned, streak) {
-    let titleColor = s >= threshold ? "#39ff14" : (s >= MIN_REPLAY_SCORE ? "#00f3ff" : "#ff003c");
-    let titleText = s >= threshold ? "MISSION ACCOMPLISHED" : (s >= MIN_REPLAY_SCORE ? "STAGE CLEARED" : "TIME'S UP");
+function buildResultHTML(s, threshold) {
+    let titleColor = s >= threshold ? "#00f3ff" : "#ff003c";
+    let titleText = s >= threshold ? "STAGE CLEARED" : "TIME'S UP";
 
     let html = `
         <div style="font-size: clamp(30px,6vw,50px); color: ${titleColor}; text-shadow: 0 0 20px ${titleColor}; font-weight: 900; margin-bottom: 10px; font-style: italic;">${titleText}</div>
@@ -234,27 +186,11 @@ function buildResultHTML(s, threshold, gotBadge, crystalEarned, streak) {
     `;
 
     if (s >= threshold) {
-        if (gotBadge) {
-            html += `
-                <div class="reward-box">
-                    <div style="font-size: 45px; margin-bottom: 5px;">🧚</div>
-                    <div style="font-size: 22px; color: #fde68a; font-weight: 900;">【汉字精灵】徽章 +1！</div>
-                    <div style="font-size: 16px; color: #f59e0b; margin-top: 5px;">💰 金币 +1 已存入家庭金库</div>
-                    ${crystalEarned ? `<div style="font-size: 16px; color: #38bdf8; margin-top: 5px;">💎 连续打卡${streak}天，水晶 +1！</div>` : ''}
-                </div>
-            `;
-        } else {
-            html += `
-                <div style="font-size: 16px; color: #94a3b8; margin-top: 25px; max-width: 300px; margin-left:auto; margin-right:auto; line-height: 1.5;">(太棒了！但【汉字精灵】每天只发 1 枚，明天再来赚金币吧！)</div>
-                ${crystalEarned ? `<div style="font-size: 16px; color: #38bdf8; margin-top: 15px;">💎 连续打卡${streak}天，水晶 +1！</div>` : ''}
-            `;
-        }
+        html += `<div style="font-size: 16px; color: #94a3b8; margin-top: 15px; max-width: 300px; margin-left:auto; margin-right:auto; line-height: 1.5;">太棒了！你的专属汉字编曲已解锁，快来欣赏吧！</div>`;
     } else {
-        html += `
-            <div style="font-size: 16px; color: #94a3b8; margin-top: 25px;">(目标：${threshold} 分拿徽章，继续努力！)</div>
-            ${crystalEarned ? `<div style="font-size: 16px; color: #38bdf8; margin-top: 15px;">💎 连续打卡${streak}天，水晶 +1！</div>` : ''}
-        `;
+        html += `<div style="font-size: 16px; color: #94a3b8; margin-top: 25px;">(目标：${threshold} 分解锁编曲，继续努力！)</div>`;
     }
+    
     return html;
 }
 
@@ -269,7 +205,7 @@ function showSettlement() {
     startBtn.textContent = "🔁 PLAY AGAIN";
     
     document.getElementById("start").style.display = "flex";
-    if(window.gotConfetti) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    if(score >= MIN_REPLAY_SCORE) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 }
 
 function returnToStart(){
@@ -285,7 +221,7 @@ function returnToStart(){
     showSettlement(); 
 }
 
-function showTeaserThenReplay(){teaser.style.display="flex";clearTimeout(autoReplayTimer);autoReplayTimer=setTimeout(()=>{teaser.style.display="none";prepareReplay()},3000)}
+function showTeaserThenReplay(){teaser.style.display="flex";setTimeout(()=>{teaser.style.display="none";prepareReplay()},3000)}
 function loop(t){if(!isPlaying)return;activeChars.forEach(renderChar);if(t-lastStar>650){lastStar=t;spawnStar()}anim=requestAnimationFrame(loop)}
 function spawnChar(){let d=dictionary[Math.floor(Math.random()*dictionary.length)];if(!d)return;let el=document.createElement("div");el.className="char";let s=document.createElement("span");s.textContent=d.word;el.appendChild(s);let pr=document.createElement("div");pr.className="prog";d.parts.forEach(()=>{let dot=document.createElement("div");dot.className="dot";pr.appendChild(dot)});el.appendChild(pr);arena.appendChild(el);let c={id:idCounter++,el,word:d.word,parts:d.parts.map((char,idx)=>({char,idx,partId:`${idCounter}-${idx}-${char}-${Math.random()}`})),nextPartIndex:0,visualHitCount:0,dead:false};activeChars=[c];resetFor(c);renderChar(c)}
 function resetFor(c){slots=Array(KEY_COUNT).fill(null);let avoid=c.parts.map(p=>p.char);for(let i=0;i<KEY_COUNT;i++)slots[i]={kind:"distractor",char:randDis(avoid)};let idxs=Array.from({length:KEY_COUNT},(_,i)=>i);shuffle(idxs);c.parts.slice(0,KEY_COUNT).forEach((p,n)=>slots[idxs[n]]={kind:"part",char:p.char,partIndex:p.idx,target:c});renderKeys()}
