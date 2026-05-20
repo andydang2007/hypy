@@ -5,17 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pinyin Shooter: Laser Expedition</title>
     
-    <link rel="apple-touch-icon" href="./pinyinfiles/spaceship2.jpg">
+    <link rel="apple-touch-icon" href="hypyfiles/spaceship2.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
-        let currentUser = localStorage.getItem('currentPlayer') || 'Valerie'; 
-        let currentGrade = localStorage.getItem('currentGrade');
-        if (!currentGrade) {
-            currentGrade = (currentUser === 'Venessa' || currentUser === 'P1') ? 'P1' : 'P3';
-        }
-        let isSister = (currentGrade === 'P1' || currentUser === 'Venessa' || currentUser === 'P1');
+        // 简化本地用户判定，作为教学工具直接读取年级，默认为 P1
+        let currentGrade = localStorage.getItem('currentGrade') || 'P1';
     </script>
     <style>
         :root {
@@ -31,8 +27,7 @@
             font-family: 'Microsoft YaHei', sans-serif;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
             background-color: #000;
-            /* 2. 修改星空背景路径 */
-            background-image: url("./pinyinfiles/starspace.png");
+            background-image: url("hypyfiles/starspace.png");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -124,8 +119,7 @@
         .explosion-effect-container { position: fixed; width: 150px; height: 150px; pointer-events: none; z-index: 160; mix-blend-mode: screen; }
         .explosion-layer {
             position: absolute; width: 100%; height: 100%;
-            /* 3. 修改爆炸图片路径 */
-            background-image: url("./pinyinfiles/explosion.png"); background-size: contain; background-repeat: no-repeat; background-position: center;
+            background-image: url("hypyfiles/explosion.png"); background-size: contain; background-repeat: no-repeat; background-position: center;
             opacity: 0; animation: boomScaleLayers 0.5s ease-out forwards;
         }
         @keyframes boomScaleLayers { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
@@ -182,10 +176,8 @@
         .start-btn { padding: 18px 50px; border: 2px solid var(--accent-glow); background: rgba(0, 240, 255, 0.05); color: var(--accent-glow); font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.2); letter-spacing: 3px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.2s; display: none; margin-top: 15px;}
         .start-btn:active { transform: scale(0.95); }
         
-        .back-btn { margin-top: 20px; padding: 10px 30px; border: 2px solid #64748b; background: rgba(0,0,0,0.5); color: #94a3b8; font-size: 18px; font-weight: 900; cursor: pointer; border-radius: 15px; transition: all 0.2s; }
+        .back-btn { margin-top: 20px; padding: 10px 30px; border: 2px solid #64748b; background: rgba(0,0,0,0.5); color: #94a3b8; font-size: 18px; font-weight: 900; cursor: pointer; border-radius: 15px; transition: all 0.2s; display: none; }
         .back-btn:hover { background: #334155; color: white; border-color: #94a3b8;}
-
-        .reward-box { margin-top: 20px; background: rgba(255,255,255,0.1); padding: 15px 25px; border-radius: 20px; border: 2px solid #fde68a; display: inline-block; animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; }
 
         @media (max-width: 800px) {
             .game-title { font-size: 5vw; margin-bottom: 40px; gap: 10px; } .psle-cap { font-size: 9vw; }
@@ -200,7 +192,7 @@
 <body>
 
     <header>
-        <button class="hub-btn sci-fi-text" onclick="window.location.href='https://andydang2007.github.io/valerie-venessa-learn/index.html'">← HUB</button>
+        <button class="hub-btn sci-fi-text" onclick="window.location.href='index.html'">← HUB</button>
         <div class="stat-box" style="margin-right: 20px;">
             <span class="stat-label sci-fi-text">TIME</span>
             <span class="stat-value sci-fi-text" id="ui-time">05:00</span>
@@ -242,52 +234,19 @@
         
         <div class="ship-selector-title sci-fi-text" id="selector-title">SELECT YOUR FIGHTER</div>
         <div class="ship-selector" id="ship-selector">
-            <img class="ship-option selected" src="./pinyinfiles/spaceship1.jpg" onclick="selectShip(0)">
-            <img class="ship-option" src="./pinyinfiles/spaceship2.jpg" onclick="selectShip(1)">
-            <img class="ship-option" src="./pinyinfiles/spaceship3.jpg" onclick="selectShip(2)">
+            <img class="ship-option selected" src="hypyfiles/spaceship1.jpg" onclick="selectShip(0)">
+            <img class="ship-option" src="hypyfiles/spaceship2.jpg" onclick="selectShip(1)">
+            <img class="ship-option" src="hypyfiles/spaceship3.jpg" onclick="selectShip(2)">
         </div>
 
         <button class="start-btn sci-fi-text" id="btn-start" onclick="startGame()">MISSION START</button>
-        <button class="hub-btn sci-fi-text" onclick="window.location.href='https://andydang2007.github.io/valerie-venessa-learn/index.html'">← HUB</button>
+        <button class="back-btn sci-fi-text" id="btn-back" onclick="window.location.href='index.html'">← RETURN TO HUB</button>
     </div>
 
 <script>
-    const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbzbNOgg7deW9uVVyfYGTfKGOtVgNs_9ZfUQ9J_9cYpG2Ufow9KLDICHgsinBXrPJlmz/exec";
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4/pub?gid=573238154&single=true&output=csv";
+    // 使用全新的公开数据源
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy_N0p0bq48zhdqMk2hhgbcBE0AimY8C6xgyXWBm3QLC8VUhOnJ-38bA7hwLUWbjbOT8D7mSc_idxK/pub?gid=573238154&single=true&output=csv";
     
-    function getSGTDateString() {
-        const d = new Date();
-        const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        const sgt = new Date(utc + (3600000 * 8));
-        return sgt.getFullYear() + '-' + String(sgt.getMonth() + 1).padStart(2, '0') + '-' + String(sgt.getDate()).padStart(2, '0');
-    }
-
-    async function syncToCloud(payload) {
-        try { fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (e) {}
-    }
-
-    async function syncUserDataFromCloud() {
-        try {
-            const statsResp = await fetch(`${SYNC_API_URL}?type=fetch_user_data&user=${currentUser}`);
-            const cloudStats = await statsResp.json();
-            if (cloudStats && Object.keys(cloudStats).length > 0) {
-                localStorage.setItem(`total_days_${currentUser}`, cloudStats.userTotalDays);
-                localStorage.setItem(`current_streak_${currentUser}`, cloudStats.userStreak);
-                localStorage.setItem(`crystals_${currentUser}`, cloudStats.userCrystals);
-                localStorage.setItem(`gold_coins_vault`, cloudStats.vaultCoins); 
-                
-                if (cloudStats.lastCheckinDate) {
-                    let d = new Date(cloudStats.lastCheckinDate);
-                    let sgtStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-                    localStorage.setItem(`last_date_${currentUser}`, sgtStr);
-                }
-                console.log("✅ 成功从云端同步玩家数据！云端连击数：", cloudStats.userStreak);
-            }
-        } catch (e) {
-            console.log("❌ 云端数据同步失败，将使用本地缓存:", e);
-        }
-    }
-
     const lessonMap = {
         '第一课': 1, '第二课': 2, '第三课': 3, '第四课': 4, '第五课': 5,
         '第六课': 6, '第七课': 7, '第八课': 8, '第九课': 9, '第十课': 10,
@@ -295,9 +254,9 @@
         '第十六课': 16, '第十七课': 17, '第十八课': 18, '第十九课': 19
     };
 
-    // 7. 修改逻辑里的飞船和怪物图片路径
-    const SHIPS = ['./pinyinfiles/spaceship1.jpg', './pinyinfiles/spaceship2.jpg', './pinyinfiles/spaceship3.jpg'];
-    const MONSTERS = ['./pinyinfiles/monster1.jpg', './pinyinfiles/monster2.jpg', './pinyinfiles/monster3.jpg', './pinyinfiles/monster4.jpg', './pinyinfiles/monster5.jpg'];
+    // 资源图片全换成 hypyfiles
+    const SHIPS = ['hypyfiles/spaceship1.jpg', 'hypyfiles/spaceship2.jpg', 'hypyfiles/spaceship3.jpg'];
+    const MONSTERS = ['hypyfiles/monster1.jpg', 'hypyfiles/monster2.jpg', 'hypyfiles/monster3.jpg', 'hypyfiles/monster4.jpg', 'hypyfiles/monster5.jpg'];
     let currentShipIdx = 0;
 
     function selectShip(idx) {
@@ -318,7 +277,6 @@
     let DB_WORDS = [];
     
     let state = {
-        pilot: currentUser,
         score: 0, combo: 0, timeLeft: 300, isPlaying: false, hatRemoved: false, dialsTouched: false,
         i: { angle: 0, opts: [], step: 0 }, f: { angle: 0, opts: [], step: 0 }, t: { angle: 0, opts: [], step: 0 },
         targets: [], targetIdCounter: 0, lastSpawnTime: 0, lastTimerTick: 0,
@@ -353,8 +311,6 @@
     }
 
     async function loadDB() {
-        syncUserDataFromCloud();
-        
         try {
             let ALL_WORDS = [];
             let cachedPinyinDB = sessionStorage.getItem('pinyin_db_cache');
@@ -363,7 +319,7 @@
                 ALL_WORDS = JSON.parse(cachedPinyinDB);
                 filterAndStart(ALL_WORDS);
             } else {
-                Papa.parse(CSV_URL, {
+                Papa.parse(`${CSV_URL}&t=${Date.now()}`, {
                     download: true,
                     header: true,
                     skipEmptyLines: 'greedy',
@@ -412,13 +368,11 @@
     }
 
     function filterAndStart(ALL_WORDS) {
-        let maxLesson = parseInt(localStorage.getItem(`max_lesson_${currentUser}`) || "8");
-
-        if (isSister) {
-            DB_WORDS = ALL_WORDS.filter(w => w.grade === 'P1' && w.lesson <= maxLesson);
-        } else {
-            DB_WORDS = ALL_WORDS.filter(w => w.grade === 'P1' || w.grade === 'P2' || (w.grade === 'P3' && w.lesson <= maxLesson));
-        }
+        // 教学版不再根据人名强行卡进度，直接抓取年级相关的题库
+        DB_WORDS = ALL_WORDS.filter(w => w.grade === currentGrade || currentGrade === 'ALL');
+        
+        // 兜底逻辑：如果该年级没题，干脆全拿出来
+        if(DB_WORDS.length === 0) DB_WORDS = ALL_WORDS;
         
         if(DB_WORDS.length > 0){
             document.getElementById('loading-ui').style.display = 'none';
@@ -471,91 +425,20 @@
         state.isPlaying = false;
         document.getElementById('overlay').style.display = 'flex';
         
-        let config = JSON.parse(localStorage.getItem('hub_config') || "{}");
-        const threshold = isSister ? (config.pinyin_threshold_p1 || 2000) : (config.pinyin_threshold_p3 || 6000);
-        
-        const today = getSGTDateString();
-        const badgeDateKey = `pinyin_badge_date_${currentUser}`;
-        const badgeCountKey = `pinyin_badge_count_${currentUser}`;
-        const lastBadgeDate = localStorage.getItem(badgeDateKey);
-
         let resultHTML = "";
-        let crystalEarned = false;
 
-        let lastDate = localStorage.getItem(`last_date_${currentUser}`);
-        let currentStreak = parseInt(localStorage.getItem(`current_streak_${currentUser}`) || "0");
-        let totalDays = parseInt(localStorage.getItem(`total_days_${currentUser}`) || "0");
-
-        if (lastDate) {
-            let diff = Math.floor((new Date(today) - new Date(lastDate)) / 864e5);
-            if (diff === 1) currentStreak++; else if (diff > 1) currentStreak = 1; 
-        } else {
-            currentStreak = 1;
-        }
-
-        if (lastDate !== today) {
-            totalDays++; 
-            localStorage.setItem(`last_date_${currentUser}`, today);
-            localStorage.setItem(`current_streak_${currentUser}`, currentStreak);
-            localStorage.setItem(`total_days_${currentUser}`, totalDays);
-
-            let crys = parseInt(localStorage.getItem(`crystals_${currentUser}`) || "0");
-            if (currentStreak >= 3) {
-                crys += 1;
-                localStorage.setItem(`crystals_${currentUser}`, crys);
-                crystalEarned = true;
-            }
-            
-            syncToCloud({ 
-                type: 'crystal_update', 
-                user: currentUser, 
-                crystalsTotal: crys, 
-                totalDays: totalDays, 
-                streak: currentStreak,
-                checkinDate: today 
-            });
-        }
-        
-        localStorage.setItem(`last_checkin_date_${currentUser}`, today);
-
-        if (state.score >= threshold) {
-            if (lastBadgeDate !== today) {
-                localStorage.setItem(badgeDateKey, today);
-                let currentCount = parseInt(localStorage.getItem(badgeCountKey) || "0");
-                localStorage.setItem(badgeCountKey, currentCount + 1);
-
-                let coinGain = 1;
-                let vaultCoins = parseInt(localStorage.getItem('gold_coins_vault') || "0");
-                localStorage.setItem('gold_coins_vault', vaultCoins + coinGain);
-
-                syncToCloud({ type: 'badge', user: currentUser, subject: '拼音', icon: '🎮', title: '拼音高手', desc: `镭射射击达到 ${state.score} 分！` });
-                syncToCloud({ type: 'coin_update', user: currentUser, earned: coinGain });
-
-                resultHTML = `
-                    <div style="font-size: 48px; color: #39ff14; text-shadow: 0 0 20px #39ff14;">MISSION ACCOMPLISHED</div>
-                    <div style="font-size: 24px; color: #fff; margin-top: 10px;">FINAL SCORE: ${state.score}</div>
-                    <div class="reward-box">
-                        <div style="font-size: 45px; margin-bottom: 5px;">🎮</div>
-                        <div style="font-size: 22px; color: #fde68a; font-weight: 900;">【拼音高手】徽章 +1！</div>
-                        <div style="font-size: 16px; color: #f59e0b; margin-top: 5px;">💰 金币 +${coinGain} 已存入家庭金库</div>
-                        ${crystalEarned ? `<div style="font-size: 16px; color: #38bdf8; margin-top: 5px;">💎 连续打卡${currentStreak}天，水晶 +1！</div>` : ''}
-                    </div>
-                `;
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            } else {
-                resultHTML = `
-                    <div style="font-size: 48px; color: #39ff14; text-shadow: 0 0 20px #39ff14;">MISSION ACCOMPLISHED</div>
-                    <div style="font-size: 24px; color: #fff; margin-top: 10px;">FINAL SCORE: ${state.score}</div>
-                    <div style="font-size: 16px; color: #94a3b8; margin-top: 25px; max-width: 300px; margin-left:auto; margin-right:auto; line-height: 1.5;">(你太棒了！但【拼音高手】每天只发 1 枚，明天再来赚金币吧！)</div>
-                    ${crystalEarned ? `<div style="font-size: 16px; color: #38bdf8; margin-top: 15px;">💎 连续打卡${currentStreak}天，水晶 +1！</div>` : ''}
-                `;
-            }
+        if (state.score > 0) {
+            resultHTML = `
+                <div style="font-size: 48px; color: #39ff14; text-shadow: 0 0 20px #39ff14;">MISSION ACCOMPLISHED</div>
+                <div style="font-size: 24px; color: #fff; margin-top: 10px;">FINAL SCORE: ${state.score}</div>
+                <div style="font-size: 16px; color: #94a3b8; margin-top: 25px; line-height: 1.5;">太棒了！干掉了很多怪物！</div>
+            `;
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         } else {
             resultHTML = `
                 <div style="font-size: 48px; color: #ff003c; text-shadow: 0 0 20px #ff003c;">TIME'S UP</div>
                 <div style="font-size: 24px; color: #fff; margin-top: 10px;">FINAL SCORE: ${state.score}</div>
-                <div style="font-size: 16px; color: #94a3b8; margin-top: 25px;">(目标：${threshold} 分。继续努力！)</div>
-                ${crystalEarned ? `<div style="font-size: 16px; color: #38bdf8; margin-top: 15px;">💎 连续打卡${currentStreak}天，水晶 +1！</div>` : ''}
+                <div style="font-size: 16px; color: #94a3b8; margin-top: 25px;">(再接再厉，瞄准再射击！)</div>
             `;
         }
 
@@ -571,8 +454,7 @@
         let backBtn = document.getElementById('btn-back');
         backBtn.style.display = 'block'; 
         backBtn.innerText = 'RETURN TO HUB';
-        // 8. 结算界面的返回路径也改为回到上级目录
-        backBtn.onclick = () => { window.location.href = "https://andydang2007.github.io/valerie-venessa-learn/index.html"; };
+        backBtn.onclick = () => { window.location.href = "index.html"; };
     }
 
     function getFixedOpts(correct, allArr) {
