@@ -37,9 +37,6 @@
         .checkbox-label.selected { border-color: #a855f7; background: #faf5ff; color: #7e22ce; box-shadow: 0 4px 0 #d8b4fe; }
         .checkbox-label.wrong-selected { border-color: #f59e0b; background: #fffbeb; color: #d97706; box-shadow: 0 4px 0 #fcd34d; }
 
-        /* 变灰禁用的样式 */
-        .checkbox-label.disabled-lesson { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; cursor: not-allowed; box-shadow: none; opacity: 0.6; }
-
         .action-panel { display: flex; gap: 15px; margin-top: 10px; height: auto; min-height: 130px; padding-bottom: 20px; width: 100%; flex: none; }
         .btn-square { flex: 0 0 140px; border-radius: 35px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: #f1f5f9; color: #64748b; border: 3px solid #e2e8f0; box-shadow: 0 6px 0 #cbd5e1; font-weight: 900; cursor: pointer; transition: 0.15s; }
         .btn-square:active { transform: translateY(6px); box-shadow: 0 0 0 transparent; }
@@ -99,7 +96,7 @@
         <h1>🎈 Spelling Hub 🎈</h1>
         <div id="grade-group" class="btn-group"></div>
         <div id="subject-group" class="btn-group" style="display:none; margin-top: 35px;"></div>
-        <button class="btn-action btn-quit" style="width:200px; margin: 20px auto 0 auto;" onclick="window.location.href='index.html'">🏠 返回主页</button>
+        <button class="btn-choice" style="margin: 40px auto 0; background: #f1f5f9; color: #64748b; border-color: #e2e8f0; width: 200px; box-shadow: 0 6px 0 #cbd5e1;" onclick="window.location.href='index.html'">🏠 返回主页</button>
     </div>
 
     <div id="topic-screen" class="screen">
@@ -143,11 +140,10 @@
 </div>
 
 <script>
-    // 🌟 题库 URL
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6wi8MMQvvVS7HukVf43huxpW1EOWZhfJpNQGi-2RAz0K37y2bYyZi2bTbbVhw2d5NlUfjxggCIvA3/pub?gid=266851979&single=true&output=csv";
+    // 🌟 更新了最新的题库 URL
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy_N0p0bq48zhdqMk2hhgbcBE0AimY8C6xgyXWBm3QLC8VUhOnJ-38bA7hwLUWbjbOT8D7mSc_idxK/pub?gid=266851979&single=true&output=csv";
     
     const LIMIT = 5; 
-    const DISABLED_MAX_LESSON = 8; 
 
     let db = {}, curUser = '', curSub = '', practiceList = [], curIdx = 0;
     let hzWriter = null, practiceChars = [];
@@ -242,13 +238,10 @@
         const list = document.getElementById('topic-list'); list.innerHTML = '';
         
         topics.forEach(t => {
-            const weight = getWeight(t);
-            // 控制前面的课次不能重复刷
-            const isDisabled = weight <= DISABLED_MAX_LESSON;
-            
             const lbl = document.createElement('label'); 
-            lbl.className = 'checkbox-label' + (isDisabled ? ' disabled-lesson' : '');
-            lbl.innerHTML = `<input type="checkbox" value="${t}" ${isDisabled ? 'disabled' : ''} onchange="this.parentElement.classList.toggle('selected', this.checked)"> ${t}`;
+            // 移除了置灰与锁定的逻辑
+            lbl.className = 'checkbox-label';
+            lbl.innerHTML = `<input type="checkbox" value="${t}" onchange="this.parentElement.classList.toggle('selected', this.checked)"> ${t}`;
             list.appendChild(lbl);
         });
         showScreen('topic-screen');
@@ -258,7 +251,7 @@
         btn.classList.toggle('active'); let isActive = btn.classList.contains('active');
         document.querySelectorAll('#topic-list input').forEach(cb => {
             let weight = getWeight(cb.value);
-            if(cb.disabled) return;
+            // 移除了如果 disabled 就跳过的逻辑，保障全选功能畅通无阻
             if (type === 'A' && weight <= 10) { cb.checked = isActive; cb.parentElement.classList.toggle('selected', isActive); }
             else if (type === 'B' && (weight > 10 && weight < 999)) { cb.checked = isActive; cb.parentElement.classList.toggle('selected', isActive); }
         });
