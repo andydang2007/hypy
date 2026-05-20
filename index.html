@@ -3,147 +3,473 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+
 <title>学习游戏中心</title>
 
 <style>
-    * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,body{
+    width:100%;
+    min-height:100%;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(59,130,246,.25), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(168,85,247,.22), transparent 30%),
+        linear-gradient(180deg,#0f172a,#020617);
+    color:white;
+}
+
+body{
+    display:flex;
+    justify-content:center;
+    padding:28px 18px;
+}
+
+.container{
+    width:100%;
+    max-width:980px;
+}
+
+/* 顶部 */
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:38px;
+}
+
+.logo-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.title{
+    font-size:clamp(36px,7vw,64px);
+    font-weight:900;
+    letter-spacing:2px;
+    line-height:1;
+    background:linear-gradient(90deg,#ffffff,#7dd3fc);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.subtitle{
+    color:#cbd5e1;
+    font-size:15px;
+}
+
+.date-box{
+    position:relative;
+    padding:16px 22px;
+    border-radius:22px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    text-align:center;
+    user-select:none;
+    cursor:pointer;
+    overflow:hidden;
+}
+
+.date-label{
+    font-size:13px;
+    color:#94a3b8;
+    margin-bottom:6px;
+}
+
+.date-text{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:1px;
+}
+
+/* 长按进度 */
+.hold-progress{
+    position:absolute;
+    left:0;
+    bottom:0;
+    height:4px;
+    width:0%;
+    background:linear-gradient(90deg,#38bdf8,#818cf8);
+    transition:width .1s linear;
+}
+
+/* 卡片区域 */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+}
+
+.card{
+    position:relative;
+    overflow:hidden;
+    text-decoration:none;
+    color:white;
+    border-radius:30px;
+    padding:34px 24px;
+    min-height:220px;
+
+    background:
+        linear-gradient(145deg,
+            rgba(30,41,59,.95),
+            rgba(15,23,42,.82)
+        );
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.35);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(56,189,248,.18),
+            transparent 40%
+        );
+}
+
+.card:hover{
+    transform:translateY(-8px);
+    border-color:rgba(56,189,248,.5);
+
+    box-shadow:
+        0 18px 50px rgba(56,189,248,.18);
+}
+
+.card:active{
+    transform:scale(.97);
+}
+
+.icon{
+    position:relative;
+    z-index:2;
+    font-size:58px;
+    margin-bottom:20px;
+}
+
+.card-title{
+    position:relative;
+    z-index:2;
+    font-size:30px;
+    font-weight:900;
+    margin-bottom:10px;
+}
+
+.desc{
+    position:relative;
+    z-index:2;
+    color:#cbd5e1;
+    line-height:1.6;
+    font-size:15px;
+}
+
+/* footer */
+.footer{
+    text-align:center;
+    margin-top:40px;
+    color:#64748b;
+    font-size:13px;
+    letter-spacing:1px;
+}
+
+/* 后台弹窗 */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+}
+
+.modal-content{
+    width:min(92%,380px);
+    padding:34px 28px;
+    border-radius:30px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,.08);
+    text-align:center;
+    box-shadow:0 20px 80px rgba(0,0,0,.5);
+}
+
+.modal-title{
+    font-size:24px;
+    font-weight:800;
+    margin-bottom:16px;
+}
+
+.password{
+    font-size:58px;
+    font-weight:900;
+    letter-spacing:8px;
+    color:#38bdf8;
+    margin:22px 0;
+    text-shadow:0 0 18px rgba(56,189,248,.45);
+}
+
+.modal-desc{
+    color:#94a3b8;
+    font-size:14px;
+}
+
+.close-btn{
+    margin-top:26px;
+    border:none;
+    background:#38bdf8;
+    color:#0f172a;
+    padding:12px 26px;
+    border-radius:16px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+@media(max-width:760px){
+
+    .topbar{
+        flex-direction:column;
+        gap:22px;
+        align-items:flex-start;
     }
 
-    html, body {
-        margin: 0;
-        width: 100%;
-        min-height: 100%;
-        font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
-        background:
-            radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 35%),
-            linear-gradient(180deg, #0f172a, #020617);
-        color: #fff;
+    .date-box{
+        width:100%;
     }
 
-    body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 28px;
+    .grid{
+        grid-template-columns:1fr;
     }
 
-    .container {
-        width: 100%;
-        max-width: 820px;
-        text-align: center;
+    .card{
+        min-height:180px;
     }
-
-    .title {
-        margin: 0;
-        font-size: clamp(34px, 7vw, 64px);
-        font-weight: 900;
-        letter-spacing: 2px;
-        line-height: 1.1;
-        text-shadow: 0 0 18px rgba(56, 189, 248, 0.55);
-    }
-
-    .subtitle {
-        margin: 16px 0 36px;
-        color: #cbd5e1;
-        font-size: clamp(15px, 3vw, 20px);
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-
-    .card {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        min-height: 180px;
-        padding: 26px 20px;
-        text-decoration: none;
-        color: #fff;
-        border-radius: 28px;
-        background: rgba(15, 23, 42, 0.78);
-        border: 1px solid rgba(148, 163, 184, 0.22);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
-        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-        backdrop-filter: blur(8px);
-    }
-
-    .card:hover {
-        transform: translateY(-6px);
-        border-color: rgba(56, 189, 248, 0.75);
-        box-shadow: 0 22px 60px rgba(56, 189, 248, 0.18);
-    }
-
-    .card:active {
-        transform: scale(0.97);
-    }
-
-    .icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-    }
-
-    .card-title {
-        font-size: 26px;
-        font-weight: 900;
-        margin-bottom: 8px;
-    }
-
-    .desc {
-        color: #cbd5e1;
-        font-size: 15px;
-        line-height: 1.5;
-    }
-
-    .footer {
-        margin-top: 34px;
-        color: #64748b;
-        font-size: 13px;
-    }
-
-    @media (max-width: 760px) {
-        body {
-            padding: 22px;
-        }
-
-        .grid {
-            grid-template-columns: 1fr;
-        }
-
-        .card {
-            min-height: 140px;
-        }
-    }
+}
 </style>
 </head>
 
 <body>
-    <main class="container">
-        <h1 class="title">学习游戏中心</h1>
-        <p class="subtitle">选择一个游戏开始练习</p>
 
-        <section class="grid">
-            <a class="card" href="spelling.html">
-                <div class="icon">✍️</div>
-                <div class="card-title">学听写</div>
-            </a>
+<main class="container">
 
-            <a class="card" href="hypy.html">
-                <div class="icon">🚀</div>
-                <div class="card-title">练拼音</div>
-            </a>
+    <div class="topbar">
 
-            <a class="card" href="radical.html">
-                <div class="icon">🧩</div>
-                <div class="card-title">认汉字</div>
-            </a>
-        </section>
+        <div class="logo-wrap">
+            <h1 class="title">学习游戏中心</h1>
+            <div class="subtitle">选择一个游戏开始练习</div>
+        </div>
 
-        <div class="footer">Learning Game Hub</div>
-    </main>
+        <!-- 长按隐藏按钮 -->
+        <div class="date-box" id="hiddenTrigger">
+            <div class="date-label">今天日期</div>
+            <div class="date-text" id="dateText"></div>
+            <div class="hold-progress" id="progressBar"></div>
+        </div>
+
+    </div>
+
+    <section class="grid">
+
+        <a class="card" href="spelling.html">
+            <div class="icon">✍️</div>
+            <div class="card-title">学听写</div>
+            <div class="desc">
+                通过互动方式练习词语听写与拼读。
+            </div>
+        </a>
+
+        <a class="card" href="hypy.html">
+            <div class="icon">🚀</div>
+            <div class="card-title">练拼音</div>
+            <div class="desc">
+                拼音训练与发音挑战，提高识字能力。
+            </div>
+        </a>
+
+        <a class="card" href="radical.html">
+            <div class="icon">🧩</div>
+            <div class="card-title">认汉字</div>
+            <div class="desc">
+                部首组合与汉字识别小游戏。
+            </div>
+        </a>
+
+    </section>
+
+    <div class="footer">
+        Learning Game Hub
+    </div>
+
+</main>
+
+<!-- 后台弹窗 -->
+<div class="modal" id="adminModal">
+    <div class="modal-content">
+        <div class="modal-title">后台动态口令</div>
+
+        <div class="password" id="passwordText">
+            0000
+        </div>
+
+        <div class="modal-desc">
+            根据当天日期与星期自动生成
+        </div>
+
+        <button class="close-btn" id="closeBtn">
+            关闭
+        </button>
+    </div>
+</div>
+
+<script>
+
+/* 日期显示 */
+const dateText = document.getElementById("dateText");
+
+const today = new Date();
+
+const dd = String(today.getDate()).padStart(2,'0');
+const mm = String(today.getMonth()+1).padStart(2,'0');
+const yyyy = today.getFullYear();
+
+dateText.innerText = `${dd}/${mm}/${yyyy}`;
+
+
+/* 动态口令逻辑 */
+/*
+日期格式：
+ddmmyyyy
+
+例如：
+20 05 2026
+=> 20052026
+
+星期：
+周一=1
+周二=2
+周三=3
+
+从第N位开始取4位
+
+周三：
+20052026
+  ^
+  从第3位开始
+=> 5202
+*/
+
+function generatePassword(){
+
+    const dateStr = `${dd}${mm}${yyyy}`;
+
+    let day = today.getDay();
+
+    // JS:
+    // 周日=0
+    // 周一=1
+    // ...
+    // 周六=6
+
+    if(day === 0){
+        day = 7;
+    }
+
+    const startIndex = day - 1;
+
+    return dateStr.substr(startIndex,4);
+}
+
+document.getElementById("passwordText").innerText = generatePassword();
+
+
+/* 长按8秒 */
+const trigger = document.getElementById("hiddenTrigger");
+const modal = document.getElementById("adminModal");
+const closeBtn = document.getElementById("closeBtn");
+const progressBar = document.getElementById("progressBar");
+
+let pressTimer = null;
+let progressTimer = null;
+let holdTime = 8000;
+let progress = 0;
+
+function startHold(){
+
+    progress = 0;
+    progressBar.style.width = "0%";
+
+    const start = Date.now();
+
+    progressTimer = setInterval(()=>{
+
+        const elapsed = Date.now() - start;
+
+        progress = Math.min((elapsed / holdTime) * 100, 100);
+
+        progressBar.style.width = progress + "%";
+
+    },50);
+
+    pressTimer = setTimeout(()=>{
+
+        modal.style.display = "flex";
+
+    },holdTime);
+}
+
+function cancelHold(){
+
+    clearTimeout(pressTimer);
+    clearInterval(progressTimer);
+
+    progressBar.style.width = "0%";
+}
+
+/* 手机 */
+trigger.addEventListener("touchstart",startHold);
+trigger.addEventListener("touchend",cancelHold);
+trigger.addEventListener("touchcancel",cancelHold);
+
+/* 电脑 */
+trigger.addEventListener("mousedown",startHold);
+trigger.addEventListener("mouseup",cancelHold);
+trigger.addEventListener("mouseleave",cancelHold);
+
+
+/* 关闭弹窗 */
+closeBtn.addEventListener("click",()=>{
+
+    modal.style.display = "none";
+
+});
+
+modal.addEventListener("click",(e)=>{
+
+    if(e.target === modal){
+        modal.style.display = "none";
+    }
+
+});
+
+</script>
+
 </body>
 </html>
